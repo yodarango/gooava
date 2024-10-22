@@ -1,0 +1,183 @@
+{{template "base" .}} {{define "styles" }}
+<style>
+  .header {
+    left: calc(-49.9vw + 50%);
+    position: relative;
+    overflow: hidden;
+    height: 20rem;
+    width: 99.9vw;
+  }
+
+  .header-image {
+    border-bottom-left-radius: 2.5rem;
+    border-bottom-right-radius: 2.5rem;
+    object-fit: cover;
+    height: 100%;
+    width: 100%;
+  }
+
+  .avatar-container {
+    position: absolute;
+    border-radius: 50%;
+    cursor: pointer;
+    height: 6rem;
+    width: 6rem;
+    right: 1rem;
+    z-index: 2;
+    top: 1rem;
+
+    ion-icon {
+      font-size: 3rem;
+      color: var(--dr-zeta);
+    }
+  }
+
+  .avatar-container:active {
+    scale: 0.9;
+  }
+</style>
+
+{{end}} {{ define "body"}}
+
+<div class="header mb-2">
+  <img
+    src="/static/images/tacos_bkg.webp"
+    alt="Tacos on a plate"
+    class="header-image"
+  />
+
+  <a
+    class="avatar-container bg-delta d-flex align-items-center justify-content-center"
+  >
+    <ion-icon name="person"></ion-icon>
+  </a>
+</div>
+
+<div class="header-content mb-4">
+  <h2 class="header-title text-center">Good {=afternoon=}!</h2>
+  <p class="header-subtitle text-center">
+    Select your filters below to get started.
+  </p>
+</div>
+
+<form>
+  <!-- Button and associated checkbox for "Healthy" -->
+  <button
+    type="button"
+    class="primary-selector-button mb-2"
+    onclick="toggleSelection(this, 'healthyCheckbox')"
+  >
+    <ion-icon name="fitness"></ion-icon>
+    <span>Healthy</span>
+    <div>
+      <ion-icon name="alert-circle-outline"></ion-icon>
+    </div>
+  </button>
+  <input type="checkbox" id="healthyCheckbox" style="display: none" />
+
+  <!-- Button and associated checkbox for "Quick" -->
+  <button
+    type="button"
+    class="primary-selector-button mb-2"
+    onclick="toggleSelection(this, 'quickCheckbox')"
+  >
+    <ion-icon name="flash"></ion-icon>
+    <span>Quick</span>
+    <div>
+      <ion-icon name="alert-circle-outline"></ion-icon>
+    </div>
+  </button>
+  <input type="checkbox" id="quickCheckbox" style="display: none" />
+
+  <!-- Button and associated checkbox for "Maximize ingredients" -->
+  <button
+    type="button"
+    class="primary-selector-button mb-2"
+    onclick="toggleSelection(this, 'maximizeCheckbox')"
+  >
+    <ion-icon name="checkmark-circle"></ion-icon>
+    <span>Maximize ingredients</span>
+    <div>
+      <ion-icon name="alert-circle-outline"></ion-icon>
+    </div>
+  </button>
+  <input type="checkbox" id="maximizeCheckbox" style="display: none" />
+
+  <!-- Button and associated checkbox for "Budget friendly" -->
+  <button
+    type="button"
+    class="primary-selector-button mb-2"
+    onclick="toggleSelection(this, 'budgetCheckbox')"
+  >
+    <ion-icon name="wallet"></ion-icon>
+    <span>Budget friendly</span>
+    <div>
+      <ion-icon name="alert-circle-outline"></ion-icon>
+    </div>
+  </button>
+  <input type="checkbox" id="budgetCheckbox" style="display: none" />
+
+  <!-- Input for "Cuisine specific" -->
+  <div
+    class="input-selector-button mb-4"
+    onclick="toggleInput(this, 'cuisineInput')"
+  >
+    <div class="input-selector-button__top-content">
+      <ion-icon name="flag"></ion-icon>
+      <span>Cuisine specific</span>
+      <div>
+        <ion-icon name="alert-circle-outline"></ion-icon>
+      </div>
+    </div>
+    <div
+      class="input-selector-button__bottom-content"
+      id="cuisineInput"
+      style="display: none"
+    >
+      <p class="mb-1">Type the kind of cuisine you’d like to cook</p>
+      <input
+        type="text"
+        placeholder="example: Italian"
+        onclick="event.stopPropagation();"
+      />
+    </div>
+  </div>
+
+  <button class="primary-button" type="submit">Let's cook</button>
+</form>
+
+{{end}} {{define "scripts"}}
+<script>
+  function toggleSelection(button, checkboxId) {
+    button.prevent;
+    const checkbox = document.getElementById(checkboxId);
+
+    // Toggle the checkbox state
+    checkbox.checked = !checkbox.checked;
+
+    // Toggle the .active class on the button
+    button.classList.toggle("active");
+  }
+
+  function toggleInput(button, inputId) {
+    const inputDiv = document.getElementById(inputId);
+
+    // Check if the element exists before trying to access its properties
+    if (!inputDiv) {
+      console.error(`Element with id '${inputId}' not found.`);
+      return;
+    }
+
+    // Toggle visibility of the input section
+    if (inputDiv.style.display === "none" || inputDiv.style.display === "") {
+      inputDiv.style.display = "block";
+      // Add the active class to the button
+      button.classList.add("active");
+    } else {
+      inputDiv.style.display = "none";
+      // Remove the active class from the button
+      button.classList.remove("active");
+    }
+  }
+</script>
+{{end}}

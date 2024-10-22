@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    container_name: gooava_app
+    ports:
+      - "8003:8003" # Maps port 8080 from the container to port 8080 on the host
+    environment:
+      - DB_HOST=mysql
+      - DB_USER=root
+      - DB_PASSWORD=Crh15tK1n6*
+      - DB_NAME=gooava
+    depends_on:
+      - mysql # Waits for the MySQL service to start
+    networks:
+      - app-network
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: Crh15tK1n6*
+      MYSQL_DATABASE: gooava
+      MYSQL_USER: root
+      MYSQL_PASSWORD: Crh15tK1n6*
+    ports:
+      - "3306:3306" # Exposes MySQL on port 3306
+    networks:
+      - app-network
+    volumes:
+      - mysql_data:/var/lib/mysql # Persistent storage for MySQL data
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local

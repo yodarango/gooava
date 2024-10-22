@@ -1,0 +1,20 @@
+:root {
+  --dr-alpha: #f9e5e8;
+  --dr-alpha-rgb: 249, 229, 232;
+  --dr-beta: #29282b;
+  --dr-beta-rgb: 41, 40, 43;
+  --dr-gamma: #fcf5f6;
+  --dr-gamma-rgb: 252, 245, 246;
+  --dr-delta: #f24c66;
+  --dr-delta-rgb: 242, 76, 102;
+  --dr-epsilon: #ede1e3;
+  --dr-epsilon-rgb: 237, 225, 227;
+  --dr-zeta: #ffffff;
+  --dr-zeta-rgb: 255, 255, 255;
+  --dr-eta: #454243;
+  --dr-eta-rgb: 69, 66, 67;
+  --dr-theta: #f2bc19;
+  --dr-theta-rgb: 255, 193, 7;
+  /* --dr-iota: #ff00cb;
+  --dr-iota-rgb: 255, 0, 203; */
+}

@@ -1,0 +1,65 @@
+# Binaries for programs and apps
+main
+*.exe
+*.out
+*.app
+
+# Go workspace files
+*.log
+*.tmp
+
+# Directory for dependencies
+/vendor/
+
+# Ignore Go module files (if using vendoring)
+go.sum
+
+# Compiled object files
+*.o
+
+# Go test binary files
+*.test
+
+# Ignore the build directory
+/build/
+
+# Configuration files
+.env
+config.yaml
+config.json
+
+# Database dumps
+*.sql
+*.db
+*.sqlite
+
+# MySQL data directories (if using mounted volumes for MySQL in Docker)
+mysql_data/
+
+# Ignore node_modules/ if you're using Node for frontend (React) in the same project
+node_modules/
+
+# Ignore macOS specific files
+.DS_Store
+
+# Ignore Docker files that are specific to local development
+docker-compose.override.yml
+
+# Logs and debug files
+*.log
+
+# Ignore IDE/editor project files (adjust for your IDE/editor)
+.vscode/
+.idea/
+*.iml
+
+# Ignore migrations logs if applicable
+migrations.log
+
+# Git-specific files
+*.orig
+
+# Exclude OS or temporary editor swap files
+*~
+*.swp
+*.swo

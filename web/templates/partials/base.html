@@ -1,0 +1,98 @@
+{{ define "base" }}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script
+      defer
+      data-domain="shrood.app"
+      src="https://plausible.io/js/script.js"
+    ></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="keywords"
+      content="Gooava, recipe app, cooking, food, recipes, meal planning, gourmet, healthy recipes, cooking app, food app, diet, meal ideas, recipe collection, baking, cuisine, kitchen, culinary, easy recipes, quick meals, grocery list, Gooava recipes"
+    />
+
+    <!-- SEO, OG and Twitter tags -->
+    <link rel="canonical" href="https://shrood.app/gooava" />
+    <link rel="alternate" hreflang="en" href="https://shrood.app/gooava" />
+    <meta property="og:site_name" content="Gooava" />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Gooava | {.Title}" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:title" content="Gooava | {.Title}" />
+    <meta property="og:article:author" content="Daniel Rangel" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@danielrangel" />
+    <meta name="twitter:creator" content="@yodarango" />
+    <meta
+      property="og:image"
+      content="https://shrood.app/gooava/public/images/OG_logo.png"
+    />
+    <meta property="og:url" content="https://shrood.app/gooava" />
+    <meta
+      name="description"
+      content="Gooava is your go-to recipe app for delicious meal planning, healthy cooking, and gourmet cuisine. Discover new recipes, save your favorites, and enjoy easy cooking with Gooava."
+    />
+    <meta
+      property="og:description"
+      content="Gooava is your go-to recipe app for delicious meal planning, healthy cooking, and gourmet cuisine. Discover new recipes, save your favorites, and enjoy easy cooking with Gooava."
+    />
+    <meta
+      name="twitter:description"
+      content="Gooava is your go-to recipe app for delicious meal planning, healthy cooking, and gourmet cuisine. Discover new recipes, save your favorites, and enjoy easy cooking with Gooava."
+    />
+    <meta
+      name="twitter:image"
+      content="https://shrood.app/gooava/public/images/OG_logo.png"
+    />
+
+    <!-- PWA -->
+    <link
+      rel="apple-touch-icon"
+      href="https://shrood.app/gooava/public/images/OG_logo.png"
+    />
+    <link rel="manifest" href="/public/manifest.json" />
+
+    <!-- styles -->
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.danielrangel.net/fullds.min.css"
+    />
+    <link rel="stylesheet" type="text/css" href="/static/css/tokens.css" />
+    <link rel="stylesheet" type="text/css" href="/static/css/app.css" />
+    <!-- ionic icons -->
+    <script
+      type="module"
+      src="/static/ionic/ionicons.esm.js"
+      data-stencil
+    ></script>
+    <script nomodule="" src="/static/ionic/ionicons.js" data-stencil></script>
+    <link
+      rel="icon"
+      type="image/png"
+      href="https://shrood.app/gooava/public/images/favicon.png"
+    />
+
+    {{block "styles" . }} {{end}}
+    <title data-language-ui="pageTitle">Gooava | {.Title}</title>
+  </head>
+
+  <body>
+    <div class="body-frame-15ks">
+      <!-- header -->
+
+      <main>{{block "header" .}} {{end}} {{ block "body" .}} {{end}}</main>
+
+      <div class="spacer-4"></div>
+
+      {{block "footer" .}} {{end}}
+    </div>
+
+    {{ block "scripts" .}} {{end}} {{ block "js" .}} {{end}}
+  </body>
+</html>
+{{ end }}

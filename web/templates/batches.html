@@ -1,0 +1,53 @@
+{{template "base" .}} {{define "styles"}}
+
+<style>
+  .recipe-batches-container {
+    grid-template-columns: repeat(auto-fit, minmax(25rem, 1fr));
+    gap: var(--dr-spacing-4);
+    display: grid;
+  }
+
+  .recipe-batches-container .post-card:first-child {
+    border: 2px solid var(--dr-theta);
+    position: relative;
+  }
+
+  .recipe-batches-container .post-card:first-child::after {
+    background-color: var(--dr-theta);
+    font-size: var(--dr-fs-2);
+    padding: var(--dr-spacing-1) var(--dr-spacing-2);
+    border-radius: 1rem;
+    position: absolute;
+    content: "latest";
+    display: block;
+    right: 1rem;
+    top: 1rem;
+  }
+</style>
+
+{{end}} {{define "body"}}
+
+<p class="mb-4">These are all your recipe batches</p>
+
+<div class="recipe-batches-container">
+  {{ range $index, $value := .Data}}
+  <a href="/batches/{{.Id}}" class="post-card">
+    <div class="thumbnail">
+      <img src="{{.Thumbnail}}" alt="{{.Name}}" />
+    </div>
+    <div class="post-details">
+      <h4 class="post-title">{{.Name}}</h4>
+      <p class="post-date">{{.Date}}</p>
+      <!-- TODO: Add tags at the bottom for easy visibility-->
+      <!-- <div class="post-tags">
+        <img src="/static/images/tag1-icon.png" alt="Tag 1" class="tag-icon" />
+        <img src="/static/images/tag2-icon.png" alt="Tag 2" class="tag-icon" />
+        <img src="/static/images/tag3-icon.png" alt="Tag 3" class="tag-icon" />
+        <!-- Add more tag icons as needed 
+      </div> -->
+    </div>
+  </a>
+
+  {{end}}
+</div>
+{{end}}
