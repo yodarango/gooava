@@ -50,13 +50,48 @@ func main() {
 
 	})
 
-	mux.HandleFunc("/batches/", func(w http.ResponseWriter, r *http.Request) {
-		templ := template.New("recipes.html").Funcs(template.FuncMap{
+	mux.HandleFunc("/batches/2/ingredients", func(w http.ResponseWriter, r *http.Request) {
+		templ := template.New("batches_ingredients.html").Funcs(template.FuncMap{
 			"add": func(x, y int) int {
 				return x + y
 			},
 		})
-		temp, err := templ.ParseFiles("web/templates/recipes.html", "web/templates/partials/base.html", "web/templates/partials/header.html")
+		temp, err := templ.ParseFiles("web/templates/batches_ingredients.html", "web/templates/partials/base.html", "web/templates/partials/header.html")
+
+		if err != nil {
+			http.Error(w, "Error parsing template", http.StatusInternalServerError)
+			log.Printf("Error parsing template %v", err)
+			return
+		}
+
+		err = temp.Execute(w, map[string]interface{}{
+			"Data": []map[string]interface{}{
+				{"Name": "my recipe", "Qty": 2},
+				{"Name": "my recipe", "Qty": 5},
+				{"Name": "my recipe", "Qty": 22},
+				{"Name": "my recipe", "Qty": 6},
+				{"Name": "my recipe", "Qty": 42},
+				{"Name": "my recipe", "Qty": 1},
+				{"Name": "my recipe", "Qty": 68},
+			},
+			"MenuIcon": "restaurant",
+		})
+
+		if err != nil {
+			http.Error(w, "Error executing template", http.StatusInternalServerError)
+			log.Printf("Error executing template: %v", err)
+			return
+		}
+
+	})
+
+	mux.HandleFunc("/batches/", func(w http.ResponseWriter, r *http.Request) {
+		templ := template.New("batches_recipes.html").Funcs(template.FuncMap{
+			"add": func(x, y int) int {
+				return x + y
+			},
+		})
+		temp, err := templ.ParseFiles("web/templates/batches_recipes.html", "web/templates/partials/base.html", "web/templates/partials/header.html")
 
 		if err != nil {
 			http.Error(w, "Error parsing template", http.StatusInternalServerError)

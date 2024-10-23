@@ -1,0 +1,124 @@
+{{ template "base" .}} {{define "styles"}}
+<style>
+  .table-container {
+    box-shadow: 0 0.4rem 0.6rem rgba(var(--dr-beta-rgb), 0.1);
+    background-color: var(--dr-zeta);
+    padding: var(--dr-spacing-5);
+    border-radius: 2rem;
+    margin: 0 auto;
+  }
+
+  .ingredients-table {
+    border-collapse: separate;
+    border-spacing: 0 8px;
+    width: 100%;
+  }
+
+  .ingredients-table th {
+    border-bottom: 0.1rem solid rgba(var(--dr-eta-rgb), 0.2);
+    padding: 0 var(--dr-spacing-4) var(--dr-spacing-4);
+    color: var(--dr-beta);
+    font-weight: bold;
+  }
+
+  .ingredients-table td {
+    border-bottom: 0.1rem solid rgba(var(--dr-eta-rgb), 0.1);
+    color: var(--dr-beta);
+    padding: 10px 15px;
+  }
+
+  .ingredients-table td button {
+    background-color: transparent;
+  }
+
+  .ingredients-table tr:last-child td {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .checkmark.checked::after {
+    content: "\2714";
+    font-size: 14px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+  }
+</style>
+{{end}} {{ define "body"}}
+<p class="mb-2">
+  Below are all the ingredients that you will need to create all the recipes
+  within this batch
+</p>
+<button class="primary-button mb-4">Try automatic shopping!</button>
+<div class="table-container">
+  <table class="ingredients-table">
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th class="text-center">Qty</th>
+        <th class="text-center">Have</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range $index, $value := .Data}}
+      <tr>
+        <td>{{.Name}}</td>
+        <td class="text-center">{{.Qty}}</td>
+        <td class="d-flex align-items-center justify-content-center">
+          <button class="p-0 m-0" onclick="toggleIcon(this, {{$index}})">
+            <ion-icon class="fs-2"></ion-icon>
+          </button>
+        </td>
+      </tr>
+      {{ end }}
+    </tbody>
+  </table>
+</div>
+{{end}} {{define "js"}}
+
+<script>
+  // I toggle the ingredient icon and store the state in localStorage
+  function toggleIcon(button, index) {
+    const icon = button.querySelector("ion-icon");
+    let state = localStorage.getItem("ingredientState")
+      ? JSON.parse(localStorage.getItem("ingredientState"))
+      : {};
+
+    if (icon.getAttribute("name") === "ellipse-outline") {
+      icon.setAttribute("name", "checkmark-circle");
+      icon.classList.remove("color-eta");
+      icon.classList.add("color-delta");
+      state[index] = true; // Mark as checked
+    } else {
+      icon.setAttribute("name", "ellipse-outline");
+      icon.classList.remove("color-delta");
+      icon.classList.add("color-eta");
+      state[index] = false; // Mark as unchecked
+    }
+
+    // Save the updated state to localStorage
+    localStorage.setItem("ingredientState", JSON.stringify(state));
+  }
+
+  // I initialize the icon states from localStorage on first load
+  function initializeIconStates() {
+    let state = localStorage.getItem("ingredientState")
+      ? JSON.parse(localStorage.getItem("ingredientState"))
+      : {};
+
+    document.querySelectorAll("tbody tr").forEach((row, index) => {
+      const icon = row.querySelector("ion-icon");
+      if (state[index]) {
+        icon.setAttribute("name", "checkmark-circle");
+        icon.classList.add("color-delta");
+      } else {
+        icon.setAttribute("name", "ellipse-outline");
+        icon.classList.add("color-eta");
+      }
+    });
+  }
+  initializeIconStates();
+</script>
+{{end}}

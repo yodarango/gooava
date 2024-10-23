@@ -1,0 +1,19 @@
+{{template "base" .}} {{define "style"}}
+<style>
+  .recipe-thumbnail {
+    border-radius: 2rem;
+    max-width: 40rem;
+    width: 100%;
+  }
+</style>
+{{end}} {{ define "body"}}
+<p class="mb-4">
+  Look at the ingredients and follow the steps below to serve this recipe
+</p>
+<img src="{{.Thumbnail}}" class="recipe-thumbnail d-block m-auto mb-4" />
+
+<div class="d-flex align-items-center justify-content-start gap-2 opacity-60">
+  <ion-icon name="timer"></ion-icon>
+  <p>Estimated time: {{.TimeToPrepare}}</p>
+</div>
+{{end}}
