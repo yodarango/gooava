@@ -1,5 +1,5 @@
 # Step 1: Build the Go application with CompileDaemon
-FROM golang:1.20-alpine AS builder
+FROM golang:1.22-alpine AS builder
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -12,7 +12,8 @@ RUN go mod download
 
 # Copy the application code
 COPY ./cmd/main ./cmd/main 
-COPY ./internal ./internal
+COPY ./api ./api
+# COPY ./internal ./internal
 COPY ./config ./config
 COPY ./web /app/web            
 
@@ -20,7 +21,7 @@ COPY ./web /app/web
 RUN go install github.com/githubnemo/CompileDaemon@latest
 
 # Step 2: Set up the Runtime Container
-FROM golang:1.20-alpine
+FROM golang:1.22-alpine
 
 # Set the working directory inside the container
 WORKDIR /app
