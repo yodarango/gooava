@@ -38,7 +38,7 @@
 │   └── response.go         # Utilities for building consistent API responses
 │
 ├── /cmd/                   # Main applications for different services
-│   └── recipe-app/         # The main service application
+│   └── main/               # The main service application
 │       └── main.go         # Application entry point
 │
 ├── /db/                    # Database-related files

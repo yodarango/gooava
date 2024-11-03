@@ -1,38 +1,37 @@
-# Step 1: Build the Go application
+# Step 1: Build the Go application with CompileDaemon
 FROM golang:1.20-alpine AS builder
 
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy the Go modules manifests
+# Copy go.mod and go.sum files
 COPY go.mod go.sum ./
 
 # Download dependencies
 RUN go mod download
 
-# Copy the rest of the application code
-COPY . .
+# Copy the application code
+COPY ./cmd/main ./cmd/main 
+COPY ./internal ./internal
+COPY ./config ./config
+COPY ./web /app/web            
 
-# Build the Go binary
-RUN go build -o main .
+# Install CompileDaemon
+RUN go install github.com/githubnemo/CompileDaemon@latest
 
-# Step 2: Run the Go application
-FROM alpine:3.18
+# Step 2: Set up the Runtime Container
+FROM golang:1.20-alpine
 
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy the Go binary from the builder stage
-COPY --from=builder /app/main .
+# Copy the Go binary and necessary files from the builder stage
+COPY --from=builder /go/bin/CompileDaemon /usr/local/bin/CompileDaemon
+# Copy all files from builder
+COPY --from=builder /app /app  
 
-# Copy any other necessary files (such as config files, migrations, etc.)
-COPY --from=builder /app/db /app/db
+# Expose the port
+EXPOSE 8003
 
-# Expose the port on which the application will run (change if necessary)
-EXPOSE 8080
-
-# Define environment variables if needed
-# ENV DATABASE_URL=mysql://user:password@tcp(mysql-container:3306)/dbname
-
-# Start the Go application
-CMD ["./main"]
+# Run CompileDaemon to watch for file changes and rebuild/restart the app
+ENTRYPOINT ["CompileDaemon", "-build=go build -o main ./cmd/main/main.go", "-command=./main"]

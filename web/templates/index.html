@@ -54,13 +54,16 @@
 </div>
 
 <div class="header-content mb-4">
-  <h2 class="header-title text-center">Good {=afternoon=}!</h2>
+  <h2 class="header-title text-center"></h2>
   <p class="header-subtitle text-center">
     Select your filters below to get started.
   </p>
+  <p class="opacity-60 text-center"></p>
+    (A large list of filters could limit recipe options.)
+  </p>
 </div>
 
-<form>
+<form action="/" method="post">
   <!-- Button and associated checkbox for "Healthy" -->
   <button
     type="button"
@@ -69,9 +72,9 @@
   >
     <ion-icon name="fitness"></ion-icon>
     <span>Healthy</span>
-    <div>
+    <!-- <div>
       <ion-icon name="alert-circle-outline"></ion-icon>
-    </div>
+    </div> -->
   </button>
   <input type="checkbox" id="healthyCheckbox" style="display: none" />
 
@@ -83,9 +86,9 @@
   >
     <ion-icon name="flash"></ion-icon>
     <span>Quick</span>
-    <div>
+    <!-- <div>
       <ion-icon name="alert-circle-outline"></ion-icon>
-    </div>
+    </div> -->
   </button>
   <input type="checkbox" id="quickCheckbox" style="display: none" />
 
@@ -97,9 +100,9 @@
   >
     <ion-icon name="checkmark-circle"></ion-icon>
     <span>Maximize ingredients</span>
-    <div>
+    <!-- <div>
       <ion-icon name="alert-circle-outline"></ion-icon>
-    </div>
+    </div> -->
   </button>
   <input type="checkbox" id="maximizeCheckbox" style="display: none" />
 
@@ -111,9 +114,9 @@
   >
     <ion-icon name="wallet"></ion-icon>
     <span>Budget friendly</span>
-    <div>
+    <!-- <div>
       <ion-icon name="alert-circle-outline"></ion-icon>
-    </div>
+    </div> -->
   </button>
   <input type="checkbox" id="budgetCheckbox" style="display: none" />
 
@@ -125,9 +128,9 @@
     <div class="input-selector-button__top-content">
       <ion-icon name="flag"></ion-icon>
       <span>Cuisine specific</span>
-      <div>
+      <!-- <div>
         <ion-icon name="alert-circle-outline"></ion-icon>
-      </div>
+      </div> -->
     </div>
     <div
       class="input-selector-button__bottom-content"
@@ -179,5 +182,27 @@
       button.classList.remove("active");
     }
   }
+
+  // I update the title in accordance with the time of the day:
+  function updateGreeting() {
+    const headerTitle = document.querySelector(".header-title");
+    const currentHour = new Date().getHours();
+    let greeting;
+
+    if (currentHour >= 5 && currentHour < 12) {
+      greeting = "morning";
+    } else if (currentHour >= 12 && currentHour < 18) {
+      greeting = "afternoon";
+    } else if (currentHour >= 18 && currentHour < 21) {
+      greeting = "evening";
+    } else {
+      greeting = "night";
+    }
+
+    headerTitle.textContent = `Good ${greeting}!`;
+  }
+
+  // Call the function to set the greeting initially
+  updateGreeting();
 </script>
 {{end}}

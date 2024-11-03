@@ -22,10 +22,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: Crh15tK1n6*
       MYSQL_DATABASE: gooava
-      MYSQL_USER: root
-      MYSQL_PASSWORD: Crh15tK1n6*
     ports:
-      - "3306:3306" # Exposes MySQL on port 3306
+      - "3306:3306"
     networks:
       - app-network
     volumes:
