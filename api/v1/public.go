@@ -7,7 +7,6 @@ import (
 )
 
 func Public(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("home")
 	temp, err := template.ParseFiles("web/templates/index.html", "web/templates/partials/base.html")
 
 	if err != nil {
@@ -15,5 +14,4 @@ func Public(w http.ResponseWriter, r *http.Request) {
 	}
 
 	temp.Execute(w, nil)
-
 }

@@ -17,6 +17,8 @@ func Routes() http.Handler {
 
 	mux.HandleFunc("/batches/2/ingredients", apiv1.GetSingleBatchIngredients)
 
+	mux.HandleFunc("/batches/new", apiv1.PostNewBatch)
+
 	mux.HandleFunc("/batches/", apiv1.GetBatchById)
 
 	mux.HandleFunc("/", apiv1.Public)

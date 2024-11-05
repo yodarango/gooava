@@ -7,7 +7,19 @@ import (
 	"net/http"
 )
 
+// I handle the POST and GET methods and redirect the user to the corresponding page
+// func Batches(w http.ResponseWriter, r *http.Request) {
+// 	if r.Method == http.MethodPost {
+// 		PostNewBatch(w, r)
+// 		return
+// 	}
+
+// 	GetBatchById(w, r)
+// }
+
+// I get all the batches available for a specific user
 func GetBathes(w http.ResponseWriter, r *http.Request) {
+
 	templ := template.New("batches.html")
 
 	temp, err := templ.ParseFiles("web/templates/batches.html", "web/templates/partials/base.html", "web/templates/partials/header.html")
@@ -40,6 +52,7 @@ func GetBathes(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// I get all the ingredients necessary for a specific batch
 func GetSingleBatchIngredients(w http.ResponseWriter, r *http.Request) {
 	templ := template.New("batches_ingredients.html").Funcs(template.FuncMap{
 		"add": func(x, y int) int {
@@ -75,6 +88,7 @@ func GetSingleBatchIngredients(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// I get a single batch by its ID
 func GetBatchById(w http.ResponseWriter, r *http.Request) {
 	templ := template.New("batches_recipes.html").Funcs(template.FuncMap{
 		"add": func(x, y int) int {
@@ -108,4 +122,22 @@ func GetBatchById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+}
+
+// I create a brand new batch
+func PostNewBatch(w http.ResponseWriter, r *http.Request) {
+	// isMaximizeIngredients := r.FormValue("isMaximizeIngredients")
+	// isBudgetFriendly := r.FormValue("isBudgetFriendly")
+	// cuisineType := r.FormValue("cuisineType")
+	// recipeCount := r.FormValue("recipeCount")
+	// isHealthy := r.FormValue("isHealthy")
+	// isQuick := r.FormValue("isQuick")
+
+	tmpl, err := template.New("name").Parse("<p>test</p>")
+
+	if err != nil {
+		http.Error(w, "Error executing template", http.StatusInternalServerError)
+	}
+
+	tmpl.Execute(w, nil)
 }

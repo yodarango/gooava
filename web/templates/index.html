@@ -58,12 +58,14 @@
   <p class="header-subtitle text-center">
     Select your filters below to get started.
   </p>
-  <p class="opacity-60 text-center"></p>
+  <p class="opacity-60 text-center">
     (A large list of filters could limit recipe options.)
   </p>
 </div>
 
-<form action="/" method="post">
+<!-- form response after submission. This component will swap the form -->
+<div id="response"></div>
+<form hx-post="/batches/new" hx-swap="outerHTML">
   <!-- Button and associated checkbox for "Healthy" -->
   <button
     type="button"
@@ -72,11 +74,13 @@
   >
     <ion-icon name="fitness"></ion-icon>
     <span>Healthy</span>
-    <!-- <div>
-      <ion-icon name="alert-circle-outline"></ion-icon>
-    </div> -->
   </button>
-  <input type="checkbox" id="healthyCheckbox" style="display: none" />
+  <input
+    type="checkbox"
+    id="healthyCheckbox"
+    name="isHealthy"
+    style="display: none"
+  />
 
   <!-- Button and associated checkbox for "Quick" -->
   <button
@@ -86,11 +90,13 @@
   >
     <ion-icon name="flash"></ion-icon>
     <span>Quick</span>
-    <!-- <div>
-      <ion-icon name="alert-circle-outline"></ion-icon>
-    </div> -->
   </button>
-  <input type="checkbox" id="quickCheckbox" style="display: none" />
+  <input
+    type="checkbox"
+    name="isQuick"
+    id="quickCheckbox"
+    style="display: none"
+  />
 
   <!-- Button and associated checkbox for "Maximize ingredients" -->
   <button
@@ -100,11 +106,13 @@
   >
     <ion-icon name="checkmark-circle"></ion-icon>
     <span>Maximize ingredients</span>
-    <!-- <div>
-      <ion-icon name="alert-circle-outline"></ion-icon>
-    </div> -->
   </button>
-  <input type="checkbox" id="maximizeCheckbox" style="display: none" />
+  <input
+    type="checkbox"
+    id="maximizeCheckbox"
+    name="isMaximizeIngredients"
+    style="display: none"
+  />
 
   <!-- Button and associated checkbox for "Budget friendly" -->
   <button
@@ -114,11 +122,13 @@
   >
     <ion-icon name="wallet"></ion-icon>
     <span>Budget friendly</span>
-    <!-- <div>
-      <ion-icon name="alert-circle-outline"></ion-icon>
-    </div> -->
   </button>
-  <input type="checkbox" id="budgetCheckbox" style="display: none" />
+  <input
+    type="checkbox"
+    name="isBudgetFriendly"
+    id="budgetCheckbox"
+    style="display: none"
+  />
 
   <!-- Input for "Cuisine specific" -->
   <div
@@ -128,9 +138,6 @@
     <div class="input-selector-button__top-content">
       <ion-icon name="flag"></ion-icon>
       <span>Cuisine specific</span>
-      <!-- <div>
-        <ion-icon name="alert-circle-outline"></ion-icon>
-      </div> -->
     </div>
     <div
       class="input-selector-button__bottom-content"
@@ -141,9 +148,33 @@
       <input
         type="text"
         placeholder="example: Italian"
+        name="cuisineType"
         onclick="event.stopPropagation();"
       />
     </div>
+  </div>
+
+  <!-- Slider input for "Number of recipes" -->
+  <div class="mb-4">
+    <label for="recipeCount"
+      >Number of recipes: <b id="recipeCountDisplay">1</b></label
+    >
+    <input
+      type="range"
+      id="recipeCount"
+      name="recipeCount"
+      class="range-input-primary"
+      min="1"
+      max="14"
+      value="1"
+      oninput="document.getElementById('recipeCountDisplay').textContent = this.value"
+    />
+    <div class="d-flex align-items-center justify-content-between">
+      <span>1</span>
+      <span>14</span>
+    </div>
+
+    <!-- Display slider value here -->
   </div>
 
   <button class="primary-button" type="submit">Let's cook</button>
@@ -204,5 +235,17 @@
 
   // Call the function to set the greeting initially
   updateGreeting();
+
+  // Show loading text when form is being submitted
+  function showLoading() {
+    const button = document.getElementById("submitButton");
+    button.innerHTML = "Loading...";
+    button.disabled = true;
+
+    document.body.addEventListener("htmx:afterOnLoad", function () {
+      button.innerHTML = "Submit";
+      button.disabled = false;
+    });
+  }
 </script>
 {{end}}

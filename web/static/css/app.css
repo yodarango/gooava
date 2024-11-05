@@ -238,3 +238,69 @@ main {
 .post-card p {
   color: rgba(var(--dr-beta-rgb), 0.5);
 }
+
+/* range input */
+.range-input-primary {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 0.6rem;
+  background: rgba(var(--dr-eta-rgb), 0.25);
+  outline: none;
+  border-radius: 0.5rem;
+}
+
+.range-input-primary::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 6rem;
+  height: 2rem;
+  background: var(--dr-delta);
+  cursor: pointer;
+  border-radius: 1rem;
+  transition: background 0.2s ease;
+}
+
+.range-input-primary::-moz-range-thumb {
+  width: 2rem;
+  height: 2rem;
+  background: var(--dr-delta);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background 0.2s ease;
+  border: none;
+}
+
+.range-input-primary::-webkit-slider-thumb:hover,
+.range-input-primary::-moz-range-thumb:hover {
+  background: var(--dr-delta);
+}
+
+.range-input-primary:active::-webkit-slider-thumb,
+.range-input-primary:active::-moz-range-thumb {
+  background: var(--dr-delta);
+}
+
+.range-input-primary::-webkit-slider-runnable-track,
+.range-input-primary::-moz-range-track {
+  width: 100%;
+  height: 0.6rem;
+  cursor: pointer;
+  background: var(--dr-zeta);
+  border-radius: 0.5rem;
+}
+
+.range-input-primary:focus {
+  outline: none;
+  box-shadow: none;
+  border: none;
+}
+
+.range-input-primary:focus::-webkit-slider-runnable-track {
+  background: var(--dr-zeta);
+  border-radius: 2rem;
+}
+
+.range-input-primary:focus::-moz-range-track {
+  background: var(--dr-zeta);
+  border-radius: 2rem;
+}
