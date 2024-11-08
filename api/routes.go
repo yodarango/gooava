@@ -24,6 +24,7 @@ func Routes() http.Handler {
 	 * Batches pages
 	 ********************************/
 	// GET: I get all the recipe batches with pagination
+	// #LEFT OFF: I am going down the routes until I can have all the fuctionality for each.
 	mux.HandleFunc("/recipe-batch", apiv1.GetBathes)
 
 	// POST: I creates a new recipe batch
