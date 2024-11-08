@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
@@ -23,34 +24,53 @@ type RecipesBatch struct {
 /**
 * I map the form fields to the struct fields
  */
-func (rb *RecipesBatch) MapFormToStruct(form url.Values) {
+func (rb *RecipesBatch) MapFormToStruct(form url.Values) []FieldValidationError {
+	var errors []FieldValidationError
+
 	isMaximizeIngredients, err := strconv.ParseBool(form.Get("isMaximizeIngredients"))
 	if err != nil {
+		errors = append(errors, FieldValidationError{Field: "isMaximizeIngredients", Message: "Error parsing this value. "})
+		fmt.Println(fmt.Errorf("error decoding the isMaximizeIngredients field: %w", err).Error())
+	} else {
 		rb.IsMaximizeIngredients = isMaximizeIngredients
 	}
 
 	isBudgetFriendly, err := strconv.ParseBool(form.Get("isBudgetFriendly"))
 	if err != nil {
+		errors = append(errors, FieldValidationError{Field: "isBudgetFriendly", Message: "Error parsing this value. "})
+		fmt.Println(fmt.Errorf("error decoding the isBudgetFriendly field: %w", err).Error())
+	} else {
 		rb.IsBudgetFriendly = isBudgetFriendly
 	}
 
 	recipeCount, err := strconv.ParseUint(form.Get("recipeCount"), 10, 16)
 	if err != nil {
+		errors = append(errors, FieldValidationError{Field: "recipeCount", Message: "Error parsing this value. "})
+		fmt.Println(fmt.Errorf("error decoding the recipeCount field: %w", err).Error())
+	} else {
 		rb.RecipeCount = uint16(recipeCount)
 	}
 
 	isHealthy, err := strconv.ParseBool(form.Get("isHealthy"))
 	if err != nil {
+		errors = append(errors, FieldValidationError{Field: "isHealthy", Message: "Error parsing this value. "})
+		fmt.Println(fmt.Errorf("error decoding the isHealthy field: %w", err).Error())
+	} else {
 		rb.IsHealthy = isHealthy
 	}
 
-	isQuick, err := strconv.ParseBool(form.Get("isHealthy"))
+	isQuick, err := strconv.ParseBool(form.Get("isQuick"))
 	if err != nil {
+		errors = append(errors, FieldValidationError{Field: "isQuick", Message: "Error parsing this value. "})
+		fmt.Println(fmt.Errorf("error decoding the isQuick field: %w", err).Error())
+	} else {
 		rb.IsQuick = isQuick
 	}
 
 	rb.CuisineType = form.Get("cuisine_type")
 	rb.Name = form.Get("name")
+
+	return errors
 }
 
 /**
@@ -79,8 +99,8 @@ func (rb *RecipesBatch) Validate() []FieldValidationError {
 	return errors
 }
 
-func (rb *RecipesBatch) Save() {
-
+func (rb *RecipesBatch) Save() error {
+	return nil
 }
 
 func (rb *RecipesBatch) Update() {
@@ -89,4 +109,58 @@ func (rb *RecipesBatch) Update() {
 
 func (rb *RecipesBatch) Delete() {
 
+}
+
+/**
+* I get all the batches for the logged in user
+ */
+func (rb *RecipesBatch) GetAll() []RecipesBatch {
+	tempResults := []RecipesBatch{{
+		Id:                    1,
+		UserId:                2,
+		Name:                  "name",
+		RecipeCount:           4,
+		IsHealthy:             false,
+		IsQuick:               false,
+		IsMaximizeIngredients: false,
+		IsBudgetFriendly:      false,
+		CuisineType:           "italian",
+		PromptId:              1,
+		CreatedAt:             "time",
+	}, {
+		Id:                    1,
+		UserId:                2,
+		Name:                  "name",
+		RecipeCount:           4,
+		IsHealthy:             false,
+		IsQuick:               false,
+		IsMaximizeIngredients: false,
+		IsBudgetFriendly:      false,
+		CuisineType:           "italian",
+		PromptId:              1,
+		CreatedAt:             "time",
+	}}
+
+	return tempResults
+}
+
+/**
+* I get one batch by id for the logged in user
+ */
+func (rb *RecipesBatch) GetOneById(id uint) RecipesBatch {
+	tempResults := RecipesBatch{
+		Id:                    1,
+		UserId:                2,
+		Name:                  "name",
+		RecipeCount:           4,
+		IsHealthy:             false,
+		IsQuick:               false,
+		IsMaximizeIngredients: false,
+		IsBudgetFriendly:      false,
+		CuisineType:           "italian",
+		PromptId:              1,
+		CreatedAt:             "time",
+	}
+
+	return tempResults
 }

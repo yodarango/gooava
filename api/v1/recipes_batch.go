@@ -5,17 +5,9 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+
+	"github.com/yodarango/gooava/internal/models"
 )
-
-// I handle the POST and GET methods and redirect the user to the corresponding page
-// func Batches(w http.ResponseWriter, r *http.Request) {
-// 	if r.Method == http.MethodPost {
-// 		PostNewBatch(w, r)
-// 		return
-// 	}
-
-// 	GetBatchById(w, r)
-// }
 
 // I get all the batches available for a specific user
 func GetBathes(w http.ResponseWriter, r *http.Request) {
@@ -30,20 +22,9 @@ func GetBathes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = temp.Execute(w, map[string]interface{}{
-		"Data": []map[string]interface{}{{
-			"Name":      "the name 1",
-			"Date":      "The date 1",
-			"Thumbnail": "https://picsum.photos/300/300",
-			"Id":        "1",
-		}, {
-			"Name":      "the name 2",
-			"Date":      "The date 2",
-			"Thumbnail": "https://picsum.photos/300/300",
-			"Id":        "2",
-		}},
-		"MenuIcon": "restaurant",
-	})
+	var batches models.RecipesBatch
+
+	err = temp.Execute(w, batches.GetAll)
 
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error executing the template %v", err), http.StatusInternalServerError)
@@ -126,15 +107,26 @@ func GetBatchById(w http.ResponseWriter, r *http.Request) {
 
 // I create a brand new batch
 func PostNewBatch(w http.ResponseWriter, r *http.Request) {
-	// isMaximizeIngredients := r.FormValue("isMaximizeIngredients")
-	// isBudgetFriendly := r.FormValue("isBudgetFriendly")
-	// cuisineType := r.FormValue("cuisineType")
-	// recipeCount := r.FormValue("recipeCount")
-	// isHealthy := r.FormValue("isHealthy")
-	// isQuick := r.FormValue("isQuick")
 
+	var batch models.RecipesBatch
+
+	errors := batch.MapFormToStruct(r.Form)
+	if errors != nil {
+		// return early
+	}
+
+	errors = batch.Validate()
+	if errors != nil {
+		// return early
+	}
+
+	err := batch.Save()
+	if err != nil {
+		// return early
+	}
+
+	// make a template that returns the given htmx template
 	tmpl, err := template.New("name").Parse("<p>test</p>")
-
 	if err != nil {
 		http.Error(w, "Error executing template", http.StatusInternalServerError)
 	}

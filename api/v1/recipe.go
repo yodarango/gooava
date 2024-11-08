@@ -1,3 +1,7 @@
 package apiv1
 
-func placeholderRecipes() {}
+import "net/http"
+
+func GetRecipes(w http.ResponseWriter, r *http.Request) {
+
+}
