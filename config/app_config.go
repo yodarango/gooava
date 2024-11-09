@@ -4,7 +4,7 @@
 
 package config
 
-import "text/template"
+import "html/template"
 
 type AppConfig struct {
 	TemplateCache map[string]*template.Template

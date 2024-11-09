@@ -29,7 +29,6 @@ func (c *ApiConfiguration) GetBathes(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error parsing template %v", err)
 		return
 	}
-
 }
 
 // I get all the ingredients necessary for a specific batch
