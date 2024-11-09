@@ -1,3 +1,0 @@
-package config
-
-func placeholderConfig() {}

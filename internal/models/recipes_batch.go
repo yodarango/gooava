@@ -8,6 +8,7 @@ import (
 )
 
 type RecipesBatch struct {
+	*ModelConfiguration
 	Id                    uint   `json:id`
 	UserId                uint   `json:user_id`
 	Name                  string `json:name`

@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func Public(w http.ResponseWriter, r *http.Request) {
+func (c *ApiConfiguration) Home(w http.ResponseWriter, r *http.Request) {
 	temp, err := template.ParseFiles("web/templates/index.html", "web/templates/partials/base.html")
 
 	if err != nil {

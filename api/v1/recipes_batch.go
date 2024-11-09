@@ -7,14 +7,22 @@ import (
 	"net/http"
 
 	"github.com/yodarango/gooava/internal/models"
+	"github.com/yodarango/gooava/internal/utils"
 )
 
 // I get all the batches available for a specific user
-func GetBathes(w http.ResponseWriter, r *http.Request) {
+func (c *ApiConfiguration) GetBathes(w http.ResponseWriter, r *http.Request) {
 
-	templ := template.New("batches.html")
+	var batches models.RecipesBatch
 
-	temp, err := templ.ParseFiles("web/templates/batches.html", "web/templates/partials/base.html", "web/templates/partials/header.html")
+	templateRenderer := utils.TemplateRenderer{
+		Title: "Batches",
+		Files: []string{"web/templates/batches.html"},
+		Name:  "batches",
+		Data:  batches.GetAll(),
+	}
+
+	err := templateRenderer.Render(w)
 
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error parsing template %v", err), http.StatusInternalServerError)
@@ -22,19 +30,10 @@ func GetBathes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var batches models.RecipesBatch
-
-	err = temp.Execute(w, batches.GetAll)
-
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error executing the template %v", err), http.StatusInternalServerError)
-		log.Printf("Error executing the template %v", err)
-	}
-
 }
 
 // I get all the ingredients necessary for a specific batch
-func GetSingleBatchIngredients(w http.ResponseWriter, r *http.Request) {
+func (c *ApiConfiguration) GetSingleBatchIngredients(w http.ResponseWriter, r *http.Request) {
 	templ := template.New("batches_ingredients.html").Funcs(template.FuncMap{
 		"add": func(x, y int) int {
 			return x + y
@@ -70,7 +69,7 @@ func GetSingleBatchIngredients(w http.ResponseWriter, r *http.Request) {
 }
 
 // I get a single batch by its ID
-func GetBatchById(w http.ResponseWriter, r *http.Request) {
+func (c *ApiConfiguration) GetBatchById(w http.ResponseWriter, r *http.Request) {
 	templ := template.New("batches_recipes.html").Funcs(template.FuncMap{
 		"add": func(x, y int) int {
 			return x + y
@@ -106,13 +105,13 @@ func GetBatchById(w http.ResponseWriter, r *http.Request) {
 }
 
 // I create a brand new batch
-func PostNewBatch(w http.ResponseWriter, r *http.Request) {
+func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) {
 
 	var batch models.RecipesBatch
 
 	errors := batch.MapFormToStruct(r.Form)
 	if errors != nil {
-		// return early
+
 	}
 
 	errors = batch.Validate()

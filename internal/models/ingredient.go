@@ -6,6 +6,7 @@ import (
 )
 
 type Ingredient struct {
+	*ModelConfiguration
 	CreatedAt string `json:created_at`
 	Name      string `json:name`
 	Id        uint   `json:id`

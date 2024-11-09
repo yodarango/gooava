@@ -1,3 +1,3 @@
 package apiv1
 
-func placeholderUsers() {}
+func (c *ApiConfiguration) placeholderUsers() {}

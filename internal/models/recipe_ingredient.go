@@ -10,6 +10,7 @@ import (
 * I map the json fields to the struct fields
  */
 type RecipeIngredient struct {
+	*ModelConfiguration
 	Id           uint   `json:id`
 	RecipeId     uint   `json:recipe_id`
 	IngredientId uint   `json:ingredient_id`

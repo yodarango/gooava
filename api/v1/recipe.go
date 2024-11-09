@@ -2,6 +2,6 @@ package apiv1
 
 import "net/http"
 
-func GetRecipes(w http.ResponseWriter, r *http.Request) {
+func (c *ApiConfiguration) GetRecipes(w http.ResponseWriter, r *http.Request) {
 
 }
