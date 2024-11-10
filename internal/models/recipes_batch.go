@@ -101,6 +101,7 @@ func (rb *RecipesBatch) Validate() []FieldValidationError {
 }
 
 func (rb *RecipesBatch) Save() error {
+	fmt.Print("....")
 	return nil
 }
 

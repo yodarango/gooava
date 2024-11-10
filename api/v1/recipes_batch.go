@@ -17,7 +17,6 @@ func (c *ApiConfiguration) GetBathes(w http.ResponseWriter, r *http.Request) {
 
 	templateRenderer := utils.TemplateRenderer{
 		Title: "Batches",
-		Files: []string{"web/templates/batches.html"},
 		Name:  "batches",
 		Data:  batches.GetAll(),
 	}
@@ -107,27 +106,43 @@ func (c *ApiConfiguration) GetBatchById(w http.ResponseWriter, r *http.Request) 
 func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) {
 
 	var batch models.RecipesBatch
+	template := utils.TemplateRenderer{
+		Name:  "batches",
+		Title: "Batches",
+		Data:  map[string]interface{}{},
+	}
 
+	// Check if the form provides valid values, otherwise return the errors
+	// but also the form data to avoid resetting the form
 	errors := batch.MapFormToStruct(r.Form)
 	if errors != nil {
-
+		template.Data = map[string]interface{}{
+			"FormValidationError": errors,
+			"Form":                batch,
+		}
+		template.Render(w)
+		return
 	}
 
-	errors = batch.Validate()
-	if errors != nil {
-		// return early
-	}
-
-	err := batch.Save()
+	// Check if the form is missing values, otherwise return the errors
+	// but also the form data to avoid resetting the form
+	err := batch.Validate()
 	if err != nil {
-		// return early
+		template.Data = map[string]interface{}{
+			"FormValidationError": errors,
+			"Form":                batch,
+		}
+		template.Render(w)
+		return
 	}
 
-	// make a template that returns the given htmx template
-	tmpl, err := template.New("name").Parse("<p>test</p>")
-	if err != nil {
-		http.Error(w, "Error executing template", http.StatusInternalServerError)
+	// if everything went well, save the data
+	savingErr := batch.Save()
+	if savingErr != nil {
+		template.Data = map[string]interface{}{
+			"Error": err,
+		}
+		template.Render(w)
+		return
 	}
-
-	tmpl.Execute(w, nil)
 }

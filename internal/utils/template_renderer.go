@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"net/http"
 	"path/filepath"
+	"strings"
 
 	"github.com/yodarango/gooava/internal/constants"
 )
@@ -14,7 +15,6 @@ type TemplateRenderer struct {
 	*TemplateConfiguration
 	Title string      // title of the page
 	Data  interface{} // the data to render. Typically sourced by the DB
-	Files []string    // the template files to parse
 	Name  string      // name of the template
 }
 
@@ -77,7 +77,7 @@ func CacheTemplates() (map[string]*template.Template, error) {
 
 	// iterate for each template file and set them in map holding the templates
 	for _, templ := range templates {
-		templateName := filepath.Base(templ)
+		templateName := strings.Replace(filepath.Base(templ), ".html", "", 1)
 		parsedTemplate, err := template.New(templateName).Funcs(functions).Parse(templ)
 
 		if err != nil {
