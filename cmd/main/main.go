@@ -14,8 +14,6 @@ var PORT string = ":8003"
 var appConfig config.AppConfig
 
 func main() {
-	// initialize the configuration for all parts of the app.
-	Init()
 
 	handler := api.Routes()
 

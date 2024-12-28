@@ -20,7 +20,7 @@ func Init() {
 	}
 	appConfig.TemplateCache = templates
 
-	// initliazie the apiConfig
+	// initialize the apiConfig
 	apiConfig := apiv1.NewApiConfig(&appConfig, "DB")
 	apiv1.SetApiConfig(apiConfig)
 

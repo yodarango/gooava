@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/yodarango/gooava/internal/dto"
 	"github.com/yodarango/gooava/internal/models"
 	"github.com/yodarango/gooava/internal/utils"
 )
@@ -32,35 +33,20 @@ func (c *ApiConfiguration) GetBathes(w http.ResponseWriter, r *http.Request) {
 
 // I get all the ingredients necessary for a specific batch
 func (c *ApiConfiguration) GetSingleBatchIngredients(w http.ResponseWriter, r *http.Request) {
-	templ := template.New("batches_ingredients.html").Funcs(template.FuncMap{
-		"add": func(x, y int) int {
-			return x + y
-		},
-	})
-	temp, err := templ.ParseFiles("web/templates/batches_ingredients.html", "web/templates/partials/base.html", "web/templates/partials/header.html")
 
-	if err != nil {
-		http.Error(w, "Error parsing template", http.StatusInternalServerError)
-		log.Printf("Error parsing template %v", err)
-		return
+	var recipientIngredients dto.RecipeIngredientDetails
+
+	templateRenderer := utils.TemplateRenderer{
+		Title: "Batch name",
+		Name:  "batches_ingredients",
+		Data:  recipientIngredients.GetIngredientsByBatchId(213),
 	}
 
-	err = temp.Execute(w, map[string]interface{}{
-		"Data": []map[string]interface{}{
-			{"Name": "my recipe", "Qty": 2},
-			{"Name": "my recipe", "Qty": 5},
-			{"Name": "my recipe", "Qty": 22},
-			{"Name": "my recipe", "Qty": 6},
-			{"Name": "my recipe", "Qty": 42},
-			{"Name": "my recipe", "Qty": 1},
-			{"Name": "my recipe", "Qty": 68},
-		},
-		"MenuIcon": "restaurant",
-	})
+	err := templateRenderer.Render(w)
 
 	if err != nil {
-		http.Error(w, "Error executing template", http.StatusInternalServerError)
-		log.Printf("Error executing template: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("Error executing template: %v", err.Error())
 		return
 	}
 

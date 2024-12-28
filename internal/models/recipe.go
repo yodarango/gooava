@@ -59,14 +59,86 @@ func (r *Recipe) Validate() []FieldValidationError {
 	return errors
 }
 
-func (rb *Recipe) Save() {
+/**
+* I get all the recipes for a batch id
+ */
+func (r *Recipe) GetRecipesByBatchId(id uint) []Recipe {
+	return []Recipe{
+		{
+			Id:                    212,
+			UserId:                12,
+			Name:                  "name",
+			IsHealthy:             true,
+			IsQuick:               false,
+			IsMaximizeIngredients: false,
+			IsBudgetFriendly:      true,
+			CuisineType:           "italian",
+			CreatedAt:             "12-12-63",
+			BatchId:               123,
+			Servings:              3,
+			Instructions:          "This are the instructions",
+		},
+		{
+			Id:                    212,
+			UserId:                12,
+			Name:                  "name",
+			IsHealthy:             true,
+			IsQuick:               false,
+			IsMaximizeIngredients: false,
+			IsBudgetFriendly:      true,
+			CuisineType:           "italian",
+			CreatedAt:             "12-12-63",
+			BatchId:               123,
+			Servings:              3,
+			Instructions:          "This are the instructions",
+		},
+	}
+}
+
+/**
+* I get all the recipes
+ */
+func (r *Recipe) GetAll() []Recipe {
+	return []Recipe{
+		{
+			Id:                    212,
+			UserId:                12,
+			Name:                  "name",
+			IsHealthy:             true,
+			IsQuick:               false,
+			IsMaximizeIngredients: false,
+			IsBudgetFriendly:      true,
+			CuisineType:           "italian",
+			CreatedAt:             "12-12-63",
+			BatchId:               123,
+			Servings:              3,
+			Instructions:          "This are the instructions",
+		},
+		{
+			Id:                    212,
+			UserId:                12,
+			Name:                  "name",
+			IsHealthy:             true,
+			IsQuick:               false,
+			IsMaximizeIngredients: false,
+			IsBudgetFriendly:      true,
+			CuisineType:           "italian",
+			CreatedAt:             "12-12-63",
+			BatchId:               123,
+			Servings:              3,
+			Instructions:          "This are the instructions",
+		},
+	}
+}
+
+func (r *Recipe) Save() {
 
 }
 
-func (rb *Recipe) Update() {
+func (r *Recipe) Update() {
 
 }
 
-func (rb *Recipe) Delete() {
+func (r *Recipe) Delete() {
 
 }

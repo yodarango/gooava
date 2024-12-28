@@ -1,7 +1,34 @@
 package apiv1
 
-import "net/http"
+import (
+	"net/http"
 
-func (c *ApiConfiguration) GetRecipes(w http.ResponseWriter, r *http.Request) {
+	"github.com/yodarango/gooava/internal/models"
+	"github.com/yodarango/gooava/internal/utils"
+)
 
+func (c *ApiConfiguration) GetRecipesByBatchId(w http.ResponseWriter, r *http.Request, id uint) {
+
+	var recipes models.Recipe
+	// get the ingredients for this batch
+	templateRenderer := utils.TemplateRenderer{
+		Title: "batches_id_recipes",
+		Name:  "batches_id_recipes",
+		Data:  recipes.GetRecipesByBatchId(id),
+	}
+
+	templateRenderer.Render(w)
+}
+
+func (c *ApiConfiguration) GetAllRecipes(w http.ResponseWriter, r *http.Request) {
+
+	var recipes models.Recipe
+	// get the ingredients for this batch
+	templateRenderer := utils.TemplateRenderer{
+		Title: "batches_id_recipes",
+		Name:  "batches_id_recipes",
+		Data:  recipes.GetAll(),
+	}
+
+	templateRenderer.Render(w)
 }
