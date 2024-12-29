@@ -65,7 +65,7 @@
 
 <!-- form response after submission. This component will swap the form -->
 <div id="response"></div>
-<form hx-post="/batches/new" hx-swap="outerHTML">
+<form action="/recipe-batches/new" method="POST">
   <!-- Button and associated checkbox for "Healthy" -->
   <button
     type="button"

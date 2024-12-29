@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/yodarango/gooava/internal/dto"
 	"github.com/yodarango/gooava/internal/models"
@@ -53,7 +54,7 @@ func (c *ApiConfiguration) GetSingleBatchIngredients(w http.ResponseWriter, r *h
 }
 
 // I get a single batch by its ID
-func (c *ApiConfiguration) GetBatchById(w http.ResponseWriter, r *http.Request) {
+func (c *ApiConfiguration) GetBatchById(w http.ResponseWriter, r *http.Request, id uint) {
 	templ := template.New("batches_recipes.html").Funcs(template.FuncMap{
 		"add": func(x, y int) int {
 			return x + y
@@ -88,6 +89,7 @@ func (c *ApiConfiguration) GetBatchById(w http.ResponseWriter, r *http.Request) 
 
 }
 
+// LEFT OF TESTING THIS ROUTE MAKE SURE IT IS WORKING
 // I create a brand new batch
 func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) {
 
@@ -122,8 +124,10 @@ func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	// --------- AI STUFF ----------- //
+
 	// if everything went well, save the data
-	savingErr := batch.Save()
+	recipeBatch, savingErr := batch.Save()
 	if savingErr != nil {
 		template.Data = map[string]interface{}{
 			"Error": err,
@@ -131,4 +135,11 @@ func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) 
 		template.Render(w)
 		return
 	}
+
+	recipeBatchId := strconv.FormatUint(uint64(recipeBatch.Id), 10)
+	redirectToRoute := utils.MakeRouteFromPath(r.URL.Path, recipeBatchId)
+
+	// -------- if everything went well redirect to the batch page
+	http.Redirect(w, r, redirectToRoute, http.StatusSeeOther)
+
 }

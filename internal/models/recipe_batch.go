@@ -100,9 +100,15 @@ func (rb *RecipesBatch) Validate() []FieldValidationError {
 	return errors
 }
 
-func (rb *RecipesBatch) Save() error {
+func (rb *RecipesBatch) Save() (*RecipesBatch, error) {
+	var newRecipeBatch RecipesBatch
+
+	newRecipeBatch = RecipesBatch{
+		Id: 123,
+	}
+
 	fmt.Print("....")
-	return nil
+	return &newRecipeBatch, nil
 }
 
 func (rb *RecipesBatch) Update() {

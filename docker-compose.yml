@@ -3,14 +3,15 @@ version: "3.8"
 services:
   app:
     build: .
-    container_name: gooava_app
+    container_name: ${COMPOSE_PROJECT_NAME}
     ports:
-      - "8003:8003" # Maps port 8080 from the container to port 8080 on the host
+      - "8003:8003" # Maps port 8003 from the container to port 8003 on the host
     environment:
-      - DB_HOST=mysql
-      - DB_USER=root
-      - DB_PASSWORD=Crh15tK1n6*
-      - DB_NAME=gooava
+      # Environment variables for the application
+      - DB_HOST=${DB_HOST} # Database host, loaded from .env
+      - DB_USER=${DB_USER} # Database user, loaded from .env
+      - DB_PASSWORD=${DB_PASSWORD} # Database password, loaded from .env
+      - DB_NAME=${DB_NAME} # Database name, loaded from .env
     depends_on:
       - mysql # Waits for the MySQL service to start
     networks:
@@ -22,13 +23,14 @@ services:
     image: mysql:8.0
     container_name: mysql
     environment:
-      MYSQL_ROOT_PASSWORD: Crh15tK1n6*
-      MYSQL_DATABASE: gooava
+      # Environment variables for MySQL
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD} # Root password for MySQL, loaded from .env
+      MYSQL_DATABASE: ${MYSQL_DATABASE} # Database name, loaded from .env
     ports:
-      - "3306:3306"
+      - "3306:3306" # Exposes MySQL on the host at port 3306
     networks:
       - app-network
-      # TODO: Map the volume to another docker container
+      # TODO: Map the volume to another Docker container
     # volumes:
     #   - mysql_data:/var/lib/mysql # Persistent storage for MySQL data
 
