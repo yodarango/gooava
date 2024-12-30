@@ -21,6 +21,8 @@ func main() {
 		Addr:    PORT,
 		Handler: handler,
 	}
+
+	Init()
 	// start the server
 	fmt.Println("Starting server on port, ", PORT)
 	server.ListenAndServe()

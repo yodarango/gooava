@@ -89,7 +89,6 @@ func (c *ApiConfiguration) GetBatchById(w http.ResponseWriter, r *http.Request, 
 
 }
 
-// LEFT OF TESTING THIS ROUTE MAKE SURE IT IS WORKING
 // I create a brand new batch
 func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) {
 
@@ -111,6 +110,9 @@ func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) 
 		template.Render(w)
 		return
 	}
+
+	fmt.Println("------------------", template)
+	return
 
 	// Check if the form is missing values, otherwise return the errors
 	// but also the form data to avoid resetting the form

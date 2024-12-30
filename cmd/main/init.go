@@ -27,4 +27,9 @@ func Init() {
 	// initialize the modelConfig
 	modelsConfig := models.NewModelConfig(&appConfig, "DB")
 	models.SetModelConfig(modelsConfig)
+
+	// initialize the utils config
+	utilsConfig := utils.NewTemplateConfig(&appConfig, "DB")
+	utils.SetTemplateConfig(utilsConfig)
+
 }

@@ -35,4 +35,4 @@ COPY --from=builder /app /app
 EXPOSE 8003
 
 # Run CompileDaemon to watch for file changes and rebuild/restart the app
-ENTRYPOINT ["CompileDaemon", "-build=go build -o main ./cmd/main/main.go", "-command=./main"]
+ENTRYPOINT ["CompileDaemon", "-build=go build -o main ./cmd/main", "-command=./main"]

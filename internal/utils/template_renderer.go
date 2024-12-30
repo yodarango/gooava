@@ -12,7 +12,6 @@ import (
 )
 
 type TemplateRenderer struct {
-	*TemplateConfiguration
 	Title string      // title of the page
 	Data  interface{} // the data to render. Typically sourced by the DB
 	Name  string      // name of the template
@@ -21,24 +20,26 @@ type TemplateRenderer struct {
 // set the template functions
 var functions = template.FuncMap{}
 
-const pathToTemplates = "../../web/templates"
+const pathToTemplates = "web/templates"
 
 // I execute the template TemplateRenderer.Name from the cache if in production
 // or from the pared
 func (t *TemplateRenderer) Render(w http.ResponseWriter) error {
 
-	// If in dev mod, the cache must not be used to allow for hot reload
-	if t.AppConfig.Environment == constants.ENV_DEV {
+	//If in dev mod, the cache must not be used to allow for hot reload
+	if TemplateConfig.AppConfig.Environment == constants.ENV_DEV {
 		templateCache, err := CacheTemplates()
 		if err != nil {
-			return fmt.Errorf("there was an error getting the ")
+			return fmt.Errorf("there was an error getting the cache %w", err)
 		}
 
-		t.AppConfig.TemplateCache = templateCache
+		TemplateConfig.AppConfig.TemplateCache = templateCache
 	}
 
-	// check that the template requested exists in the cache
-	templ, ok := t.AppConfig.TemplateCache[t.Name]
+	//check that the template requested exists in the cache
+	// fmt.Println("###########", TemplateConfig.AppConfig.TemplateCache[t.Name])
+	// return nil
+	templ, ok := TemplateConfig.AppConfig.TemplateCache[t.Name]
 
 	if !ok {
 		return fmt.Errorf("could not find %s in the cache ", t.Name)
