@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io/fs"
@@ -25,6 +26,48 @@ var functions = template.FuncMap{}
 const PATH_TO_TEMPLATES = "/web/templates"
 const PATH_TO_PARTIALS = "partials"
 
+// I return the given template paths as an array of TemplateRenders.
+// primarily used to send in body requests
+func (t *TemplateRenderer) ParseTemplates(paths []string) (string, error) {
+
+	// not used yet
+	var functions = template.FuncMap{}
+
+	templates := make(map[string]string)
+
+	for _, path := range paths {
+
+		templ, err := template.New(path).Funcs(functions).ParseFiles(path)
+
+		if err != nil {
+			return "", fmt.Errorf("error creating template %s. Error: %w", path, err)
+		}
+
+		buf := new(bytes.Buffer)
+
+		err = templ.Execute(buf, t.Data)
+
+		if err != nil {
+			return "", fmt.Errorf("error executing %s to buffer. Error:  %w", path, err)
+		}
+
+		templates[path] = buf.String()
+
+	}
+
+	jsonString, err := json.Marshal(templates)
+
+	if err != nil {
+		return "", fmt.Errorf("error marshalling %w", err)
+	}
+
+	return string(jsonString), nil
+}
+
+// Add a new function to the functions Maps
+func (t *TemplateRenderer) AddFunction(function template.FuncMap) {
+}
+
 // I execute the template TemplateRenderer.Name from the cache if in production
 // or from the pared
 func (t *TemplateRenderer) Render(w http.ResponseWriter) error {
@@ -47,6 +90,7 @@ func (t *TemplateRenderer) Render(w http.ResponseWriter) error {
 	}
 
 	buf := new(bytes.Buffer)
+
 	err := templ.Execute(buf, t.Data)
 	// err := templ.Execute(w, t.Data)
 	if err != nil {

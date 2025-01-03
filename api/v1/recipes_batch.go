@@ -97,13 +97,12 @@ func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) 
 
 	// Check if the form provides valid values, otherwise return the errors
 	// but also the form data to avoid resetting the form
-	errors := batch.MapFormToStruct(r.Form)
-
-	if len(errors) > 0 {
+	err := batch.MapBodyToStruct(r.Body)
+	if err != nil {
 		template.Name = "index"
 		template.Title = "Home"
 		template.Data = map[string]interface{}{
-			"FormValidationError": errors,
+			"FormValidationError": err,
 			"Form":                batch,
 		}
 
@@ -119,8 +118,10 @@ func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) 
 
 	// Check if the form is missing values, otherwise return the errors
 	// but also the form data to avoid resetting the form
-	err := batch.Validate()
-	if err != nil {
+	errors := batch.Validate()
+	if len(errors) > 0 {
+		template.Name = "index"
+		template.Title = "Home"
 		template.Data = map[string]interface{}{
 			"FormValidationError": errors,
 			"Form":                batch,

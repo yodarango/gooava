@@ -64,7 +64,11 @@
 </div>
 
 <!-- form response after submission -->
-<div id="response"></div>
+<div id="response">
+  {{if .FormValidationError}} {{range .FormValidationError }}
+  <p>{{.Message}}</p>
+  {{end}} {{end}}
+</div>
 <form action="/recipe-batches/new" method="POST" onsubmit="handleSubmit(event)">
   <!-- Button and associated checkbox for "Healthy" -->
   <button
@@ -257,17 +261,18 @@
     const formData = new FormData(form);
     const data = {};
 
-    // Itera su tutti gli elementi del modulo
     Array.from(form.elements).forEach((element) => {
       if (element.name) {
         if (element.type === "checkbox") {
-          data[element.name] = element.checked; // Checkbox come booleano
+          data[element.name] = element.checked;
         } else if (element.type === "radio") {
           if (element.checked) {
-            data[element.name] = element.value; // Solo il radio selezionato
+            data[element.name] = element.value;
           }
+        } else if (element.type === "range") {
+          data[element.name] = Number(formData.get(element.name) || "1");
         } else {
-          data[element.name] = formData.get(element.name) || ""; // Altri tipi come stringhe
+          data[element.name] = formData.get(element.name) || "";
         }
       }
     });
