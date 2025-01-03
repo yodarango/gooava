@@ -1,12 +1,10 @@
-{{template "base" .}} {{define "body"}}
+{{define "batches_id_recipes"}}{{template "base" .}} {{end}} {{define "body"}}
 <p class="mb-4">Below are your newly created recipes.</p>
 <a class="secondary-button mb-4" href="#"> See all ingredients needed </a>
 {{ range $index, $value := .Data}}
 <div>
   <a href="#" class="primary-selector-button mb-2">
-    <div class="button-icon ordinal me-2">
-      <span>{{add $index 1}}</span>
-    </div>
+    <div class="button-icon ordinal me-2"></div>
     <span>{{index $value "Name"}}</span>
     <div>
       <ion-icon name="chevron-forward"></ion-icon>

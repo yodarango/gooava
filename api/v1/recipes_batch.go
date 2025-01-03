@@ -93,26 +93,29 @@ func (c *ApiConfiguration) GetBatchById(w http.ResponseWriter, r *http.Request, 
 func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) {
 
 	var batch models.RecipesBatch
-	template := utils.TemplateRenderer{
-		Name:  "batches",
-		Title: "Batches",
-		Data:  map[string]interface{}{},
-	}
+	var template utils.TemplateRenderer
 
 	// Check if the form provides valid values, otherwise return the errors
 	// but also the form data to avoid resetting the form
 	errors := batch.MapFormToStruct(r.Form)
-	if errors != nil {
+
+	if len(errors) > 0 {
+		template.Name = "index"
+		template.Title = "Home"
 		template.Data = map[string]interface{}{
 			"FormValidationError": errors,
 			"Form":                batch,
 		}
-		template.Render(w)
+
+		err := template.Render(w)
+
+		if err != nil {
+			fmt.Println(err)
+			http.Error(w, "Sorry, there was an issue!", http.StatusInternalServerError)
+			return
+		}
 		return
 	}
-
-	fmt.Println("------------------", template)
-	return
 
 	// Check if the form is missing values, otherwise return the errors
 	// but also the form data to avoid resetting the form
@@ -141,7 +144,7 @@ func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) 
 	recipeBatchId := strconv.FormatUint(uint64(recipeBatch.Id), 10)
 	redirectToRoute := utils.MakeRouteFromPath(r.URL.Path, recipeBatchId)
 
-	// -------- if everything went well redirect to the batch page
+	// if everything went well redirect to the batch page
 	http.Redirect(w, r, redirectToRoute, http.StatusSeeOther)
 
 }

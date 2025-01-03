@@ -2,16 +2,22 @@ package apiv1
 
 import (
 	"fmt"
-	"html/template"
 	"net/http"
+
+	"github.com/yodarango/gooava/internal/utils"
 )
 
 func (c *ApiConfiguration) Home(w http.ResponseWriter, r *http.Request) {
-	temp, err := template.ParseFiles("web/templates/index.html", "web/templates/partials/base.html")
+	var template utils.TemplateRenderer
+	template.Name = "index"
+	template.Title = "Home"
+
+	err := template.Render(w)
 
 	if err != nil {
-		fmt.Print(fmt.Errorf("error parsing template %q", err.Error()))
+		fmt.Println(err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 
-	temp.Execute(w, nil)
 }

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	apiv1 "github.com/yodarango/gooava/api/v1"
 	"github.com/yodarango/gooava/internal/constants"
 	"github.com/yodarango/gooava/internal/models"
@@ -16,7 +18,8 @@ func Init() {
 	}
 	templates, err := utils.CacheTemplates()
 	if err != nil {
-		panic("I could not cache templates")
+		panic(fmt.Errorf("i could not cache templates %w", err))
+
 	}
 	appConfig.TemplateCache = templates
 
