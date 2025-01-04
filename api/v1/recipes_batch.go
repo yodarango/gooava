@@ -5,7 +5,6 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/yodarango/gooava/internal/dto"
 	"github.com/yodarango/gooava/internal/models"
@@ -92,26 +91,27 @@ func (c *ApiConfiguration) GetBatchById(w http.ResponseWriter, r *http.Request, 
 // I create a brand new batch
 func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) {
 
+	var responseError models.ResponseError
+	var response models.HttpResponse
 	var batch models.RecipesBatch
-	var template utils.TemplateRenderer
 
 	// Check if the form provides valid values, otherwise return the errors
 	// but also the form data to avoid resetting the form
 	err := batch.MapBodyToStruct(r.Body)
 	if err != nil {
-		template.Name = "index"
-		template.Title = "Home"
-		template.Data = map[string]interface{}{
-			"FormValidationError": err,
-			"Form":                batch,
-		}
+		fmt.Printf("Error mapping body to struct: %v \n", err)
 
-		err := template.Render(w)
+		responseError.Error = fmt.Sprintf("%v", err)
+		responseError.Title = "Failed data validation"
+		responseError.Code = "dataValidation"
+
+		response.Data = responseError
+		response.Code = http.StatusBadRequest
+
+		err = response.Respond(w)
 
 		if err != nil {
 			fmt.Println(err)
-			http.Error(w, "Sorry, there was an issue!", http.StatusInternalServerError)
-			return
 		}
 		return
 	}
@@ -120,13 +120,17 @@ func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) 
 	// but also the form data to avoid resetting the form
 	errors := batch.Validate()
 	if len(errors) > 0 {
-		template.Name = "index"
-		template.Title = "Home"
-		template.Data = map[string]interface{}{
-			"FormValidationError": errors,
-			"Form":                batch,
+		responseError.Title = "Incomplete data"
+		responseError.Code = "dataValidation"
+		responseError.Error = errors
+
+		response.Data = responseError
+		response.Code = http.StatusBadRequest
+
+		err = response.Respond(w)
+		if err != nil {
+			fmt.Println(err)
 		}
-		template.Render(w)
 		return
 	}
 
@@ -135,17 +139,27 @@ func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) 
 	// if everything went well, save the data
 	recipeBatch, savingErr := batch.Save()
 	if savingErr != nil {
-		template.Data = map[string]interface{}{
-			"Error": err,
+		responseError.Title = "Could not save"
+		responseError.Code = "savingData"
+		responseError.Error = err
+
+		response.Code = http.StatusInternalServerError
+		response.Data = responseError
+
+		err = response.Respond(w)
+		if err != nil {
+			fmt.Println(err)
 		}
-		template.Render(w)
 		return
 	}
 
-	recipeBatchId := strconv.FormatUint(uint64(recipeBatch.Id), 10)
-	redirectToRoute := utils.MakeRouteFromPath(r.URL.Path, recipeBatchId)
+	response.Code = http.StatusOK
+	response.Data = recipeBatch
+	response.Success = true
 
-	// if everything went well redirect to the batch page
-	http.Redirect(w, r, redirectToRoute, http.StatusSeeOther)
-
+	err = response.Respond(w)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return
 }

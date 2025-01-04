@@ -7,13 +7,13 @@ import (
 
 type User struct {
 	*ModelConfiguration
-	Id        uint   `json:id`
-	FirstName string `json:first_name`
-	LastName  string `json:last_name`
-	Email     string `json:email`
-	Password  string `json:password`
-	CreatedAt string `json:created_at`
-	UpdatedAt string `json:created_at`
+	Id        uint   `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
 }
 
 /**
@@ -29,24 +29,24 @@ func (u *User) MapFormToStruct(form url.Values) {
 /**
 * I validate that all the required fields are set
  */
-func (rb *User) Validate() []FieldValidationError {
+func (rb *User) Validate() []map[string]interface{} {
 
-	errors := make([]FieldValidationError, 0, 5)
+	errors := []map[string]interface{}{}
 
 	if strings.TrimSpace(rb.FirstName) == "" {
-		errors = append(errors, FieldValidationError{Field: "FirstName", Message: "Please provide a first name"})
+		errors = append(errors, map[string]interface{}{"Field": "FirstName", "Message": "Please provide a first name"})
 	}
 
 	if strings.TrimSpace(rb.LastName) == "" {
-		errors = append(errors, FieldValidationError{Field: "LastName", Message: "Please provide your last name"})
+		errors = append(errors, map[string]interface{}{"Field": "LastName", "Message": "Please provide your last name"})
 	}
 
 	if strings.TrimSpace(rb.Password) == "" {
-		errors = append(errors, FieldValidationError{Field: "Password", Message: "Password is a necessary field. Please provide it."})
+		errors = append(errors, map[string]interface{}{"Field": "Password", "Message": "Password is a necessary field. Please provide it."})
 	}
 
 	if strings.TrimSpace(rb.Email) == "" {
-		errors = append(errors, FieldValidationError{Field: "Email", Message: "The prompt used to created this batch must be specified"})
+		errors = append(errors, map[string]interface{}{"Field": "Email", "Message": "Email is a necessary field. Please provide it."})
 	}
 
 	return errors

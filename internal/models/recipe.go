@@ -8,18 +8,18 @@ import (
 
 type Recipe struct {
 	*ModelConfiguration
-	Id                    uint   `json:id`
-	UserId                uint   `json:user_id`
-	Name                  string `json:name`
-	IsHealthy             bool   `json:is_healthy`
-	IsQuick               bool   `json:is_quick`
-	IsMaximizeIngredients bool   `json:is_maximize_ingredients`
-	IsBudgetFriendly      bool   `json:is_budget_friendly`
-	CuisineType           string `json:cuisine_type`
-	CreatedAt             string `json:created_at`
-	BatchId               uint   `json:batch_id`
-	Servings              uint16 `json:batch_id`
-	Instructions          string `json:instructions`
+	Id                    uint   `json:"id"`
+	UserId                uint   `json:"user_id"`
+	Name                  string `json:"name"`
+	IsHealthy             bool   `json:"is_healthy"`
+	IsQuick               bool   `json:"is_quick"`
+	IsMaximizeIngredients bool   `json:"is_maximize_ingredients"`
+	IsBudgetFriendly      bool   `json:"is_budget_friendly"`
+	CuisineType           string `json:"cuisine_type"`
+	CreatedAt             string `json:"created_at"`
+	BatchId               uint   `json:"batch_id"`
+	Servings              uint16 `json:"servings"`
+	Instructions          string `json:"instructions"`
 }
 
 /**
@@ -37,23 +37,23 @@ func (r *Recipe) MapJsonToStruct(jsonBytes []byte) error {
 /**
 * I validate that all the required fields are set
  */
-func (r *Recipe) Validate() []FieldValidationError {
-	errors := make([]FieldValidationError, 0, 6)
+func (r *Recipe) Validate() []map[string]interface{} {
+	errors := []map[string]interface{}{}
 
 	if !(r.UserId > 0) {
-		errors = append(errors, FieldValidationError{Field: "UserId", Message: "Please provide the user Id associated with this recipe"})
+		errors = append(errors, map[string]interface{}{"Field": "UserId", "Message": "Please provide the user Id associated with this recipe"})
 	}
 
 	if strings.TrimSpace(r.Name) == "" {
-		errors = append(errors, FieldValidationError{Field: "Name", Message: "Recipes must have a name"})
+		errors = append(errors, map[string]interface{}{"Field": "Name", "Message": "Recipes must have a name"})
 	}
 
 	if !(r.Servings > 0) {
-		errors = append(errors, FieldValidationError{Field: "Servings", Message: "Servings count is necessary"})
+		errors = append(errors, map[string]interface{}{"Field": "Servings", "Message": "Servings count is necessary"})
 	}
 
 	if strings.TrimSpace(r.Instructions) == "" {
-		errors = append(errors, FieldValidationError{Field: "Instructions", Message: "Users need to know how to prepare this recipe"})
+		errors = append(errors, map[string]interface{}{"Field": "Instructions", "Message": "Users need to know how to prepare this recipe"})
 	}
 
 	return errors

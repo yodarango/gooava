@@ -26,11 +26,17 @@ var functions = template.FuncMap{}
 const PATH_TO_TEMPLATES = "/web/templates"
 const PATH_TO_PARTIALS = "partials"
 
-// I return the given template paths as an array of TemplateRenders.
-// primarily used to send in body requests
+/*
+***********************************************************************************
+* NOT USED FOR NOW. I thought about sending templates as response instead of JSON but
+* have changed my mind since
+
+*I return the given template paths as an array of TemplateRenders.
+*primarily used to send in body request.
+***************************************
+ */
 func (t *TemplateRenderer) ParseTemplates(paths []string) (string, error) {
 
-	// not used yet
 	var functions = template.FuncMap{}
 
 	templates := make(map[string]string)

@@ -10,17 +10,17 @@ import (
 
 type RecipesBatch struct {
 	*ModelConfiguration
-	Id                    uint   `json:id`
-	UserId                uint   `json:user_id`
-	Name                  string `json:name`
-	RecipeCount           uint16 `json:recipe_count`
-	IsHealthy             bool   `json:is_healthy`
-	IsQuick               bool   `json:is_quick`
-	IsMaximizeIngredients bool   `json:is_maximize_ingredients`
-	IsBudgetFriendly      bool   `json:is_budget_friendly`
-	CuisineType           string `json:cuisine_type`
-	PromptId              uint   `json:prompt_id`
-	CreatedAt             string `json:created_at`
+	Id                    uint   `json:"id"`
+	UserId                uint   `json:"user_id"`
+	Name                  string `json:"name"`
+	RecipeCount           uint16 `json:"recipe_count"`
+	IsHealthy             bool   `json:"is_healthy"`
+	IsQuick               bool   `json:"is_quick"`
+	IsMaximizeIngredients bool   `json:"is_maximize_ingredients"`
+	IsBudgetFriendly      bool   `json:"is_budget_friendly"`
+	CuisineType           string `json:"cuisine_type"`
+	PromptId              uint   `json:"prompt_id"`
+	CreatedAt             string `json:"created_at"`
 }
 
 /**
@@ -29,7 +29,7 @@ type RecipesBatch struct {
 func (rb *RecipesBatch) MapBodyToStruct(body io.ReadCloser) error {
 
 	if body == nil {
-		return errors.New("Body cannot be empty")
+		return errors.New("body cannot be empty")
 	}
 	defer body.Close()
 
@@ -51,24 +51,24 @@ func (rb *RecipesBatch) MapBodyToStruct(body io.ReadCloser) error {
 /**
 * I validate that all the required fields are set
  */
-func (rb *RecipesBatch) Validate() []FieldValidationError {
+func (rb *RecipesBatch) Validate() []map[string]interface{} {
 
-	errors := make([]FieldValidationError, 0, 5)
+	errors := []map[string]interface{}{}
 
 	if !(rb.UserId > 0) {
-		errors = append(errors, FieldValidationError{Field: "UserId", Message: "User Id cannot be empty"})
+		errors = append(errors, map[string]interface{}{"Field": "UserId", "Message": "User Id cannot be empty"})
 	}
 
 	if strings.TrimSpace(rb.Name) == "" {
-		errors = append(errors, FieldValidationError{Field: "Name", Message: "You need to provide a name for this batch"})
+		errors = append(errors, map[string]interface{}{"Field": "Name", "Message": "You need to provide a name for this batch"})
 	}
 
 	if !(rb.RecipeCount > 0) {
-		errors = append(errors, FieldValidationError{Field: "RecipeCount", Message: "Please specify how many recipes this batch is for"})
+		errors = append(errors, map[string]interface{}{"Field": "RecipeCount", "Message": "Please specify how many recipes this batch is for"})
 	}
 
 	if !(rb.PromptId > 0) {
-		errors = append(errors, FieldValidationError{Field: "PromptId", Message: "The prompt used to created this batch must be specified"})
+		errors = append(errors, map[string]interface{}{"Field": "PromptId", "Message": "The prompt used to created this batch must be specified"})
 	}
 
 	return errors

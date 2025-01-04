@@ -7,12 +7,12 @@ import (
 
 type Prompt struct {
 	*ModelConfiguration
-	CreatedAt   string `json:created_at`
-	UserId      uint   `json:user_id`
-	Description string `json:description`
-	Provider    string `json:provider` // gemini, gpt, etc
-	Model       string `json:model`    // model used to create the query
-	Id          uint   `json:id`
+	CreatedAt   string `json:"created_at"`
+	UserId      uint   `json:"user_id"`
+	Description string `json:"description"`
+	Provider    string `json:"provider"` // gemini, gpt, etc.
+	Model       string `json:"model"`    // model used to create the query
+	Id          uint   `json:"id"`
 }
 
 /**

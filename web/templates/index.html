@@ -280,7 +280,7 @@
     console.log(data);
 
     try {
-      const response = await fetch(form.action, {
+      const request = await fetch(form.action, {
         method: form.method,
         headers: {
           "Content-Type": "application/json",
@@ -288,10 +288,11 @@
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) {
+      if (!request.ok) {
         throw new Error("Error submitting the form.");
       }
 
+      const response = await request.json();
       console.log("Result:", response);
     } catch (error) {
       console.error("Error:", error);

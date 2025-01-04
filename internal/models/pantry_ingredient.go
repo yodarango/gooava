@@ -11,11 +11,11 @@ import (
  */
 type PantryIngredient struct {
 	*ModelConfiguration
-	Id           uint   `json:id`
-	PantryId     uint   `json:recipe_id`
-	IngredientId uint   `json:ingredient_id`
-	Quantity     string `json:quantity`
-	CreatedAt    string `json:created_at`
+	Id           uint   `json:"id"`
+	PantryId     uint   `json:"pantry_id"`
+	IngredientId uint   `json:"ingredient_id"`
+	Quantity     string `json:"quantity"`
+	CreatedAt    string `json:"created_at"`
 }
 
 /**
@@ -35,20 +35,20 @@ func (ri *PantryIngredient) MapJsonToStruct(jsonBytes []byte) error {
 * I validate that all the required fields are set
  */
 
-func (ri *PantryIngredient) Validate() []FieldValidationError {
+func (ri *PantryIngredient) Validate() []map[string]interface{} {
 
-	errors := make([]FieldValidationError, 0, 3)
+	errors := []map[string]interface{}{}
 
 	if !(ri.PantryId > 0) {
-		errors = append(errors, FieldValidationError{Field: "PantryId", Message: "Pantry items need to be associated with a recipe"})
+		errors = append(errors, map[string]interface{}{"Field": "PantryId", "Message": "Pantry items need to be associated with a recipe"})
 	}
 
 	if !(ri.IngredientId > 0) {
-		errors = append(errors, FieldValidationError{Field: "RecipeId", Message: "Pantry items need to be associated with a pantry"})
+		errors = append(errors, map[string]interface{}{"Field": "IngredientId", "Message": "Pantry items need to be associated with a pantry"})
 	}
 
 	if strings.TrimSpace(ri.Quantity) == "" {
-		errors = append(errors, FieldValidationError{Field: "Quantity", Message: "Each ingredient must specify a quantity"})
+		errors = append(errors, map[string]interface{}{"Field": "Quantity", "Message": "Each ingredient must specify a quantity"})
 	}
 
 	return errors
