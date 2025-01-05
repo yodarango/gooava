@@ -31,7 +31,7 @@ func Init() {
 
 	if err != nil {
 		// if the db connection failed, there is no point in continuing, crash te app.
-		log.Panicf("failed to connect to DB %v", err)
+		log.Panicf("failed to connect to DB %v \n", err)
 	}
 
 	// initialize the apiConfig

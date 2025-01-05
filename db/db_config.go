@@ -30,7 +30,18 @@ func Connect() (*sql.DB, error) {
 
 	// connect to the db
 	fmt.Println("🔌 Connecting to the database...")
-	dbConn, err := sql.Open("mysql", fmt.Sprintf("%s:%s@/%s", os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
+
+	// db constants
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbUser := os.Getenv("DB_USER")
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
+	dbName := os.Getenv("DB_NAME")
+
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		dbUser, dbPassword, dbHost, dbPort, dbName)
+
+	dbConn, err := sql.Open("mysql", dsn)
 
 	if err != nil {
 		return nil, err
