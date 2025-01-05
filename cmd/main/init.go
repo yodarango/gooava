@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	apiv1 "github.com/yodarango/gooava/api/v1"
+	"github.com/yodarango/gooava/db"
 	"github.com/yodarango/gooava/internal/constants"
 	"github.com/yodarango/gooava/internal/models"
 	"github.com/yodarango/gooava/internal/utils"
@@ -23,8 +25,17 @@ func Init() {
 	}
 	appConfig.TemplateCache = templates
 
+	// Initialize the DB config
+	dbConn, err := db.Connect()
+	dbConfig.DB = dbConn
+
+	if err != nil {
+		// if the db connection failed, there is no point in continuing, crash te app.
+		log.Panicf("failed to connect to DB %v", err)
+	}
+
 	// initialize the apiConfig
-	apiConfig := apiv1.NewApiConfig(&appConfig, "DB")
+	apiConfig := apiv1.NewApiConfig(&appConfig, &dbConfig)
 	apiv1.SetApiConfig(apiConfig)
 
 	// initialize the modelConfig

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"strings"
 )
 
 type RecipesBatch struct {
@@ -56,19 +55,15 @@ func (rb *RecipesBatch) Validate() []map[string]interface{} {
 	errors := []map[string]interface{}{}
 
 	if !(rb.UserId > 0) {
-		errors = append(errors, map[string]interface{}{"Field": "UserId", "Message": "User Id cannot be empty"})
-	}
-
-	if strings.TrimSpace(rb.Name) == "" {
-		errors = append(errors, map[string]interface{}{"Field": "Name", "Message": "You need to provide a name for this batch"})
+		errors = append(errors, map[string]interface{}{"field": "user_id", "message": "User Id cannot be empty"})
 	}
 
 	if !(rb.RecipeCount > 0) {
-		errors = append(errors, map[string]interface{}{"Field": "RecipeCount", "Message": "Please specify how many recipes this batch is for"})
+		errors = append(errors, map[string]interface{}{"field": "recipe_count", "message": "Please specify how many recipes this batch is for"})
 	}
 
 	if !(rb.PromptId > 0) {
-		errors = append(errors, map[string]interface{}{"Field": "PromptId", "Message": "The prompt used to created this batch must be specified"})
+		errors = append(errors, map[string]interface{}{"field": "prompt_id", "message": "The prompt used to created this batch must be specified"})
 	}
 
 	return errors

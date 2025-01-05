@@ -76,7 +76,8 @@
       type="image/png"
       href="https://shrood.app/gooava/public/images/favicon.png"
     />
-    <script src="/static/js/htmx.min.js"></script>
+    <script src="/static/js/ergon.js"></script>
+    <script src="/static/js/utils.js"></script>
 
     {{block "styles" . }} {{end}}
     <title data-language-ui="pageTitle">Gooava | {.Title}</title>
@@ -84,8 +85,6 @@
 
   <body>
     <div class="body-frame-15ks">
-      <!-- header -->
-
       <main>{{block "header" .}} {{end}} {{ block "body" .}} {{end}}</main>
 
       <div class="spacer-4"></div>

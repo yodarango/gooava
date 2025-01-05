@@ -53,7 +53,7 @@
   </a>
 </div>
 
-<div class="header-content mb-4">
+<div class="header-content mb-4" id="intro-text">
   <h2 class="header-title text-center"></h2>
   <p class="header-subtitle text-center">
     Select your filters below to get started.
@@ -63,129 +63,143 @@
   </p>
 </div>
 
-<!-- form response after submission -->
-<div id="response">
-  {{if .FormValidationError}} {{range .FormValidationError }}
-  <p>{{.Message}}</p>
-  {{end}} {{end}}
-</div>
-<form action="/recipe-batches/new" method="POST" onsubmit="handleSubmit(event)">
+<form
+  onsubmit="handlePostRequest(event)"
+  action="/recipe-batches/new"
+  method="POST"
+>
   <!-- Button and associated checkbox for "Healthy" -->
-  <button
-    type="button"
-    class="primary-selector-button mb-2"
-    onclick="toggleSelection(this, 'healthyCheckbox')"
-  >
-    <ion-icon name="fitness"></ion-icon>
-    <span>Healthy</span>
-  </button>
-  <input
-    type="checkbox"
-    id="healthyCheckbox"
-    name="isHealthy"
-    style="display: none"
-  />
+  <div name="is_healthy_input">
+    <button
+      type="button"
+      class="primary-selector-button mb-2"
+      onclick="toggleSelection(this, 'is_healthy')"
+    >
+      <ion-icon name="fitness"></ion-icon>
+      <span>Healthy</span>
+    </button>
+    <input
+      type="checkbox"
+      id="is_healthy"
+      name="is_healthy"
+      style="display: none"
+    />
+  </div>
 
   <!-- Button and associated checkbox for "Quick" -->
-  <button
-    type="button"
-    class="primary-selector-button mb-2"
-    onclick="toggleSelection(this, 'quickCheckbox')"
-  >
-    <ion-icon name="flash"></ion-icon>
-    <span>Quick</span>
-  </button>
-  <input
-    type="checkbox"
-    name="isQuick"
-    id="quickCheckbox"
-    style="display: none"
-  />
+  <div id="is_quick_input">
+    <button
+      type="button"
+      class="primary-selector-button mb-2"
+      onclick="toggleSelection(this, 'is_quick')"
+    >
+      <ion-icon name="flash"></ion-icon>
+      <span>Quick</span>
+    </button>
+    <input
+      type="checkbox"
+      name="is_quick"
+      id="is_quick"
+      style="display: none"
+    />
+  </div>
 
   <!-- Button and associated checkbox for "Maximize ingredients" -->
-  <button
-    type="button"
-    class="primary-selector-button mb-2"
-    onclick="toggleSelection(this, 'maximizeCheckbox')"
-  >
-    <ion-icon name="checkmark-circle"></ion-icon>
-    <span>Maximize ingredients</span>
-  </button>
-  <input
-    type="checkbox"
-    id="maximizeCheckbox"
-    name="isMaximizeIngredients"
-    style="display: none"
-  />
+  <div id="is_maximize_ingredients_input">
+    <button
+      type="button"
+      class="primary-selector-button mb-2"
+      onclick="toggleSelection(this, 'is_maximize_ingredients')"
+    >
+      <ion-icon name="checkmark-circle"></ion-icon>
+      <span>Maximize ingredients</span>
+    </button>
+    <input
+      type="checkbox"
+      id="is_maximize_ingredients"
+      name="is_maximize_ingredients"
+      style="display: none"
+    />
+  </div>
 
   <!-- Button and associated checkbox for "Budget friendly" -->
-  <button
-    type="button"
-    class="primary-selector-button mb-2"
-    onclick="toggleSelection(this, 'budgetCheckbox')"
-  >
-    <ion-icon name="wallet"></ion-icon>
-    <span>Budget friendly</span>
-  </button>
-  <input
-    type="checkbox"
-    name="isBudgetFriendly"
-    id="budgetCheckbox"
-    style="display: none"
-  />
+  <div id="is_budget_friendly_input">
+    <button
+      type="button"
+      class="primary-selector-button mb-2"
+      onclick="toggleSelection(this, 'is_budget_friendly')"
+    >
+      <ion-icon name="wallet"></ion-icon>
+      <span>Budget friendly</span>
+    </button>
+    <input
+      type="checkbox"
+      name="is_budget_friendly"
+      id="is_budget_friendly"
+      style="display: none"
+    />
+  </div>
 
   <!-- Input for "Cuisine specific" -->
-  <div
-    class="input-selector-button mb-4"
-    onclick="toggleInput(this, 'cuisineInput')"
-  >
-    <div class="input-selector-button__top-content">
-      <ion-icon name="flag"></ion-icon>
-      <span>Cuisine specific</span>
-    </div>
+  <div class="mb-4">
     <div
-      class="input-selector-button__bottom-content"
-      id="cuisineInput"
-      style="display: none"
+      id="cuisine_type_input"
+      class="input-selector-button"
+      onclick="toggleInput(this, 'cousine_type_input_box')"
     >
-      <p class="mb-1">Type the kind of cuisine you’d like to cook</p>
-      <input
-        type="text"
-        placeholder="example: Italian"
-        name="cuisineType"
-        onclick="event.stopPropagation();"
-      />
+      <div class="input-selector-button__top-content">
+        <ion-icon name="flag"></ion-icon>
+        <span>Cuisine specific</span>
+      </div>
+      <div
+        class="input-selector-button__bottom-content"
+        style="display: none"
+        id="cousine_type_input_box"
+      >
+        <p class="mb-1">Type the kind of cuisine you’d like to cook</p>
+        <input
+          type="text"
+          placeholder="example: Italian"
+          name="cousine_type"
+          id="cousine_type"
+          onclick="event.stopPropagation();"
+        />
+      </div>
     </div>
   </div>
 
   <!-- Slider input for "Number of recipes" -->
-  <div class="mb-4">
-    <label for="recipeCount"
-      >Number of recipes: <b id="recipeCountDisplay">1</b></label
-    >
-    <input
-      type="range"
-      id="recipeCount"
-      name="recipeCount"
-      class="range-input-primary"
-      min="1"
-      max="14"
-      value="1"
-      oninput="document.getElementById('recipeCountDisplay').textContent = this.value"
-    />
-    <div class="d-flex align-items-center justify-content-between">
-      <span>1</span>
-      <span>14</span>
-    </div>
+  <div class="mb-4" id="recipe_count_input">
+    <div>
+      <label for="recipeCount"
+        >Number of recipes: <b id="recipeCountDisplay">1</b></label
+      >
+      <input
+        type="range"
+        id="recipe_count"
+        name="recipe_count"
+        class="range-input-primary"
+        min="1"
+        max="14"
+        value="1"
+        oninput="document.getElementById('recipeCountDisplay').textContent = this.value"
+      />
 
-    <!-- Display slider value here -->
+      <!-- Display slider value here -->
+      <div class="d-flex align-items-center justify-content-between">
+        <span>1</span>
+        <span>14</span>
+      </div>
+    </div>
   </div>
 
   <button class="primary-button" type="submit">Let's cook</button>
 </form>
 
 {{end}} {{define "scripts"}}
+<!-- form input states -->
 <script>
+  //  Toggles the button selection
   function toggleSelection(button, checkboxId) {
     button.prevent;
     const checkbox = document.getElementById(checkboxId);
@@ -197,6 +211,7 @@
     button.classList.toggle("active");
   }
 
+  // toggles a hidden input to show
   function toggleInput(button, inputId) {
     const inputDiv = document.getElementById(inputId);
 
@@ -255,47 +270,28 @@
 
 <!-- post request  -->
 <script>
-  async function handleSubmit(event) {
-    event.preventDefault();
-    const form = event.target.closest("form");
-    const formData = new FormData(form);
-    const data = {};
+  async function handlePostRequest(e) {
+    const { path, data } = formDataToJson(e);
+    const response = await postRequest(path, data);
 
-    Array.from(form.elements).forEach((element) => {
-      if (element.name) {
-        if (element.type === "checkbox") {
-          data[element.name] = element.checked;
-        } else if (element.type === "radio") {
-          if (element.checked) {
-            data[element.name] = element.value;
+    const ergon = new Ergon();
+
+    if (!response.success) {
+      if (response.data.error.length > 0) {
+        for (let error of response.data.error) {
+          console.log(error.field.toLowerCase());
+          // this is an input pecific feld
+          if (error.field === "recipe_count") {
+            ergon.tagName = "p";
+            ergon.props = { class: "color-danger mt-2" };
+            ergon.children = [error.message];
+            ergon.parent = error.field + "_input";
+            ergon.Render();
+          } else {
+            // no displaying generic errors for now....
           }
-        } else if (element.type === "range") {
-          data[element.name] = Number(formData.get(element.name) || "1");
-        } else {
-          data[element.name] = formData.get(element.name) || "";
         }
       }
-    });
-
-    console.log(data);
-
-    try {
-      const request = await fetch(form.action, {
-        method: form.method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!request.ok) {
-        throw new Error("Error submitting the form.");
-      }
-
-      const response = await request.json();
-      console.log("Result:", response);
-    } catch (error) {
-      console.error("Error:", error);
     }
   }
 </script>

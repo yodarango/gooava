@@ -304,3 +304,54 @@ main {
   background: var(--dr-zeta);
   border-radius: 2rem;
 }
+
+/* toast */
+.toast {
+  position: fixed;
+  bottom: var(--dr-spacing-5);
+  left: var(--dr-spacing-5);
+  padding: var(--dr-spacing-4);
+  border-radius: 0.5rem;
+  box-shadow: 0 0.4rem 0.8rem rgba(var(--dr-beta-rgb) 0.2);
+  min-width: 20rem;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+  color: var(--dr-alpha-rgb);
+}
+
+/* Barra di progresso */
+.toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 0.5rem;
+  width: 100%;
+  background-color: var(--dr-alpha-rgb, 0.7);
+}
+
+.toast-success {
+  background-color: var(--dr-success);
+}
+
+.toast-danger {
+  background-color: var(--dr-danger);
+}
+
+.toast-info {
+  background-color: var(--dr-info);
+}
+
+.toast-warning {
+  background-color: var(--dr-warning);
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  color: var(--dr-alpha);
+  cursor: pointer;
+}
