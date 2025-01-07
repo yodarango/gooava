@@ -7,6 +7,7 @@ import (
 	"github.com/yodarango/gooava/api"
 	"github.com/yodarango/gooava/config"
 	"github.com/yodarango/gooava/db"
+	"github.com/yodarango/gooava/internal/repo"
 )
 
 var PORT string = ":8003"
@@ -15,7 +16,10 @@ var PORT string = ":8003"
 var appConfig config.AppConfig
 
 // db singleton
-var dbConfig db.SQLConfig
+var dbConfig db.DbConfig
+
+// AppRepo that holds all global app singletons
+var appRepo repo.AppRepo
 
 func main() {
 

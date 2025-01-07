@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	apiv1 "github.com/yodarango/gooava/api/v1"
 	"github.com/yodarango/gooava/db"
 	"github.com/yodarango/gooava/internal/constants"
-	"github.com/yodarango/gooava/internal/models"
 	"github.com/yodarango/gooava/internal/utils"
 )
 
@@ -34,16 +32,24 @@ func Init() {
 		log.Panicf("failed to connect to DB %v \n", err)
 	}
 
+	// There are two global singletons in, App and Db. If all went well,
+	//pass them to all pars of the app
+
+	appRepo.NewDbRepoSetup(&appConfig, &dbConfig)
+
+	// TODO! I don't any of these. All I need is just to have the AppRpo that can be
+	// TODO!  injected into ANY part of the app!
+
 	// initialize the apiConfig
-	apiConfig := apiv1.NewApiConfig(&appConfig, &dbConfig)
-	apiv1.SetApiConfig(apiConfig)
+	// apiConfig := apiv1.NewApiConfig(&appConfig, &dbConfig)
+	// apiv1.SetApiConfig(apiConfig)
 
-	// initialize the modelConfig
-	modelsConfig := models.NewModelConfig(&appConfig, "DB")
-	models.SetModelConfig(modelsConfig)
+	// // initialize the modelConfig
+	// modelsConfig := models.NewModelConfig(&appConfig, "DB")
+	// models.SetModelConfig(modelsConfig)
 
-	// initialize the utils config
-	utilsConfig := utils.NewTemplateConfig(&appConfig, "DB")
-	utils.SetTemplateConfig(utilsConfig)
+	// // initialize the utils config
+	// utilsConfig := utils.NewTemplateConfig(&appConfig, "DB")
+	// utils.SetTemplateConfig(utilsConfig)
 
 }

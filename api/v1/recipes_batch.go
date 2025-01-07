@@ -118,6 +118,11 @@ func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) 
 
 	// Check if the form is missing values, otherwise return the errors
 	// but also the form data to avoid resetting the form
+
+	// TODO! Delete Once validation is done
+	batch.UserId = 123
+	batch.PromptId = 123
+
 	errors := batch.Validate()
 	if len(errors) > 0 {
 		responseError.Title = "Incomplete data"
@@ -137,6 +142,7 @@ func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) 
 	// --------- AI STUFF ----------- //
 
 	// if everything went well, save the data
+	// LEFT OFF HERE. MAKE SURE I AM SAVING THE DATA
 	recipeBatch, savingErr := batch.Save()
 	if savingErr != nil {
 		responseError.Title = "Could not save"

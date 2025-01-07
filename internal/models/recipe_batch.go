@@ -70,6 +70,8 @@ func (rb *RecipesBatch) Validate() []map[string]interface{} {
 }
 
 func (rb *RecipesBatch) Save() (*RecipesBatch, error) {
+
+	fmt.Println(rb)
 	var newRecipeBatch RecipesBatch
 
 	newRecipeBatch = RecipesBatch{
