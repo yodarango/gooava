@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/yodarango/gooava/internal/constants"
+	"github.com/yodarango/gooava/internal/repo"
 )
 
 type TemplateRenderer struct {
@@ -25,6 +26,9 @@ var functions = template.FuncMap{}
 
 const PATH_TO_TEMPLATES = "/web/templates"
 const PATH_TO_PARTIALS = "partials"
+
+// app singleton
+var appRepo repo.AppRepo
 
 /*
 ***********************************************************************************
@@ -79,17 +83,17 @@ func (t *TemplateRenderer) AddFunction(function template.FuncMap) {
 func (t *TemplateRenderer) Render(w http.ResponseWriter) error {
 
 	//If in dev mod, the cache must not be used to allow for hot reload
-	if TemplateConfig.AppConfig.Environment == constants.ENV_DEV {
+	if appRepo.App.Environment == constants.ENV_DEV {
 		templateCache, err := CacheTemplates()
 		if err != nil {
 			return fmt.Errorf("there was an error getting the cache %w", err)
 		}
 
-		TemplateConfig.AppConfig.TemplateCache = templateCache
+		appRepo.App.TemplateCache = templateCache
 	}
 
 	//check that the template requested exists in the cache
-	templ, ok := TemplateConfig.AppConfig.TemplateCache[t.Name]
+	templ, ok := appRepo.App.TemplateCache[t.Name]
 
 	if !ok {
 		return fmt.Errorf("could not find %s in the cache ", t.Name)
@@ -203,85 +207,3 @@ func CacheTemplates() (map[string]*template.Template, error) {
 
 	return templateCache, nil
 }
-
-// func CacheTemplates() (map[string]*template.Template, error) {
-// 	templateCache := make(map[string]*template.Template)
-
-// 	// Define the root template directory
-// 	pathDir, _ := os.Getwd()
-// 	pathDir += PATH_TO_TEMPLATES
-
-// 	// Recursively gather all .html files
-// 	var files []string
-// 	err := filepath.Walk(pathDir, func(path string, info fs.FileInfo, err error) error {
-// 		if err != nil {
-// 			return err
-// 		}
-// 		if !info.IsDir() && filepath.Ext(path) == ".html" {
-// 			files = append(files, path)
-// 		}
-// 		return nil
-// 	})
-// 	if err != nil {
-// 		return nil, fmt.Errorf("error walking template directory: %w", err)
-// 	}
-
-// 	// Parse all templates together
-// 	masterTemplate := template.New("")
-// 	parsedTemplates, err := masterTemplate.Funcs(functions).ParseFiles(files...)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("error parsing templates: %w", err)
-// 	}
-
-// 	// Populate the cache with individual templates
-// 	for _, tmpl := range files {
-// 		templateName := strings.Replace(filepath.Base(tmpl), ".html", "", 1)
-// 		if parsedTemplates.Lookup(templateName) == nil {
-// 			return nil, fmt.Errorf("template %s not found after parsing", templateName)
-// 		}
-// 		templateCache[templateName] = parsedTemplates
-// 	}
-
-// 	return templateCache, nil
-// }
-
-// func CacheTemplates() (map[string]*template.Template, error) {
-// 	templateCache := make(map[string]*template.Template)
-
-// 	// Root directory for templates
-// 	pathDir, _ := os.Getwd()
-// 	pathDir += PATH_TO_TEMPLATES
-
-// 	// Recursively gather all .html files
-// 	var files []string
-// 	err := filepath.Walk(pathDir, func(path string, info fs.FileInfo, err error) error {
-// 		if err != nil {
-// 			return err
-// 		}
-// 		if !info.IsDir() && filepath.Ext(path) == ".html" {
-// 			files = append(files, path)
-// 		}
-// 		return nil
-// 	})
-// 	if err != nil {
-// 		return nil, fmt.Errorf("error walking template directory: %w", err)
-// 	}
-
-// 	// Parse all templates together
-// 	masterTemplate := template.New("")
-// 	parsedTemplates, err := masterTemplate.ParseFiles(files...)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("error parsing templates: %w", err)
-// 	}
-
-// 	// Populate the cache with individual templates
-// 	for _, tmpl := range files {
-// 		templateName := strings.Replace(filepath.Base(tmpl), ".html", "", 1)
-// 		if parsedTemplates.Lookup(templateName) == nil {
-// 			return nil, fmt.Errorf("template %s not found after parsing", templateName)
-// 		}
-// 		templateCache[templateName] = parsedTemplates
-// 	}
-
-// 	return templateCache, nil
-// }

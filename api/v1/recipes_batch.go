@@ -12,7 +12,7 @@ import (
 )
 
 // I get all the batches available for a specific user
-func (c *ApiConfiguration) GetBathes(w http.ResponseWriter, r *http.Request) {
+func GetBathes(w http.ResponseWriter, r *http.Request) {
 
 	var batches models.RecipesBatch
 
@@ -32,7 +32,7 @@ func (c *ApiConfiguration) GetBathes(w http.ResponseWriter, r *http.Request) {
 }
 
 // I get all the ingredients necessary for a specific batch
-func (c *ApiConfiguration) GetSingleBatchIngredients(w http.ResponseWriter, r *http.Request) {
+func GetSingleBatchIngredients(w http.ResponseWriter, r *http.Request) {
 
 	var recipientIngredients dto.RecipeIngredientDetails
 
@@ -53,7 +53,7 @@ func (c *ApiConfiguration) GetSingleBatchIngredients(w http.ResponseWriter, r *h
 }
 
 // I get a single batch by its ID
-func (c *ApiConfiguration) GetBatchById(w http.ResponseWriter, r *http.Request, id uint) {
+func GetBatchById(w http.ResponseWriter, r *http.Request, id uint) {
 	templ := template.New("batches_recipes.html").Funcs(template.FuncMap{
 		"add": func(x, y int) int {
 			return x + y
@@ -89,7 +89,7 @@ func (c *ApiConfiguration) GetBatchById(w http.ResponseWriter, r *http.Request, 
 }
 
 // I create a brand new batch
-func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) {
+func PostNewBatch(w http.ResponseWriter, r *http.Request) {
 
 	var responseError models.ResponseError
 	var response models.HttpResponse

@@ -1,7 +1,6 @@
 package dto
 
 type RecipeIngredientDetails struct {
-	*DtoConfiguration
 	Id             uint   `json:id`
 	RecipeId       uint   `json:recipe_id`
 	IngredientId   uint   `json:ingredient_id`

@@ -7,7 +7,7 @@ import (
 	"github.com/yodarango/gooava/internal/utils"
 )
 
-func (c *ApiConfiguration) GetRecipesByBatchId(w http.ResponseWriter, r *http.Request, id uint) {
+func GetRecipesByBatchId(w http.ResponseWriter, r *http.Request, id uint) {
 
 	var recipes models.Recipe
 	// get the ingredients for this batch
@@ -20,7 +20,7 @@ func (c *ApiConfiguration) GetRecipesByBatchId(w http.ResponseWriter, r *http.Re
 	templateRenderer.Render(w)
 }
 
-func (c *ApiConfiguration) GetAllRecipes(w http.ResponseWriter, r *http.Request) {
+func GetAllRecipes(w http.ResponseWriter, r *http.Request) {
 
 	var recipes models.Recipe
 	// get the ingredients for this batch

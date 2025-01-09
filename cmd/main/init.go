@@ -21,6 +21,7 @@ func Init() {
 		panic(fmt.Errorf("i could not cache templates %w", err))
 
 	}
+
 	appConfig.TemplateCache = templates
 
 	// Initialize the DB config

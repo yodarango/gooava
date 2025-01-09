@@ -6,7 +6,6 @@ import (
 )
 
 type Prompt struct {
-	*ModelConfiguration
 	CreatedAt   string `json:"created_at"`
 	UserId      uint   `json:"user_id"`
 	Description string `json:"description"`

@@ -7,7 +7,7 @@ import (
 	"github.com/yodarango/gooava/internal/utils"
 )
 
-func (c *ApiConfiguration) Home(w http.ResponseWriter, r *http.Request) {
+func Home(w http.ResponseWriter, r *http.Request) {
 	var template utils.TemplateRenderer
 	template.Name = "index"
 	template.Title = "Home"

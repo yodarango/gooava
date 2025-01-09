@@ -7,8 +7,14 @@ import (
 
 	apiv1 "github.com/yodarango/gooava/api/v1"
 	"github.com/yodarango/gooava/internal/constants"
+	"github.com/yodarango/gooava/internal/repo"
 	"github.com/yodarango/gooava/internal/utils"
 )
+
+// # LEFT OFF. I broke these handler. Fix them.
+
+// app singleton
+var appRepo repo.AppRepo
 
 func Routes() http.Handler {
 
@@ -21,16 +27,16 @@ func Routes() http.Handler {
 	 * Public pages
 	 ********************************/
 	// GET: I get the homepage
-	mux.HandleFunc(constants.ROUTE_ROOT, apiv1.ApiConfig.Home)
+	mux.HandleFunc(constants.ROUTE_ROOT, apiv1.Home)
 
 	/********************************
 	 * Batches pages
 	 ********************************/
 	// GET: I get all the recipe batches with pagination
-	mux.HandleFunc(constants.ROUTE_RECIPEBATCHES, apiv1.ApiConfig.GetBathes)
+	mux.HandleFunc(constants.ROUTE_RECIPEBATCHES, apiv1.GetBathes)
 
 	// POST: I create a new recipe batch
-	mux.HandleFunc(constants.ROUTE_RECIPE_BATCHES_NEW, apiv1.ApiConfig.PostNewBatch)
+	mux.HandleFunc(constants.ROUTE_RECIPE_BATCHES_NEW, apiv1.PostNewBatch)
 
 	// GET: I get the ingredients for a single batch
 	// OR I get a single batch by id
@@ -40,7 +46,7 @@ func Routes() http.Handler {
 		// check if the user is trying to get ingredients for a batch
 		_, isIngredientsPath := utils.MakePathFromRoute(r.URL.Path, constants.ROUTE_RECIPEBATCHES_ID_INGREDIENTS)
 		if isIngredientsPath {
-			apiv1.ApiConfig.GetSingleBatchIngredients(w, r)
+			apiv1.GetSingleBatchIngredients(w, r)
 			return
 
 		}
@@ -62,7 +68,7 @@ func Routes() http.Handler {
 			// Now convert 64 to 32
 			id := uint(i)
 
-			apiv1.ApiConfig.GetBatchById(w, r, id)
+			apiv1.GetBatchById(w, r, id)
 			return
 
 		}
@@ -76,7 +82,7 @@ func Routes() http.Handler {
 	 * Recipes pages
 	 ********************************/
 	// I get all the recipes for the logged in user
-	mux.HandleFunc(constants.ROUTE_RECIPES, apiv1.ApiConfig.GetAllRecipes)
+	mux.HandleFunc(constants.ROUTE_RECIPES, apiv1.GetAllRecipes)
 
 	return mux
 
