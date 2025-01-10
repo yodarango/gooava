@@ -6,11 +6,11 @@ import (
 
 	apiv1 "github.com/yodarango/gooava/api/v1"
 	"github.com/yodarango/gooava/config"
-	"github.com/yodarango/gooava/db"
 	"github.com/yodarango/gooava/internal/constants"
 	"github.com/yodarango/gooava/internal/models"
 	"github.com/yodarango/gooava/internal/repo"
 	"github.com/yodarango/gooava/internal/utils"
+	"github.com/yodarango/gooavainternal/db"
 )
 
 func Init() *repo.AppRepo {

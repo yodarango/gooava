@@ -2,7 +2,7 @@ package repo
 
 import (
 	"github.com/yodarango/gooava/config"
-	"github.com/yodarango/gooava/db"
+	"github.com/yodarango/gooava/internal/db"
 )
 
 type AppRepo struct {
