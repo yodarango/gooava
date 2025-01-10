@@ -4,6 +4,7 @@ import (
 	"github.com/yodarango/gooava/internal/repo"
 )
 
+// TODO! Secondo AI questo e una pratica cativa, ricercare
 // I export a singleton to the api configuration
 var ApiConfig *ApiConfiguration
 

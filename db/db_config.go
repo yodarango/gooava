@@ -12,7 +12,7 @@ import (
 )
 
 type DbConfig struct {
-	DB *sql.DB
+	Connection *sql.DB
 }
 
 const DB_MAX_LIFETIME = time.Minute * 5
@@ -62,4 +62,10 @@ func Connect() (*sql.DB, error) {
 	fmt.Println("✅ Connection successful")
 
 	return dbConn, nil
+}
+
+func NewDBConfig(db *sql.DB) *DbConfig {
+	return &DbConfig{
+		Connection: db,
+	}
 }

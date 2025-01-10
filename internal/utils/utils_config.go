@@ -1,25 +1,27 @@
 package utils
 
-import "github.com/yodarango/gooava/config"
+import (
+	"github.com/yodarango/gooava/internal/repo"
+)
 
-var TemplateConfig *TemplateConfiguration
+// TODO! Secondo AI questo e una pratica cativa, ricercare (magari no)
+// PRIVATE: Should not use singleton outside its scope
+var utilsConfig *UtilsConfig
 
 // singleton to the template configuration
-type TemplateConfiguration struct {
-	AppConfig *config.AppConfig
-	DB        string
+type UtilsConfig struct {
+	AppRepo *repo.AppRepo
 }
 
 // I create a brand new instance of the TemplateConfiguration
-func NewTemplateConfig(appConfig *config.AppConfig, DB string) *TemplateConfiguration {
-	return &TemplateConfiguration{
-		AppConfig: appConfig,
-		DB:        DB,
+func NewUtilsConfig(ar *repo.AppRepo) *UtilsConfig {
+	return &UtilsConfig{
+		AppRepo: ar,
 	}
 }
 
 // I set the TemplateConfig variable holding the TemplateConfiguration singleton
 // to the TemplateConfiguration instance returned by NewTemplateConfig()
-func SetTemplateConfig(templateConfig *TemplateConfiguration) {
-	TemplateConfig = templateConfig
+func SetUtilsConfig(uc *UtilsConfig) {
+	utilsConfig = uc
 }

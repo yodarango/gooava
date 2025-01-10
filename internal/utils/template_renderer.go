@@ -79,17 +79,17 @@ func (t *TemplateRenderer) AddFunction(function template.FuncMap) {
 func (t *TemplateRenderer) Render(w http.ResponseWriter) error {
 
 	//If in dev mod, the cache must not be used to allow for hot reload
-	if TemplateConfig.AppConfig.Environment == constants.ENV_DEV {
+	if utilsConfig.AppRepo.App.Environment == constants.ENV_DEV {
 		templateCache, err := CacheTemplates()
 		if err != nil {
 			return fmt.Errorf("there was an error getting the cache %w", err)
 		}
 
-		TemplateConfig.AppConfig.TemplateCache = templateCache
+		utilsConfig.AppRepo.App.TemplateCache = templateCache
 	}
 
 	//check that the template requested exists in the cache
-	templ, ok := TemplateConfig.AppConfig.TemplateCache[t.Name]
+	templ, ok := utilsConfig.AppRepo.App.TemplateCache[t.Name]
 
 	if !ok {
 		return fmt.Errorf("could not find %s in the cache ", t.Name)
