@@ -8,6 +8,7 @@ import (
 	"github.com/yodarango/gooava/db"
 	"github.com/yodarango/gooava/internal/constants"
 	"github.com/yodarango/gooava/internal/models"
+	"github.com/yodarango/gooava/internal/repo"
 	"github.com/yodarango/gooava/internal/utils"
 )
 
@@ -34,8 +35,13 @@ func Init() {
 		log.Panicf("failed to connect to DB %v \n", err)
 	}
 
-	// initialize the apiConfig
-	apiConfig := apiv1.NewApiConfig(&appConfig, &dbConfig)
+	// There are two global singletons, the db singleton and the app singleton,
+	// set them all into a global app singleton to pas around the app
+	appRepo := repo.NewAppRepo(&appConfig, &dbConfig)
+
+	// LEFT OFF. VEDI COSA STO FACENDO INCORRETTO. REparalo e fa lo stesso per i resti dei singleton
+	// Pass singleton to the app
+	apiConfig := apiv1.NewApiConfig(&appRepo) // ricercare pointers
 	apiv1.SetApiConfig(apiConfig)
 
 	// initialize the modelConfig
