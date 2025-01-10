@@ -15,7 +15,7 @@ var PORT string = ":8003"
 var appConfig config.AppConfig
 
 // db singleton
-var dbConfig db.SQLConfig
+var dbConfig db.DbConfig
 
 func main() {
 
