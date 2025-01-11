@@ -4,8 +4,6 @@ import (
 	"github.com/yodarango/gooava/internal/repo"
 )
 
-// TODO! Secondo AI questo e una pratica cativa, ricercare
-// PRIVATE: Should not use singleton outside its scope
 var ModelConfig *ModelConfiguration
 
 // I provide configuration struct to hold the data necessary across all the api endpoints

@@ -54,6 +54,11 @@ func Init() *repo.AppRepo {
 	utilsConfig := utils.NewUtilsConfig(appRepo)
 	utils.SetUtilsConfig(utilsConfig)
 
+	// initialize the db reo
+	// TODO! Might not need this. to early to abstract
+	// dBInterfaceRepositoryConfig := dbinterfacerepo.NewDBInterfaceRepositoryConfig(appRepo)
+	// dbinterfacerepo.SetDBInterfaceRepositoryConfig(dBInterfaceRepositoryConfig)
+
 	return appRepo
 
 }

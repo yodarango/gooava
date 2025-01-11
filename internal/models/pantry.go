@@ -1,7 +1,6 @@
 package models
 
 type Pantry struct {
-	*ModelConfiguration
 	Id        uint   `json:"id"`
 	UserId    uint   `json:"user_id"`
 	CreatedAt string `json:"created_at"`

@@ -93,11 +93,11 @@ func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) 
 
 	var responseError models.ResponseError
 	var response models.HttpResponse
-	var batch models.RecipesBatch
+	var batchRecipe models.RecipesBatch
 
 	// Check if the form provides valid values, otherwise return the errors
 	// but also the form data to avoid resetting the form
-	err := batch.MapBodyToStruct(r.Body)
+	err := batchRecipe.MapBodyToStruct(r.Body)
 	if err != nil {
 		fmt.Printf("Error mapping body to struct: %v \n", err)
 
@@ -118,7 +118,7 @@ func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) 
 
 	// Check if the form is missing values, otherwise return the errors
 	// but also the form data to avoid resetting the form
-	errors := batch.Validate()
+	errors := batchRecipe.Validate()
 	if len(errors) > 0 {
 		responseError.Title = "Incomplete data"
 		responseError.Code = "dataValidation"
@@ -137,16 +137,21 @@ func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) 
 	// --------- AI STUFF ----------- //
 
 	// if everything went well, save the data
-	recipeBatch, savingErr := batch.Save()
+
+	recipeBatch, savingErr := batchRecipe.Save()
+
 	if savingErr != nil {
+		log.Println(savingErr)
+
 		responseError.Title = "Could not save"
 		responseError.Code = "savingData"
-		responseError.Error = err
+		responseError.Error = savingErr.Error()
 
 		response.Code = http.StatusInternalServerError
 		response.Data = responseError
 
 		err = response.Respond(w)
+
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -161,5 +166,4 @@ func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		fmt.Println(err)
 	}
-	return
 }

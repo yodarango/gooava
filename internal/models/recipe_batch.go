@@ -8,7 +8,6 @@ import (
 )
 
 type RecipesBatch struct {
-	*ModelConfiguration
 	Id                    uint   `json:"id"`
 	UserId                uint   `json:"user_id"`
 	Name                  string `json:"name"`
@@ -48,11 +47,15 @@ func (rb *RecipesBatch) MapBodyToStruct(body io.ReadCloser) error {
 }
 
 /**
-* I validate that all the required fields are set
+ * I validate that all the required fields are set
  */
 func (rb *RecipesBatch) Validate() []map[string]interface{} {
 
 	errors := []map[string]interface{}{}
+
+	// TODO! :Delete once auth is set
+	rb.UserId = 123
+	rb.PromptId = 123
 
 	if !(rb.UserId > 0) {
 		errors = append(errors, map[string]interface{}{"field": "user_id", "message": "User Id cannot be empty"})
@@ -69,15 +72,43 @@ func (rb *RecipesBatch) Validate() []map[string]interface{} {
 	return errors
 }
 
+/**
+ * I insert the current instance of RecipesBatch into the DB
+ */
+// LEFT OFF HERE. TRY TO UNDERSTAND THE DEPENDENCY INJECTION WHOLE THING BEFORE MOVING ONE. REDIRECT AFTER THE ID HAS BEEN INSERTED
 func (rb *RecipesBatch) Save() (*RecipesBatch, error) {
-	var newRecipeBatch RecipesBatch
+	// Query di inserimento
+	query := `
+		INSERT INTO recipe_batches 
+		(user_id, name, recipe_count, is_healthy, is_quick, is_maximize_ingredients, is_budget_friendly, cuisine_type, prompt_id)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`
 
-	newRecipeBatch = RecipesBatch{
-		Id: 123,
+	// esegui la query
+	result, err := ModelConfig.AppRepo.DB.Connection.Exec(query, rb.UserId, rb.Name, rb.RecipeCount, rb.IsHealthy, rb.IsQuick,
+		rb.IsMaximizeIngredients, rb.IsBudgetFriendly, rb.CuisineType, rb.PromptId)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to insert batch: %w", err)
 	}
 
-	fmt.Print("....")
-	return &newRecipeBatch, nil
+	// Recupera il ID della riga apena inserita
+	insertedId, err := result.LastInsertId()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get last inserted ID: %w", err)
+	}
+
+	fmt.Println("==============", !(uint(insertedId) > 0))
+
+	// there is no Id, la riga non fu inserita
+	if !(uint(insertedId) > 0) {
+		return nil, fmt.Errorf("there was no errors found but the record does not appear to have been inserted")
+	}
+
+	// aggiunge la ID al modelo
+	rb.Id = uint(insertedId)
+
+	return rb, nil
 }
 
 func (rb *RecipesBatch) Update() {

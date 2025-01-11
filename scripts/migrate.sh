@@ -16,8 +16,15 @@ if [ ! -f "$SQL_FILE" ]; then
     exit 1
 fi
 
-# Percorso al file .env
-ENV_FILE="../.env"
+# Ottieni la directory dello script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Percorso al file .env relativo alla directory dello script
+ENV_FILE="$SCRIPT_DIR/../.env"
+
+# Debug: verifica il percorso e il file
+echo "Directory dello script: $SCRIPT_DIR"
+echo "Percorso del file .env: $ENV_FILE"
 
 # Controlla se il file .env esiste
 if [ ! -f "$ENV_FILE" ]; then

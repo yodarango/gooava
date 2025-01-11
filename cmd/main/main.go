@@ -21,7 +21,7 @@ func main() {
 	appRepo := Init()
 
 	// close the db connection
-	appRepo.DB.Connection.Close()
+	defer appRepo.DB.Connection.Close()
 
 	// start the server
 	fmt.Println("Starting server on port, ", PORT)

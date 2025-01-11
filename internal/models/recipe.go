@@ -7,7 +7,6 @@ import (
 )
 
 type Recipe struct {
-	*ModelConfiguration
 	Id                    uint   `json:"id"`
 	UserId                uint   `json:"user_id"`
 	Name                  string `json:"name"`
