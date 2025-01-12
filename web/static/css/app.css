@@ -308,19 +308,19 @@ main {
 /* toast */
 .toast {
   position: fixed;
-  bottom: var(--dr-spacing-5);
+  top: var(--dr-spacing-5);
   left: var(--dr-spacing-5);
   padding: var(--dr-spacing-4);
   border-radius: 0.5rem;
-  box-shadow: 0 0.4rem 0.8rem rgba(var(--dr-beta-rgb) 0.2);
+  box-shadow: 0 0.4rem 0.8rem rgba(var(--dr-beta-rgb), 0.5);
   min-width: 20rem;
   z-index: 10;
   display: flex;
   justify-content: space-between;
   align-items: center;
   overflow: hidden;
-  position: relative;
-  color: var(--dr-alpha-rgb);
+  color: var(--dr-delta);
+  background-color: var(--dr-alpha);
 }
 
 /* Barra di progresso */
@@ -330,22 +330,22 @@ main {
   left: 0;
   height: 0.5rem;
   width: 100%;
-  background-color: var(--dr-alpha-rgb, 0.7);
+  background-color: var(--dr-beta);
 }
 
-.toast-success {
+.toast-success .toast-progress {
   background-color: var(--dr-success);
 }
 
-.toast-danger {
+.toast-danger .toast-progress {
   background-color: var(--dr-danger);
 }
 
-.toast-info {
+.toast-info .toast-info {
   background-color: var(--dr-info);
 }
 
-.toast-warning {
+.toast-warning .toast-warning {
   background-color: var(--dr-warning);
 }
 

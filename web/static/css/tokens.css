@@ -15,6 +15,10 @@
   --dr-eta-rgb: 69, 66, 67;
   --dr-theta: #f2bc19;
   --dr-theta-rgb: 255, 193, 7;
-  /* --dr-iota: #ff00cb;
-  --dr-iota-rgb: 255, 0, 203; */
+  --dr-kappa: #68bf52;
+  --dr-kappa-rgb: 102, 190, 81;
+  --dr-lambda: #67bfd3;
+  --dr-lambda-rgb: 103, 191, 211;
+  --dr-danger: #e67070;
+  --dr-danger-rgb: 230, 112, 112;
 }

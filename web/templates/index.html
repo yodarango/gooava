@@ -292,6 +292,18 @@
           }
         }
       }
+    } else {
+      // everything went well, redirect the user to the batches page with the specific batch.id
+      const batchId = response.data.id;
+
+      createToast({
+        message: "Batch created successfully, redirecting you now!",
+        variant: "success",
+        duration: 3,
+        onAutoClose: function () {
+          location.href = `/recipe-batches/${batchId}`;
+        },
+      });
     }
   }
 </script>

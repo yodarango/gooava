@@ -67,11 +67,18 @@ function createToast({
   duration = 5,
   autoClose = true,
   variant = "info",
+  onAutoClose,
 }) {
   // Creare il contenitore del toast
   const toast = document.createElement("div");
   toast.className = `toast toast-${variant}`; // Aggiungere la variante come classe
-  toast.textContent = message;
+  toast.innerHTML = `
+  <div class="d-flex align-items-center justify-content-start gap-2">
+    <ion-icon name="checkmark-circle"></ion-icon>
+    <p>${message}</p>
+  </div>
+
+  `;
 
   // Barra di progresso
   if (autoClose) {
@@ -90,7 +97,7 @@ function createToast({
   if (!autoClose) {
     const closeButton = document.createElement("button");
     closeButton.className = "toast-close";
-    closeButton.textContent = "Chiudi";
+    closeButton.textContent = "Close";
     closeButton.addEventListener("click", () => {
       document.body.removeChild(toast);
     });
@@ -105,6 +112,9 @@ function createToast({
     setTimeout(() => {
       if (toast.parentElement) {
         document.body.removeChild(toast);
+        if (onAutoClose) {
+          onAutoClose();
+        }
       }
     }, duration * 1000);
   }

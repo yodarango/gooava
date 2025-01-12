@@ -2,11 +2,11 @@ package apiv1
 
 import (
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
+	"strconv"
+	"strings"
 
-	"github.com/yodarango/gooava/internal/dto"
 	"github.com/yodarango/gooava/internal/models"
 	"github.com/yodarango/gooava/internal/utils"
 )
@@ -34,57 +34,81 @@ func (c *ApiConfiguration) GetBathes(w http.ResponseWriter, r *http.Request) {
 // I get all the ingredients necessary for a specific batch
 func (c *ApiConfiguration) GetSingleBatchIngredients(w http.ResponseWriter, r *http.Request) {
 
-	var recipientIngredients dto.RecipeIngredientDetails
+	// var recipientIngredients models.RecipeIngredientDetails
 
-	templateRenderer := utils.TemplateRenderer{
-		Title: "Batch name",
-		Name:  "batches_ingredients",
-		Data:  recipientIngredients.GetIngredientsByBatchId(213),
-	}
+	// templateRenderer := utils.TemplateRenderer{
+	// 	Title: "Batch name",
+	// 	Name:  "batches_ingredients",
+	// 	Data:  recipientIngredients.GetIngredientsByBatchId(213),
+	// }
 
-	err := templateRenderer.Render(w)
+	// err := templateRenderer.Render(w)
 
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Printf("Error executing template: %v", err.Error())
-		return
-	}
+	// if err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	log.Printf("Error executing template: %v", err.Error())
+	// 	return
+	// }
 
 }
 
 // I get a single batch by its ID
+
+// LEFT OFF HERE: study dep injection. La megliore forma da gestire DTOs. renomina DTO modeli con prefisso DTO
 func (c *ApiConfiguration) GetBatchById(w http.ResponseWriter, r *http.Request, id uint) {
-	templ := template.New("batches_recipes.html").Funcs(template.FuncMap{
-		"add": func(x, y int) int {
-			return x + y
-		},
-	})
-	temp, err := templ.ParseFiles("web/templates/batches_recipes.html", "web/templates/partials/base.html", "web/templates/partials/header.html")
+
+	var responseError models.ResponseError
+	var template utils.TemplateRenderer
+	var recipeBatch models.RecipesBatch
+
+	// set the defaults of the template. Regardless of what the outcome is, these will
+	// remain the smae
+	template.Name = "batches_id_recipes"
+	template.Title = "Batch Recipes"
+
+	// get the batch id
+	var pathParts []string = strings.Split(r.URL.Path, "/")
+
+	// if the id is not greater than 0 is not valid
+	if !(len(pathParts) > 0) {
+		responseError.Title = "Invalid Batch Id"
+		responseError.Code = "Bad Request"
+		responseError.Error = "The id provided is not valid"
+
+		template.Data = responseError
+		template.Render(w)
+		return
+
+	}
+
+	lastPart := pathParts[len(pathParts)-1]
+	batchIdUint, err := strconv.ParseUint(lastPart, 10, 32)
 
 	if err != nil {
-		http.Error(w, "Error parsing template", http.StatusInternalServerError)
-		log.Printf("Error parsing template %v", err)
+		responseError.Title = "Invalid Batch Id"
+		responseError.Code = "Bad Request"
+		responseError.Error = err.Error()
+
+		template.Data = responseError
+		template.Render(w)
 		return
 	}
 
-	err = temp.Execute(w, map[string]interface{}{
-		"Data": []map[string]interface{}{
-			{"Name": "my recipe"},
-			{"Name": "my second recipe"},
-			{"Name": "my third recipe"},
-			{"Name": "my fourth recipe"},
-			{"Name": "my fifth recipe"},
-			{"Name": "my sixth recipe"},
-			{"Name": "my seventh recipe"},
-		},
-		"MenuIcon": "restaurant",
-	})
+	data, err := recipeBatch.GetBatchIngredientsById(uint(batchIdUint))
 
 	if err != nil {
-		http.Error(w, "Error executing template", http.StatusInternalServerError)
-		log.Printf("Error executing template: %v", err)
+		responseError.Title = "Could not retrieve batch"
+		responseError.Code = "Internal Error"
+		responseError.Error = err.Error()
+
+		template.Data = err
+		template.Render(w)
 		return
 	}
+
+	fmt.Println("--------------", data)
+	template.Data = data
+	template.Render(w)
 
 }
 
