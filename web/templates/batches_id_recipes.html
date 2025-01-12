@@ -1,7 +1,9 @@
-{{define "batches_id_recipes"}}{{template "base" .}} {{end}} {{define "body"}}
+{{define "batches_id_recipes"}} {{template "base" .}} {{end}} {{define "body"}}
+<!-- are there recipes in this batch?  if not, the AI step probably failed. THere is not need to show this 👇  -->
+{{if gt (len .Data.Recipes) 0}}
 <p class="mb-4">Below are your newly created recipes.</p>
 <a class="secondary-button mb-4" href="#"> See all ingredients needed </a>
-{{ range $index, $value := .Data}}
+{{ range $index, $value := .Data.Recipes}}
 <div>
   <a href="#" class="primary-selector-button mb-2">
     <div class="button-icon ordinal me-2"></div>
@@ -11,4 +13,29 @@
     </div>
   </a>
 </div>
+{{end}} {{else}}
+
+<div class="m-auto">
+  <img
+    class="state-avatar mb-4 mx-auto"
+    alt="a man with an empty box standing"
+    src="/static/images/avatars/empty_state.webp"
+  />
+  <h4>Hmmm... Seems like I had an issue loading this recipes</h4>
+  <p class="mb-4">please try reloading the page or creating a new recipe</p>
+  <a
+    class="primary-button d-flex align-items-center justify-content-center gap-2"
+    href="/"
+  >
+    <ion-icon name="add"></ion-icon>
+    <span>Create new recipe</span>
+  </a>
+</div>
 {{end}} {{end}}
+
+<!-- testing  -->
+{{define "scripts"}}
+<script>
+  console.log("{{len .Data.Recipes}}");
+</script>
+{{end}}

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"io/fs"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -15,9 +16,14 @@ import (
 )
 
 type TemplateRenderer struct {
-	Title string      // title of the page
-	Data  interface{} // the data to render. Typically sourced by the DB
-	Name  string      // name of the template
+	Title  string          // title of the page
+	Data   interface{}     // the data to render. Typically sourced by the DB
+	Name   string          // name of the template
+	UiMeta *TemplateUIMEta // things that might change in the UI like header icons, menu options, etc
+}
+
+type TemplateUIMEta struct {
+	MenuIcon string `json:"main_icon"`
 }
 
 // set the template functions
@@ -97,8 +103,8 @@ func (t *TemplateRenderer) Render(w http.ResponseWriter) error {
 
 	buf := new(bytes.Buffer)
 
-	err := templ.Execute(buf, t.Data)
-	// err := templ.Execute(w, t.Data)
+	err := templ.Execute(buf, t)
+
 	if err != nil {
 		return fmt.Errorf("error executing %s temple: %w", t.Name, err)
 	}
@@ -128,11 +134,11 @@ func CacheTemplates() (map[string]*template.Template, error) {
 		// check if this file exists
 		if err != nil {
 			if err == os.ErrNotExist {
-				fmt.Printf("error walking the templates path: %v \n", err)
+				log.Printf("error walking the templates path: %v \n", err)
 				return err
 			}
 
-			fmt.Printf("error walking the templates path: %v \n", err)
+			log.Printf("error walking the templates path: %v \n", err)
 			return err
 		}
 
@@ -155,11 +161,11 @@ func CacheTemplates() (map[string]*template.Template, error) {
 		// check if this file exists
 		if err != nil {
 			if err == os.ErrNotExist {
-				fmt.Printf("error walking the templates path: %v \n", err)
+				log.Printf("error walking the templates path: %v \n", err)
 				return err
 			}
 
-			fmt.Printf("error walking the templates path: %v \n", err)
+			log.Printf("error walking the templates path: %v \n", err)
 			return err
 		}
 
@@ -203,85 +209,3 @@ func CacheTemplates() (map[string]*template.Template, error) {
 
 	return templateCache, nil
 }
-
-// func CacheTemplates() (map[string]*template.Template, error) {
-// 	templateCache := make(map[string]*template.Template)
-
-// 	// Define the root template directory
-// 	pathDir, _ := os.Getwd()
-// 	pathDir += PATH_TO_TEMPLATES
-
-// 	// Recursively gather all .html files
-// 	var files []string
-// 	err := filepath.Walk(pathDir, func(path string, info fs.FileInfo, err error) error {
-// 		if err != nil {
-// 			return err
-// 		}
-// 		if !info.IsDir() && filepath.Ext(path) == ".html" {
-// 			files = append(files, path)
-// 		}
-// 		return nil
-// 	})
-// 	if err != nil {
-// 		return nil, fmt.Errorf("error walking template directory: %w", err)
-// 	}
-
-// 	// Parse all templates together
-// 	masterTemplate := template.New("")
-// 	parsedTemplates, err := masterTemplate.Funcs(functions).ParseFiles(files...)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("error parsing templates: %w", err)
-// 	}
-
-// 	// Populate the cache with individual templates
-// 	for _, tmpl := range files {
-// 		templateName := strings.Replace(filepath.Base(tmpl), ".html", "", 1)
-// 		if parsedTemplates.Lookup(templateName) == nil {
-// 			return nil, fmt.Errorf("template %s not found after parsing", templateName)
-// 		}
-// 		templateCache[templateName] = parsedTemplates
-// 	}
-
-// 	return templateCache, nil
-// }
-
-// func CacheTemplates() (map[string]*template.Template, error) {
-// 	templateCache := make(map[string]*template.Template)
-
-// 	// Root directory for templates
-// 	pathDir, _ := os.Getwd()
-// 	pathDir += PATH_TO_TEMPLATES
-
-// 	// Recursively gather all .html files
-// 	var files []string
-// 	err := filepath.Walk(pathDir, func(path string, info fs.FileInfo, err error) error {
-// 		if err != nil {
-// 			return err
-// 		}
-// 		if !info.IsDir() && filepath.Ext(path) == ".html" {
-// 			files = append(files, path)
-// 		}
-// 		return nil
-// 	})
-// 	if err != nil {
-// 		return nil, fmt.Errorf("error walking template directory: %w", err)
-// 	}
-
-// 	// Parse all templates together
-// 	masterTemplate := template.New("")
-// 	parsedTemplates, err := masterTemplate.ParseFiles(files...)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("error parsing templates: %w", err)
-// 	}
-
-// 	// Populate the cache with individual templates
-// 	for _, tmpl := range files {
-// 		templateName := strings.Replace(filepath.Base(tmpl), ".html", "", 1)
-// 		if parsedTemplates.Lookup(templateName) == nil {
-// 			return nil, fmt.Errorf("template %s not found after parsing", templateName)
-// 		}
-// 		templateCache[templateName] = parsedTemplates
-// 	}
-
-// 	return templateCache, nil
-// }

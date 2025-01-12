@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/yodarango/gooava/api"
@@ -24,7 +24,7 @@ func main() {
 	defer appRepo.DB.Connection.Close()
 
 	// start the server
-	fmt.Println("Starting server on port, ", PORT)
+	log.Println("Starting server on port, ", PORT)
 	server.ListenAndServe()
 
 }

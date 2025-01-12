@@ -20,9 +20,9 @@
     <meta property="og:site_name" content="Gooava" />
     <meta name="robots" content="index, follow" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Gooava | {.Title}" />
+    <meta property="og:title" content="Gooava | {{.Title}}" />
     <meta property="og:locale" content="en_US" />
-    <meta name="twitter:title" content="Gooava | {.Title}" />
+    <meta name="twitter:title" content="Gooava | {{.Title}}" />
     <meta property="og:article:author" content="Daniel Rangel" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:site" content="@danielrangel" />
@@ -80,7 +80,7 @@
     <script src="/static/js/utils.js"></script>
 
     {{block "styles" . }} {{end}}
-    <title data-language-ui="pageTitle">Gooava | {.Title}</title>
+    <title data-language-ui="pageTitle">Gooava | {{.Title}}</title>
   </head>
 
   <body>

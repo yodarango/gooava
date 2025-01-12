@@ -1,7 +1,7 @@
 package apiv1
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/yodarango/gooava/internal/utils"
@@ -15,7 +15,7 @@ func (c *ApiConfiguration) Home(w http.ResponseWriter, r *http.Request) {
 	err := template.Render(w)
 
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}

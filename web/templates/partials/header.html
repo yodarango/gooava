@@ -3,6 +3,10 @@
   class="global-header bg-delta d-flex align-items-center justify-content-between p-5"
 >
   <h3 class="color-zeta">Let's get cooking</h3>
-  <a href="/"> <ion-icon name="{{.MenuIcon}}" class="color-zeta"></ion-icon></a>
+  {{if .UiMeta}}
+  <a href="/">
+    <ion-icon name="{{.UiMeta.MenuIcon}}" class="color-zeta"></ion-icon
+  ></a>
+  {{end}}
 </header>
 {{ end}}

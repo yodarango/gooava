@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -48,7 +47,7 @@ func Routes() http.Handler {
 
 		// Check if the use is trying to get a batch by ID
 		_, isBatchByIdPath := utils.MakePathFromRoute(r.URL.Path, constants.ROUTE_RECIPEBATCHES_ID)
-		fmt.Println(isBatchByIdPath)
+
 		if isBatchByIdPath {
 
 			// I need to get the last part of the path which MUST be the ID or I will fail

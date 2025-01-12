@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -29,7 +30,7 @@ func Connect() (*sql.DB, error) {
 	}
 
 	// connect to the db
-	fmt.Println("🔌 Connecting to the database...")
+	log.Println("🔌 Connecting to the database...")
 
 	// db constants
 	dbPassword := os.Getenv("DB_PASSWORD")
@@ -52,14 +53,14 @@ func Connect() (*sql.DB, error) {
 	dbConn.SetMaxOpenConns(DB_MAX_CONNECTIONS)
 	dbConn.SetMaxIdleConns(DB_MAX_IDLE)
 
-	fmt.Println("🔌🧪 Testing DB...")
+	log.Println("🔌🧪 Testing DB...")
 
 	// check the db is running
 	err = dbConn.Ping()
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("✅ Connection successful")
+	log.Println("✅ Connection successful")
 
 	return dbConn, nil
 }

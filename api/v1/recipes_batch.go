@@ -62,7 +62,7 @@ func (c *ApiConfiguration) GetBatchById(w http.ResponseWriter, r *http.Request, 
 	var recipeBatch models.RecipesBatch
 
 	// set the defaults of the template. Regardless of what the outcome is, these will
-	// remain the smae
+	// remain the same
 	template.Name = "batches_id_recipes"
 	template.Title = "Batch Recipes"
 
@@ -106,9 +106,19 @@ func (c *ApiConfiguration) GetBatchById(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	fmt.Println("--------------", data)
 	template.Data = data
-	template.Render(w)
+
+	template.UiMeta = &utils.TemplateUIMEta{}
+	template.UiMeta.MenuIcon = "restaurant-outline"
+
+	err = template.Render(w)
+
+	if err != nil {
+		log.Println(err)
+		errorMsg := fmt.Sprintf("%v", err)
+		http.Error(w, errorMsg, http.StatusInternalServerError)
+		return
+	}
 
 }
 
@@ -123,7 +133,7 @@ func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) 
 	// but also the form data to avoid resetting the form
 	err := batchRecipe.MapBodyToStruct(r.Body)
 	if err != nil {
-		fmt.Printf("Error mapping body to struct: %v \n", err)
+		log.Printf("Error mapping body to struct: %v \n", err)
 
 		responseError.Error = fmt.Sprintf("%v", err)
 		responseError.Title = "Failed data validation"
@@ -135,7 +145,7 @@ func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) 
 		err = response.Respond(w)
 
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 		return
 	}
@@ -153,7 +163,7 @@ func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) 
 
 		err = response.Respond(w)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 		return
 	}
@@ -177,7 +187,7 @@ func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) 
 		err = response.Respond(w)
 
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 		return
 	}
@@ -188,6 +198,6 @@ func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) 
 
 	err = response.Respond(w)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 }

@@ -165,7 +165,6 @@ main {
   text-decoration: none;
   text-align: center;
   font-weight: bold;
-  display: block;
   cursor: pointer;
   border: none;
   width: 100%;
@@ -173,6 +172,11 @@ main {
   * {
     text-decoration: none;
   }
+}
+
+.primary-button:not(.d-flex),
+.secondary-button:not(.d-flex) {
+  display: block;
 }
 
 .secondary-button {
@@ -200,6 +204,15 @@ main {
   span {
     text-align: center;
   }
+}
+
+/* stateful images that describe the state */
+.state-avatar {
+  object-position: center;
+  object-fit: contain;
+  display: block;
+  max-width: 40rem;
+  width: 100%;
 }
 
 /***************** Post card *************/

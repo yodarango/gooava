@@ -97,8 +97,6 @@ func (rb *RecipesBatch) Save() (*RecipesBatch, error) {
 		return nil, fmt.Errorf("failed to get last inserted ID: %w", err)
 	}
 
-	fmt.Println("==============", !(uint(insertedId) > 0))
-
 	// there is no Id, la riga non fu inserita
 	if !(uint(insertedId) > 0) {
 		return nil, fmt.Errorf("there was no errors found but the record does not appear to have been inserted")
@@ -173,16 +171,34 @@ func (rb *RecipesBatch) GetOneById(id uint) (*RecipesBatch, error) {
 func (rb *RecipesBatch) GetBatchIngredientsById(id uint) (*RecipesByBatchId, error) {
 	// Query con alias per evitare conflitti tra colonne
 	query := `
-	SELECT 
-	    rb.id AS rb_id, rb.user_id AS rb_user_id, rb.name AS rb_name, rb.recipe_count, rb.is_healthy AS rb_is_healthy, 
-	    rb.is_quick AS rb_is_quick, rb.is_maximize_ingredients AS rb_is_maximize_ingredients, rb.is_budget_friendly AS rb_is_budget_friendly, 
-	    rb.cuisine_type AS rb_cuisine_type, rb.prompt_id, rb.created_at AS rb_created_at,
-	    r.id AS r_id, r.user_id AS r_user_id, r.name AS r_name, r.is_healthy AS r_is_healthy, r.is_quick AS r_is_quick, 
-	    r.is_maximize_ingredients AS r_is_maximize_ingredients, r.is_budget_friendly AS r_is_budget_friendly, 
-	    r.cuisine_type AS r_cuisine_type, r.created_at AS r_created_at, r.batch_id, r.servings, r.instructions
-	FROM recipe_batches AS rb
-	JOIN recipes AS r ON r.batch_id = rb.id
-	WHERE rb.id = ?`
+SELECT 
+    IFNULL(rb.id, 0) AS rb_id, 
+    IFNULL(rb.user_id, 0) AS rb_user_id, 
+    IFNULL(rb.name, '') AS rb_name, 
+    IFNULL(rb.recipe_count, 0) AS rb_recipe_count, 
+    IFNULL(rb.is_healthy, false) AS rb_is_healthy, 
+    IFNULL(rb.is_quick, false) AS rb_is_quick, 
+    IFNULL(rb.is_maximize_ingredients, false) AS rb_is_maximize_ingredients, 
+    IFNULL(rb.is_budget_friendly, false) AS rb_is_budget_friendly, 
+    IFNULL(rb.cuisine_type, '') AS rb_cuisine_type, 
+    IFNULL(rb.prompt_id, 0) AS rb_prompt_id, 
+    IFNULL(rb.created_at, '') AS rb_created_at,
+
+    IFNULL(r.id, 0) AS r_id, 
+    IFNULL(r.user_id, 0) AS r_user_id, 
+    IFNULL(r.name, '') AS r_name, 
+    IFNULL(r.is_healthy, false) AS r_is_healthy, 
+    IFNULL(r.is_quick, false) AS r_is_quick, 
+    IFNULL(r.is_maximize_ingredients, false) AS r_is_maximize_ingredients, 
+    IFNULL(r.is_budget_friendly, false) AS r_is_budget_friendly, 
+    IFNULL(r.cuisine_type, '') AS r_cuisine_type, 
+    IFNULL(r.created_at, '') AS r_created_at, 
+    IFNULL(r.batch_id, 0) AS r_batch_id, 
+    IFNULL(r.servings, 0) AS r_servings, 
+    IFNULL(r.instructions, '') AS r_instructions
+FROM recipe_batches AS rb
+LEFT JOIN recipes AS r ON r.batch_id = rb.id
+WHERE rb.id = ?`
 
 	rows, err := ModelConfig.AppRepo.DB.Connection.Query(query, id)
 
