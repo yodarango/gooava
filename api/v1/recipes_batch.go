@@ -54,7 +54,6 @@ func (c *ApiConfiguration) GetSingleBatchIngredients(w http.ResponseWriter, r *h
 
 // I get a single batch by its ID
 
-// LEFT OFF HERE: study dep injection. La megliore forma da gestire DTOs. renomina DTO modeli con prefisso DTO
 func (c *ApiConfiguration) GetBatchById(w http.ResponseWriter, r *http.Request, id uint) {
 
 	var responseError models.ResponseError
@@ -128,6 +127,7 @@ func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) 
 	var responseError models.ResponseError
 	var response models.HttpResponse
 	var batchRecipe models.RecipesBatch
+	var recipe models.Recipe
 
 	// Check if the form provides valid values, otherwise return the errors
 	// but also the form data to avoid resetting the form
@@ -170,19 +170,65 @@ func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) 
 
 	// --------- AI STUFF ----------- //
 
-	// if everything went well, save the data
+	// if everything went well, save the recipe batch
 
 	recipeBatch, savingErr := batchRecipe.Save()
 
 	if savingErr != nil {
-		log.Println(savingErr)
-
 		responseError.Title = "Could not save"
 		responseError.Code = "savingData"
 		responseError.Error = savingErr.Error()
 
 		response.Code = http.StatusInternalServerError
 		response.Data = responseError
+
+		err = response.Respond(w)
+
+		if err != nil {
+			log.Println(err)
+		}
+		return
+	}
+
+	// once the batch is saved, save each recipe under it
+	//**************************************************************************
+	//* This is a momentary loop to create fake recipes that will eventually be
+	//* created by AI.
+	//****************
+	srtIndex := 0
+	limit := 5
+
+	recipes := make([]models.Recipe, 0, limit)
+
+	for srtIndex < limit {
+		recipe.Id = uint(srtIndex)
+		recipe.UserId = 123
+		recipe.Name = "Test"
+		recipe.IsHealthy = (srtIndex % 2) == 0
+		recipe.IsQuick = (srtIndex % 2) == 0
+		recipe.IsMaximizeIngredients = (srtIndex % 2) == 0
+		recipe.IsBudgetFriendly = (srtIndex % 2) == 0
+		recipe.CuisineType = "Test"
+		recipe.BatchId = 8
+		recipe.Servings = uint16(srtIndex)
+		recipe.Instructions = "Test...."
+
+		recipes = append(recipes, recipe)
+
+		srtIndex++
+	}
+
+	_, err = recipe.SaveMany(recipes)
+
+	if err != nil {
+		log.Println(err)
+
+		responseError.Title = "Could not save recipes in batch"
+		responseError.Code = "savingData"
+		responseError.Error = err.Error()
+
+		response.Code = http.StatusInternalServerError
+		response.Data = err
 
 		err = response.Respond(w)
 

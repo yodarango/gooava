@@ -130,10 +130,100 @@ func (r *Recipe) GetAll() []Recipe {
 	}
 }
 
-func (r *Recipe) Save() {
+func (r *Recipe) Save() (*Recipe, error) {
+	// set the query
+	query := `
+		INSERT INTO recipes (
+			user_id, batch_id, name, is_healthy, is_quick, 
+			is_maximize_ingredients, is_budget_friendly, cuisine_type, 
+			servings, instructions
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		 `
 
+	// save the new recipe
+	result, err := ModelConfig.AppRepo.DB.Connection.Exec(query,
+		r.UserId,
+		r.BatchId,
+		r.Name,
+		r.IsHealthy,
+		r.IsQuick,
+		r.IsMaximizeIngredients,
+		r.IsBudgetFriendly,
+		r.CuisineType,
+		r.Servings,
+		r.Instructions)
+
+	if err != nil {
+		return nil, fmt.Errorf("could not insert result into table %w", err)
+	}
+
+	lastInsertedId, err := result.LastInsertId()
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get last inserted ID: %w", err)
+	}
+
+	// there is no Id, la riga non fu inserita
+	if !(uint(lastInsertedId) > 0) {
+		return nil, fmt.Errorf("there was no errors found but the record does not appear to have been inserted")
+	}
+
+	r.Id = uint(lastInsertedId)
+
+	return r, nil
 }
 
+func (r *Recipe) SaveMany(recipes []Recipe) (int64, error) {
+	// set the query
+	query := `
+		INSERT INTO recipes (
+			user_id, batch_id, name, is_healthy, is_quick, 
+			is_maximize_ingredients, is_budget_friendly, cuisine_type, 
+			servings, instructions
+		) VALUES 
+		 `
+	queryValues := []interface{}{}
+	queryValuePlaceholders := []string{}
+
+	for _, recipe := range recipes {
+		queryValuePlaceholders = append(queryValuePlaceholders, "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+
+		queryValues = append(queryValues,
+			recipe.UserId,
+			recipe.BatchId,
+			recipe.Name,
+			recipe.IsHealthy,
+			recipe.IsQuick,
+			recipe.IsMaximizeIngredients,
+			recipe.IsBudgetFriendly,
+			recipe.CuisineType,
+			recipe.Servings,
+			recipe.Instructions)
+	}
+
+	unifiedQueryStrs := strings.Join(queryValuePlaceholders, ", ")
+	query += unifiedQueryStrs
+
+	// save the new recipe
+	result, err := ModelConfig.AppRepo.DB.Connection.Exec(query, queryValues...)
+
+	if err != nil {
+		return 0, fmt.Errorf("could not insert result into table %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+
+	if err != nil {
+		return 0, fmt.Errorf("failed to get last inserted ID: %w", err)
+	}
+
+	// there is no Id, la riga non fu inserita
+	if !(rowsAffected > 0) {
+		return 0, fmt.Errorf("there was no errors found but the record does not appear to have been inserted")
+	}
+
+	return rowsAffected, nil
+}
 func (r *Recipe) Update() {
 
 }
