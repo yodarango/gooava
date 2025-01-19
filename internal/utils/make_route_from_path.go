@@ -22,7 +22,7 @@ func MakeRouteFromPath(path string, replaceWith string) string {
 	return strings.Join(fixedPath, "/")
 }
 
-// Receives a dynamic rout and maps it to a fixed path (e.g. recipes/123/ingredients -> recipes/:param/ingredients)
+// Receives a dynamic route and maps it to a fixed path (e.g. recipes/123/ingredients -> recipes/:param/ingredients)
 // it returns the newly formed path and whether the two are the same.
 func MakePathFromRoute(route string, fixedPath string) (string, bool) {
 	routeParts := strings.Split(route, "/")

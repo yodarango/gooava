@@ -1,6 +1,6 @@
 package models
 
-type RecipesByBatchId struct {
+type DTORecipesByBatchId struct {
 	RecipesBatch
 	Recipes []Recipe `json:"recipes"`
 }

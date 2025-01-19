@@ -12,7 +12,7 @@ body * {
 }
 
 main {
-  max-width: 60rem;
+  max-width: 50rem;
   margin: auto;
   width: 92%;
 }
@@ -20,6 +20,7 @@ main {
 .global-header {
   box-shadow: 0 0.2rem 0.4rem rgba(var(--dr-beta-rgba) 0.1);
   left: calc(-49.9vw + 50%);
+  margin-bottom: var(--dr-spacing-6);
   position: relative;
   overflow: hidden;
   width: 99.9vw;

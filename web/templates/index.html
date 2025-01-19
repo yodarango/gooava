@@ -279,7 +279,6 @@
     if (!response.success) {
       if (response.data.error.length > 0) {
         for (let error of response.data.error) {
-          console.log(error.field.toLowerCase());
           // this is an input pecific feld
           if (error.field === "recipe_count") {
             ergon.tagName = "p";

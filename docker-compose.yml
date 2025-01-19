@@ -31,12 +31,12 @@ services:
     networks:
       - app-network
       # TODO: Map the volume to another Docker container
-    # volumes:
-    #   - mysql_data:/var/lib/mysql # Persistent storage for MySQL data
+    volumes:
+      - mysql_data:/var/lib/mysql # Persistent storage for MySQL data
 
 networks:
   app-network:
     driver: bridge
-# volumes:
-#   mysql_data:
-#     driver: local
+volumes:
+  mysql_data:
+    driver: local

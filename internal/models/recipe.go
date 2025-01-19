@@ -61,37 +61,53 @@ func (r *Recipe) Validate() []map[string]interface{} {
 /**
 * I get all the recipes for a batch id
  */
-func (r *Recipe) GetRecipesByBatchId(id uint) []Recipe {
-	return []Recipe{
-		{
-			Id:                    212,
-			UserId:                12,
-			Name:                  "name",
-			IsHealthy:             true,
-			IsQuick:               false,
-			IsMaximizeIngredients: false,
-			IsBudgetFriendly:      true,
-			CuisineType:           "italian",
-			CreatedAt:             "12-12-63",
-			BatchId:               123,
-			Servings:              3,
-			Instructions:          "This are the instructions",
-		},
-		{
-			Id:                    212,
-			UserId:                12,
-			Name:                  "name",
-			IsHealthy:             true,
-			IsQuick:               false,
-			IsMaximizeIngredients: false,
-			IsBudgetFriendly:      true,
-			CuisineType:           "italian",
-			CreatedAt:             "12-12-63",
-			BatchId:               123,
-			Servings:              3,
-			Instructions:          "This are the instructions",
-		},
+func (r *Recipe) GetRecipesByBatchId(id uint) ([]Recipe, error) {
+	// Query con alias per evitare conflitti tra colonne
+	query := `
+		SELECT 
+			IFNULL(id, 0), 
+			IFNULL(user_id, 0),
+			IFNULL(name, ''),
+			IFNULL(is_healthy, false), 
+			IFNULL(is_quick, false), 
+			IFNULL(is_maximize_ingredients, false), 
+			IFNULL(is_budget_friendly, false), 
+			IFNULL(cuisine_type, ''), 
+			IFNULL(created_at, ''), 
+			IFNULL(batch_id, 0), 
+			IFNULL(servings, 0), 
+			IFNULL(instructions, '')
+		FROM recipes
+		WHERE batch_id = ?`
+
+	rows, err := ModelConfig.AppRepo.DB.Connection.Query(query, id)
+
+	if err != nil {
+		return nil, fmt.Errorf("error querying for batch recipes %w", err)
+
 	}
+
+	// get the DTO
+	var recipes []Recipe
+
+	// this will match the properties of the DTO to the DTO and those of the recipe to the recipe
+	for rows.Next() {
+		var recipe Recipe
+
+		err := rows.Scan(
+			&recipe.Id, &recipe.UserId, &recipe.Name, &recipe.IsHealthy, &recipe.IsQuick,
+			&recipe.IsMaximizeIngredients, &recipe.IsBudgetFriendly, &recipe.CuisineType,
+			&recipe.CreatedAt, &recipe.BatchId, &recipe.Servings, &recipe.Instructions,
+		)
+
+		if err != nil {
+			return nil, fmt.Errorf("could not scan row %w", err)
+		}
+
+		recipes = append(recipes, recipe)
+	}
+
+	return recipes, nil
 }
 
 /**

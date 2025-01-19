@@ -56,60 +56,83 @@ func (c *ApiConfiguration) GetSingleBatchIngredients(w http.ResponseWriter, r *h
 
 func (c *ApiConfiguration) GetBatchById(w http.ResponseWriter, r *http.Request, id uint) {
 
+	var dtoRecipesByBatchId models.DTORecipesByBatchId
 	var responseError models.ResponseError
 	var template utils.TemplateRenderer
 	var recipeBatch models.RecipesBatch
+	var recipe models.Recipe
 
 	// set the defaults of the template. Regardless of what the outcome is, these will
 	// remain the same
+	template.UiMeta = &utils.TemplateUIMEta{}
+	template.UiMeta.MenuIcon = "restaurant-outline"
 	template.Name = "batches_id_recipes"
 	template.Title = "Batch Recipes"
 
-	// get the batch id
+	// Check that there is an id in the route. If the route does not include at least
+	// one "/", so make sure this is present
 	var pathParts []string = strings.Split(r.URL.Path, "/")
 
-	// if the id is not greater than 0 is not valid
 	if !(len(pathParts) > 0) {
+		log.Println("invalid batch id")
 		responseError.Title = "Invalid Batch Id"
 		responseError.Code = "Bad Request"
 		responseError.Error = "The id provided is not valid"
+		template.Error = &responseError
+		template.Data = map[string]interface{}{}
 
-		template.Data = responseError
 		template.Render(w)
 		return
-
 	}
 
 	lastPart := pathParts[len(pathParts)-1]
 	batchIdUint, err := strconv.ParseUint(lastPart, 10, 32)
 
 	if err != nil {
+		log.Println(err)
 		responseError.Title = "Invalid Batch Id"
 		responseError.Code = "Bad Request"
 		responseError.Error = err.Error()
+		template.Error = &responseError
+		template.Data = map[string]interface{}{}
 
-		template.Data = responseError
 		template.Render(w)
 		return
 	}
 
-	data, err := recipeBatch.GetBatchIngredientsById(uint(batchIdUint))
+	batch, err := recipeBatch.GetBatchById(uint(batchIdUint))
 
 	if err != nil {
+		log.Println(err)
 		responseError.Title = "Could not retrieve batch"
 		responseError.Code = "Internal Error"
 		responseError.Error = err.Error()
+		template.Error = &responseError
+		template.Data = map[string]interface{}{}
 
-		template.Data = err
 		template.Render(w)
 		return
 	}
 
-	template.Data = data
+	recipes, err := recipe.GetRecipesByBatchId(uint(batchIdUint))
+	if err != nil {
+		log.Println(err)
+		responseError.Title = "Could not retrieve recipes"
+		responseError.Code = "Internal Error"
+		responseError.Error = err.Error()
+		template.Error = &responseError
+		template.Data = map[string]interface{}{}
 
-	template.UiMeta = &utils.TemplateUIMEta{}
-	template.UiMeta.MenuIcon = "restaurant-outline"
+		template.Render(w)
+		return
+	}
 
+	dtoRecipesByBatchId.RecipesBatch = *batch
+	dtoRecipesByBatchId.Recipes = recipes
+	template.Data = dtoRecipesByBatchId
+	template.Error = nil
+
+	fmt.Println("------", template.Data)
 	err = template.Render(w)
 
 	if err != nil {
@@ -128,6 +151,10 @@ func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) 
 	var response models.HttpResponse
 	var batchRecipe models.RecipesBatch
 	var recipe models.Recipe
+
+	// TODO! :Delete once auth is set
+	batchRecipe.UserId = 1
+	batchRecipe.PromptId = 1
 
 	// Check if the form provides valid values, otherwise return the errors
 	// but also the form data to avoid resetting the form
@@ -195,21 +222,20 @@ func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) 
 	//* This is a momentary loop to create fake recipes that will eventually be
 	//* created by AI.
 	//****************
-	srtIndex := 0
-	limit := 5
+	var srtIndex uint16 = 0
+	limit := recipeBatch.RecipeCount
 
 	recipes := make([]models.Recipe, 0, limit)
 
 	for srtIndex < limit {
-		recipe.Id = uint(srtIndex)
-		recipe.UserId = 123
+		recipe.UserId = 1
 		recipe.Name = "Test"
 		recipe.IsHealthy = (srtIndex % 2) == 0
 		recipe.IsQuick = (srtIndex % 2) == 0
 		recipe.IsMaximizeIngredients = (srtIndex % 2) == 0
 		recipe.IsBudgetFriendly = (srtIndex % 2) == 0
 		recipe.CuisineType = "Test"
-		recipe.BatchId = 8
+		recipe.BatchId = 1
 		recipe.Servings = uint16(srtIndex)
 		recipe.Instructions = "Test...."
 

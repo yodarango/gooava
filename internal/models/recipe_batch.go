@@ -53,10 +53,6 @@ func (rb *RecipesBatch) Validate() []map[string]interface{} {
 
 	errors := []map[string]interface{}{}
 
-	// TODO! :Delete once auth is set
-	rb.UserId = 123
-	rb.PromptId = 123
-
 	if !(rb.UserId > 0) {
 		errors = append(errors, map[string]interface{}{"field": "user_id", "message": "User Id cannot be empty"})
 	}
@@ -152,86 +148,37 @@ func (rb *RecipesBatch) GetAll() []RecipesBatch {
 /**
 * I get one batch by id without its belonging recipes
  */
-func (rb *RecipesBatch) GetOneById(id uint) (*RecipesBatch, error) {
-	query := `SELECT * FROM recipe_batches WHERE id = ?`
-	row := ModelConfig.AppRepo.DB.Connection.QueryRow(query, id)
-
-	err := row.Scan(rb)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return rb, nil
-}
-
-/**
-* I get one batch by id along with all its associated recipes
- */
-func (rb *RecipesBatch) GetBatchIngredientsById(id uint) (*RecipesByBatchId, error) {
+func (rb *RecipesBatch) GetBatchById(id uint) (*RecipesBatch, error) {
 	// Query con alias per evitare conflitti tra colonne
 	query := `
-SELECT 
-    IFNULL(rb.id, 0) AS rb_id, 
-    IFNULL(rb.user_id, 0) AS rb_user_id, 
-    IFNULL(rb.name, '') AS rb_name, 
-    IFNULL(rb.recipe_count, 0) AS rb_recipe_count, 
-    IFNULL(rb.is_healthy, false) AS rb_is_healthy, 
-    IFNULL(rb.is_quick, false) AS rb_is_quick, 
-    IFNULL(rb.is_maximize_ingredients, false) AS rb_is_maximize_ingredients, 
-    IFNULL(rb.is_budget_friendly, false) AS rb_is_budget_friendly, 
-    IFNULL(rb.cuisine_type, '') AS rb_cuisine_type, 
-    IFNULL(rb.prompt_id, 0) AS rb_prompt_id, 
-    IFNULL(rb.created_at, '') AS rb_created_at,
+		SELECT 
+			IFNULL(id, 0), 
+			IFNULL(user_id, 0), 
+			IFNULL(name, ''), 
+			IFNULL(recipe_count, 0), 
+			IFNULL(is_healthy, false), 
+			IFNULL(is_quick, false), 
+			IFNULL(is_maximize_ingredients, false), 
+			IFNULL(is_budget_friendly, false) , 
+			IFNULL(cuisine_type, ''), 
+			IFNULL(prompt_id, 0), 
+			IFNULL(created_at, '') 
+		FROM recipe_batches
+		WHERE id = ?`
 
-    IFNULL(r.id, 0) AS r_id, 
-    IFNULL(r.user_id, 0) AS r_user_id, 
-    IFNULL(r.name, '') AS r_name, 
-    IFNULL(r.is_healthy, false) AS r_is_healthy, 
-    IFNULL(r.is_quick, false) AS r_is_quick, 
-    IFNULL(r.is_maximize_ingredients, false) AS r_is_maximize_ingredients, 
-    IFNULL(r.is_budget_friendly, false) AS r_is_budget_friendly, 
-    IFNULL(r.cuisine_type, '') AS r_cuisine_type, 
-    IFNULL(r.created_at, '') AS r_created_at, 
-    IFNULL(r.batch_id, 0) AS r_batch_id, 
-    IFNULL(r.servings, 0) AS r_servings, 
-    IFNULL(r.instructions, '') AS r_instructions
-FROM recipe_batches AS rb
-LEFT JOIN recipes AS r ON r.batch_id = rb.id
-WHERE rb.id = ?`
-
-	rows, err := ModelConfig.AppRepo.DB.Connection.Query(query, id)
-
-	if err != nil {
-		return nil, fmt.Errorf("error querying for batch recipes %w", err)
-
-	}
+	row := ModelConfig.AppRepo.DB.Connection.QueryRow(query, id)
 
 	// get the DTO
-	var recipeByBatchId RecipesByBatchId
-	var recipes []Recipe
+	var recipeByBatchId RecipesBatch
 
-	// this will match the properties of the DTO to the DTO and those of the recipe to the recipe
-	for rows.Next() {
-		var recipe Recipe
+	row.Scan(&recipeByBatchId.Id, &recipeByBatchId.UserId, &recipeByBatchId.Name, &recipeByBatchId.RecipeCount, &recipeByBatchId.IsHealthy,
+		&recipeByBatchId.IsQuick, &recipeByBatchId.IsMaximizeIngredients, &recipeByBatchId.IsBudgetFriendly, &recipeByBatchId.CuisineType,
+		&recipeByBatchId.PromptId, &recipeByBatchId.CreatedAt)
 
-		err := rows.Scan(
-			&recipeByBatchId.Id, &recipeByBatchId.UserId, &recipeByBatchId.Name, &recipeByBatchId.RecipeCount, &recipeByBatchId.IsHealthy,
-			&recipeByBatchId.IsQuick, &recipeByBatchId.IsMaximizeIngredients, &recipeByBatchId.IsBudgetFriendly, &recipeByBatchId.CuisineType,
-			&recipeByBatchId.PromptId, &recipeByBatchId.CreatedAt,
-			&recipe.Id, &recipe.UserId, &recipe.Name, &recipe.IsHealthy, &recipe.IsQuick,
-			&recipe.IsMaximizeIngredients, &recipe.IsBudgetFriendly, &recipe.CuisineType,
-			&recipe.CreatedAt, &recipe.BatchId, &recipe.Servings, &recipe.Instructions,
-		)
-
-		if err != nil {
-			return nil, fmt.Errorf("could not scan row %w", err)
-		}
-
-		recipes = append(recipes, recipe)
+	if row.Err() != nil {
+		err := row.Err()
+		return nil, fmt.Errorf("could not scan row %w", err)
 	}
-
-	recipeByBatchId.Recipes = recipes
 
 	return &recipeByBatchId, nil
 }

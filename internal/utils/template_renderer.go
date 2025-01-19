@@ -13,13 +13,15 @@ import (
 	"strings"
 
 	"github.com/yodarango/gooava/internal/constants"
+	"github.com/yodarango/gooava/internal/models"
 )
 
 type TemplateRenderer struct {
-	Title  string          // title of the page
-	Data   interface{}     // the data to render. Typically sourced by the DB
-	Name   string          // name of the template
-	UiMeta *TemplateUIMEta // things that might change in the UI like header icons, menu options, etc
+	Title  string                // title of the page
+	Data   interface{}           // the data to render. Typically sourced by the DB
+	Error  *models.ResponseError // could be nil
+	Name   string                // name of the template
+	UiMeta *TemplateUIMEta       // things that might change in the UI like header icons, menu options, etc
 }
 
 type TemplateUIMEta struct {
@@ -27,7 +29,11 @@ type TemplateUIMEta struct {
 }
 
 // set the template functions
-var functions = template.FuncMap{}
+var functions = template.FuncMap{
+	"add": func(a, b int) int {
+		return a + b
+	},
+}
 
 const PATH_TO_TEMPLATES = "/web/templates"
 const PATH_TO_PARTIALS = "partials"
