@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
-	"strings"
 
 	"github.com/yodarango/gooava/internal/models"
 	"github.com/yodarango/gooava/internal/utils"
@@ -31,29 +29,58 @@ func (c *ApiConfiguration) GetBathes(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// I get all the ingredients necessary for a specific batch
-func (c *ApiConfiguration) GetSingleBatchIngredients(w http.ResponseWriter, r *http.Request) {
+/***************************************************************************************
+* Ottiene tutta la informazione relazionata con una recetta specifica per la Id. Non
+* fornice nessuna altra informazione che non e relazionata con la recetta.
+***************************************************************************************/
+func (c *ApiConfiguration) GetSingleBatchIngredients(w http.ResponseWriter, r *http.Request, id uint) {
+	var template utils.TemplateRenderer
+	var recipeIngredients models.RecipeIngredient
+	var responseError models.ResponseError
 
-	// var recipientIngredients models.RecipeIngredientDetails
+	// imposta le propieta dil template per default
+	var templateUIMeta utils.TemplateUIMEta
+	templateUIMeta.MenuIcon = "restaurant-outline"
+	template.UiMeta = &templateUIMeta
+	template.Title = fmt.Sprintf("Recipe %d", id)
+	template.Name = "batches_id_ingredients"
 
-	// templateRenderer := utils.TemplateRenderer{
-	// 	Title: "Batch name",
-	// 	Name:  "batches_ingredients",
-	// 	Data:  recipientIngredients.GetIngredientsByBatchId(213),
-	// }
+	// coglie la recetta per id
+	data, err := recipeIngredients.GetIngredientsByBatchId(id)
 
-	// err := templateRenderer.Render(w)
+	if err != nil {
 
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	log.Printf("Error executing template: %v", err.Error())
-	// 	return
-	// }
+		responseError.Title = "Could not find this Id"
+		responseError.Code = "Internal Erro"
+		responseError.Error = "I did not find any information pertaining to that Id"
+		template.Error = &responseError
+		template.Data = map[string]interface{}{}
+
+		template.Render(w)
+		return
+	}
+
+	template.Data = data
+	template.Title = "Total ingredients needed for this batch"
+	template.Error = nil
+
+	err = template.Render(w)
+
+	if err != nil {
+		log.Println(err)
+		errorMsg := fmt.Sprintf("%v", err)
+		http.Error(w, errorMsg, http.StatusInternalServerError)
+		return
+	}
 
 }
 
-// I get a single batch by its ID
-// LEFT OFF. I think i finished this, move to getting a recipe by id now.
+/***************************************************************************************
+* Ottenere un batch tramite ID restituirà l'elenco di tutte le ricette incluse nel batch.
+* Verranno fornite solo le informazioni di base su ciascuna ricetta; tutte le altre
+* informazioni saranno disponibili solo se l'utente decide di visitare una specifica
+* ricetta tramite ID, il che lo porterà a una pagina diversa.
+***************************************************************************************/
 func (c *ApiConfiguration) GetBatchById(w http.ResponseWriter, r *http.Request, id uint) {
 
 	var dtoRecipesByBatchId models.DTORecipesByBatchId
@@ -66,41 +93,10 @@ func (c *ApiConfiguration) GetBatchById(w http.ResponseWriter, r *http.Request, 
 	// remain the same
 	template.UiMeta = &utils.TemplateUIMEta{}
 	template.UiMeta.MenuIcon = "restaurant-outline"
-	template.Name = "batches_id_recipes"
+	template.Name = "batches_id"
 	template.Title = "Batch Recipes"
 
-	// Check that there is an id in the route. If the route does not include at least
-	// one "/", so make sure this is present
-	var pathParts []string = strings.Split(r.URL.Path, "/")
-
-	if !(len(pathParts) > 0) {
-		log.Println("invalid batch id")
-		responseError.Title = "Invalid Batch Id"
-		responseError.Code = "Bad Request"
-		responseError.Error = "The id provided is not valid"
-		template.Error = &responseError
-		template.Data = map[string]interface{}{}
-
-		template.Render(w)
-		return
-	}
-
-	lastPart := pathParts[len(pathParts)-1]
-	batchIdUint, err := strconv.ParseUint(lastPart, 10, 32)
-
-	if err != nil {
-		log.Println(err)
-		responseError.Title = "Invalid Batch Id"
-		responseError.Code = "Bad Request"
-		responseError.Error = err.Error()
-		template.Error = &responseError
-		template.Data = map[string]interface{}{}
-
-		template.Render(w)
-		return
-	}
-
-	batch, err := recipeBatch.GetBatchById(uint(batchIdUint))
+	batch, err := recipeBatch.GetBatchById(uint(id))
 
 	if err != nil {
 		log.Println(err)
@@ -114,7 +110,7 @@ func (c *ApiConfiguration) GetBatchById(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	recipes, err := recipe.GetRecipesByBatchId(uint(batchIdUint))
+	recipes, err := recipe.GetRecipesByBatchId(uint(id))
 	if err != nil {
 		log.Println(err)
 		responseError.Title = "Could not retrieve recipes"
@@ -143,7 +139,17 @@ func (c *ApiConfiguration) GetBatchById(w http.ResponseWriter, r *http.Request, 
 
 }
 
-// I create a brand new batch
+/***************************************************************************************
+* Crea un nuovo batch con i parametri forniti. Una volta creato il batch, è necessario
+* chiamare l'IA per generare le ricette in base a tali parametri. Dopo aver ottenuto
+* le ricette dall'IA, posso salvarle nella tabella delle ricette e associarle al
+* batch appena creato. Questa operazione potrebbe richiedere molto tempo, poiché
+* è necessario attendere che l'IA elabori i dati.
+*
+* TODO? In futuro potrebbe essere utile rendere questa richiesta di tipo
+* "fire-and-forget" per poi rispondere all'utente tramite notifica or
+* email.
+***************************************************************************************/
 func (c *ApiConfiguration) PostNewBatch(w http.ResponseWriter, r *http.Request) {
 
 	var responseError models.ResponseError

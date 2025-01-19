@@ -6,9 +6,9 @@ import (
 )
 
 type Ingredient struct {
-	CreatedAt string `json:created_at`
-	Name      string `json:name`
-	Id        uint   `json:id`
+	CreatedAt string `json:"created_at"`
+	Name      string `json:"name"`
+	Id        uint   `json:"id"`
 }
 
 /**

@@ -1,4 +1,4 @@
-{{define "batches_id_recipes"}} {{template "base" .}} {{end}} {{define "body"}}
+{{define "batches_id"}} {{template "base" .}} {{end}} {{define "body"}}
 <!-- Check if there is an error -->
 {{if .Error}}
 <div class="m-auto">
@@ -29,7 +29,7 @@
 <!-- Iterate through recipes -->
 {{range $index, $recipe := .Data.Recipes}}
 <div>
-  <a href="#" class="primary-selector-button mb-2">
+  <a href="/recipe/{{$recipe.Id}}" class="primary-selector-button mb-2">
     <div class="button-icon ordinal me-2">
       <span>{{add $index 1}}</span>
     </div>

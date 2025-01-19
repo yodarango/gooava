@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -21,9 +22,9 @@ type Recipe struct {
 	Instructions          string `json:"instructions"`
 }
 
-/**
-* I map the json fields to the struct fields
- */
+/***************************************************************************************
+ * Io imposto i campi da json a il struct
+ ***************************************************************************************/
 func (r *Recipe) MapJsonToStruct(jsonBytes []byte) error {
 	err := json.Unmarshal(jsonBytes, r)
 	if err != nil {
@@ -33,9 +34,9 @@ func (r *Recipe) MapJsonToStruct(jsonBytes []byte) error {
 	return nil
 }
 
-/**
-* I validate that all the required fields are set
- */
+/***************************************************************************************
+ * Io mi asicuro che tutti i campi necessari siano impost
+ ***************************************************************************************/
 func (r *Recipe) Validate() []map[string]interface{} {
 	errors := []map[string]interface{}{}
 
@@ -58,25 +59,18 @@ func (r *Recipe) Validate() []map[string]interface{} {
 	return errors
 }
 
-/**
-* I get all the recipes for a batch id
- */
+/***************************************************************************************
+ * Fornirò il nome e la id di ogni recetta per la id del RecipesBatch specificato. Dato
+ * che il Batch già ha tutti i dati necesari non c'e bisogno di fornice tutte questi
+ * per ogni recetta. Neanche c'e bisogno di fornire altra informazione, dao che
+ * il usante e da solito chiedendo solo una lista delle reccette disponibile.
+ ***************************************************************************************/
 func (r *Recipe) GetRecipesByBatchId(id uint) ([]Recipe, error) {
 	// Query con alias per evitare conflitti tra colonne
 	query := `
 		SELECT 
 			IFNULL(id, 0), 
-			IFNULL(user_id, 0),
-			IFNULL(name, ''),
-			IFNULL(is_healthy, false), 
-			IFNULL(is_quick, false), 
-			IFNULL(is_maximize_ingredients, false), 
-			IFNULL(is_budget_friendly, false), 
-			IFNULL(cuisine_type, ''), 
-			IFNULL(created_at, ''), 
-			IFNULL(batch_id, 0), 
-			IFNULL(servings, 0), 
-			IFNULL(instructions, '')
+			IFNULL(name, '')
 		FROM recipes
 		WHERE batch_id = ?`
 
@@ -95,9 +89,7 @@ func (r *Recipe) GetRecipesByBatchId(id uint) ([]Recipe, error) {
 		var recipe Recipe
 
 		err := rows.Scan(
-			&recipe.Id, &recipe.UserId, &recipe.Name, &recipe.IsHealthy, &recipe.IsQuick,
-			&recipe.IsMaximizeIngredients, &recipe.IsBudgetFriendly, &recipe.CuisineType,
-			&recipe.CreatedAt, &recipe.BatchId, &recipe.Servings, &recipe.Instructions,
+			&recipe.Id, &recipe.Name,
 		)
 
 		if err != nil {
@@ -108,6 +100,52 @@ func (r *Recipe) GetRecipesByBatchId(id uint) ([]Recipe, error) {
 	}
 
 	return recipes, nil
+}
+
+/***************************************************************************************
+ * Io ritornero tuttal la informazione per una recetta. Se il usante sta rechiedendo una
+ * recetta per id, loro vogliono sapare come cuccinarla da solito.
+ ***************************************************************************************/
+func (r *Recipe) GetRecipeById(id uint) (*Recipe, error) {
+
+	// imposta la query
+	query := `
+		SELECT 
+			IFNULL(id, 0), 
+			IFNULL(user_id, 0),
+			IFNULL(name, ''),
+			IFNULL(is_healthy, false), 
+			IFNULL(is_quick, false), 
+			IFNULL(is_maximize_ingredients, false), 
+			IFNULL(is_budget_friendly, false), 
+			IFNULL(cuisine_type, ''), 
+			IFNULL(created_at, ''), 
+			IFNULL(batch_id, 0), 
+			IFNULL(servings, 0), 
+			IFNULL(instructions, '')
+		FROM recipes
+		WHERE batch_id = ?`
+
+	rows := ModelConfig.AppRepo.DB.Connection.QueryRow(query, id)
+
+	if rows.Err() != nil && rows.Err() != sql.ErrNoRows {
+		return nil, fmt.Errorf("error querying for recipe with id of %d %w", id, rows.Err())
+
+	}
+
+	var recipe Recipe
+
+	err := rows.Scan(
+		&recipe.Id, &recipe.UserId, &recipe.Name, &recipe.IsHealthy, &recipe.IsQuick,
+		&recipe.IsMaximizeIngredients, &recipe.IsBudgetFriendly, &recipe.CuisineType,
+		&recipe.CreatedAt, &recipe.BatchId, &recipe.Servings, &recipe.Instructions,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("could not scan row %w", err)
+	}
+
+	return &recipe, nil
 }
 
 /**

@@ -51,8 +51,7 @@ main {
   }
 }
 
-.primary-selector-button,
-p {
+.primary-selector-button p {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

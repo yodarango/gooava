@@ -13,70 +13,81 @@ import (
 func Routes() http.Handler {
 
 	mux := http.NewServeMux()
-	// serve the static files
+	// I servo tutti i file statici
 	fs := http.FileServer(http.Dir("web/static"))
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	/********************************
-	 * Public pages
-	 ********************************/
-	// GET: I get the homepage
+	/***************************************************************************************
+	 * GET: Fornisco la pagina di inizio
+	 ***************************************************************************************/
 	mux.HandleFunc(constants.ROUTE_ROOT, apiv1.ApiConfig.Home)
 
-	/********************************
-	 * Batches pages
-	 ********************************/
-	// GET: I get all the recipe batches with pagination
+	/***************************************************************************************
+	 * GET: Fornisco tutti i RecipeBatches con impaginazione
+	 ***************************************************************************************/
 	mux.HandleFunc(constants.ROUTE_RECIPEBATCHES, apiv1.ApiConfig.GetBathes)
 
-	// POST: I create a new recipe batch
+	/***************************************************************************************
+	 * POST: Creero una nuovo batch
+	 ***************************************************************************************/
 	mux.HandleFunc(constants.ROUTE_RECIPE_BATCHES_NEW, apiv1.ApiConfig.PostNewBatch)
 
-	// GET: I get the ingredients for a single batch
-	// OR I get a single batch by id
+	/***************************************************************************************
+	 * GET: Tratta tutte le richieste sparati a /recipe-batches/, quindi devve assicurse di
+	 * analizare il percorso della richiesta e chiamare il handler corretto. Per
+	 * queto utiliza vari funzione di utilità.
+	 *
+	 * TODO? bisogna di avere un framework piu strutturato per riaggungere questo compito
+	 ***************************************************************************************/
 	mux.HandleFunc(constants.ROUTE_RECIPEBATCHES+"/", func(w http.ResponseWriter, r *http.Request) {
-		// get the path and remove the router root path
 
-		// check if the user is trying to get ingredients for a batch
+		// queto significa che loro volgliono vedere colo i ingredenti dentro da un batch
 		_, isIngredientsPath := utils.MakePathFromRoute(r.URL.Path, constants.ROUTE_RECIPEBATCHES_ID_INGREDIENTS)
 		if isIngredientsPath {
-			apiv1.ApiConfig.GetSingleBatchIngredients(w, r)
-			return
+
+			// Prima di chiamare il batch, devo assicurarmi che il id e veramente valido
+			pathParts := strings.Split(r.URL.Path, "/")
+			batchId := pathParts[len(pathParts)-2]
+			i, err := strconv.ParseUint(batchId, 10, 32)
+
+			if err == nil {
+				id := uint(i)
+				apiv1.ApiConfig.GetSingleBatchIngredients(w, r, id)
+				return
+			}
 
 		}
 
-		// Check if the use is trying to get a batch by ID
+		// se non vogliono i ingredenti, questo significa che vogliono vedere il batch compieto
 		_, isBatchByIdPath := utils.MakePathFromRoute(r.URL.Path, constants.ROUTE_RECIPEBATCHES_ID)
 
 		if isBatchByIdPath {
 
-			// I need to get the last part of the path which MUST be the ID or I will fail
+			// Prima di chiamare il batch, devo assicurarmi che il id e veramente valido
 			pathParts := strings.Split(r.URL.Path, "/")
 			batchId := pathParts[len(pathParts)-1]
 			i, err := strconv.ParseUint(batchId, 10, 32)
 
-			if err != nil {
-				http.Error(w, "Invalid batch Id", http.StatusNotAcceptable)
+			if err == nil {
+				// Now convert 64 to 32
+				id := uint(i)
+
+				apiv1.ApiConfig.GetBatchById(w, r, id)
 				return
 			}
 
-			// Now convert 64 to 32
-			id := uint(i)
-
-			apiv1.ApiConfig.GetBatchById(w, r, id)
-			return
-
 		}
 
-		// If none of the above conditions where met, there must be an error
-		// TODO: Build an error template
+		// Se non abbina nessunre delle condizzine sopra, quindi responde con un errore perche
+		// sono probando a chiamare una pagina che non essiste.
+		// TODO: construie una template per 404
+
 		http.Error(w, "Invalid batch Id", http.StatusNotAcceptable)
 	})
 
-	/********************************
-	 * Recipes pages
-	 ********************************/
-	// I get all the recipes for the logged in user
+	/***************************************************************************************
+	 * GET: Fornisco tutte le recete per il usuario indicato
+	 ***************************************************************************************/
 	mux.HandleFunc(constants.ROUTE_RECIPES, apiv1.ApiConfig.GetAllRecipes)
 
 	return mux

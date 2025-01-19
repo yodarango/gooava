@@ -11,11 +11,13 @@ import (
  */
 
 type RecipeIngredient struct {
-	Id           uint   `json:"id"`
-	RecipeId     uint   `json:"recipe_id"`
-	IngredientId uint   `json:"ingredient_id"`
-	Quantity     string `json:"quantity"`
-	CreatedAt    string `json:"created_at"`
+	Id            uint   `json:"id"`
+	RecipeId      uint   `json:"recipe_id"`
+	BatchId       uint   `json:"batch_id"`
+	IngredientId  uint   `json:"ingredient_id"`
+	Quantity      int    `json:"quantity"`
+	MeasuringUnit string `json:"measuring_unit"` // necessarrio per fare la mate con qty e dopo aggiungere la untia di misura
+	CreatedAt     string `json:"created_at"`
 }
 
 /**
@@ -46,9 +48,84 @@ func (ri *RecipeIngredient) Validate() []map[string]interface{} {
 		errors = append(errors, map[string]interface{}{"Field": "IngredientId", "Message": "Recipe ingredients need to be associated with an ingredient"})
 	}
 
-	if strings.TrimSpace(ri.Quantity) == "" {
-		errors = append(errors, map[string]interface{}{"Field": "Quantity", "Message": "Each ingredient must specify a quantity"})
+	if !(ri.Quantity > 0) {
+		errors = append(errors, map[string]interface{}{"Field": "Quantity", "Message": "Quantity cannot be zero"})
+	}
+
+	if strings.TrimSpace(ri.MeasuringUnits) == "" {
+		errors = append(errors, map[string]interface{}{"Field": "MeasuringUnit", "Message": "A unit of meassurement is needed"})
 	}
 
 	return errors
+}
+
+/***************************************************************************************
+ * Dammi la id per qualsiasi BatchId e i o ti daro tutti i ingredenti necessari per
+ * cucinare tuttle le recette nel batch. Faro una somma per averiguare il totale
+ * necessario per ogni ingrediente.
+ ***************************************************************************************/
+func (ri *RecipeIngredient) GetIngredientsByBatchId(id uint) ([]DTORecipeIngredient, error) {
+	// imposta la query
+	query := `
+	SELECT 
+		IFNULL(ri.id, 0), 
+		IFNULL(ri.recipe_id, 0), 
+		IFNULL(ri.batch_id, 0), 
+		IFNULL(ri.quantity, 0), 
+		IFNULL(ri.measuring_unit, ""),
+		IFNULL(i.id, 0), 
+		IFNULL(ri.name, "")
+	FROM recipe_ingredients as ri
+	JOIN ingredients as i
+	ON ri.recipe_id ON i.id
+	WHERE ri.batch_id = ?
+	`
+
+	// chiama la db
+	rows, err := ModelConfig.AppRepo.DB.Connection.Query(query, id)
+
+	if err != nil {
+		return nil, fmt.Errorf("could not get ingredients for this batch: %w", err)
+	}
+
+	// imposta le righe nel struct
+	var dtoRecipeIngredients []DTORecipeIngredient
+
+	for rows.Next() {
+
+		var dtoRecipeIngredient DTORecipeIngredient
+
+		err := rows.Scan(dtoRecipeIngredient.Id,
+			dtoRecipeIngredient.RecipeId,
+			dtoRecipeIngredient.BatchId,
+			dtoRecipeIngredient.Quantity,
+			dtoRecipeIngredient.MeasuringUnit,
+			dtoRecipeIngredient.IngredientId,
+			dtoRecipeIngredient.Name,
+		)
+
+		if err != nil {
+			return nil, fmt.Errorf("error scaning row: %w", err)
+		}
+
+		dtoRecipeIngredients = append(dtoRecipeIngredients, dtoRecipeIngredient)
+	}
+
+	// raggruppa i ingredenti in grupi per IngredientId
+	var ingredientGroups map[uint][]DTORecipeIngredient
+
+	for _, ingredient := range dtoRecipeIngredients {
+		if !(len(ingredientGroups[ingredient.IngredientId]) > 0) {
+			ingredientGroups[ingredient.IngredientId] = make([]DTORecipeIngredient, 0)
+		}
+
+		ingredientGroups[ingredient.IngredientId] = append(ingredientGroups[ingredient.IngredientId], ingredient)
+
+	}
+	// aggiunge tutti i ingredenti in ciasqun groupo
+	for _, group := range ingredientGroups {
+		// LEFT OFF 2
+	}
+
+	// imposta un nome per ogni totale per groupo
 }

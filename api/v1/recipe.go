@@ -11,8 +11,8 @@ func (c *ApiConfiguration) GetRecipesByBatchId(w http.ResponseWriter, r *http.Re
 
 	// get the ingredients for this batch
 	templateRenderer := utils.TemplateRenderer{
-		Title: "batches_id_recipes",
-		Name:  "batches_id_recipes",
+		Title: "batches_id",
+		Name:  "batches_id",
 		Data:  "niente", // recipes.GetRecipesByBatchId(id),
 	}
 
@@ -24,8 +24,8 @@ func (c *ApiConfiguration) GetAllRecipes(w http.ResponseWriter, r *http.Request)
 	var recipes models.Recipe
 	// get the ingredients for this batch
 	templateRenderer := utils.TemplateRenderer{
-		Title: "batches_id_recipes",
-		Name:  "batches_id_recipes",
+		Title: "batches_id",
+		Name:  "batches_id",
 		Data:  recipes.GetAll(),
 	}
 
