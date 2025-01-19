@@ -53,7 +53,7 @@ func (c *ApiConfiguration) GetSingleBatchIngredients(w http.ResponseWriter, r *h
 }
 
 // I get a single batch by its ID
-
+// LEFT OFF. I think i finished this, move to getting a recipe by id now.
 func (c *ApiConfiguration) GetBatchById(w http.ResponseWriter, r *http.Request, id uint) {
 
 	var dtoRecipesByBatchId models.DTORecipesByBatchId
@@ -132,7 +132,6 @@ func (c *ApiConfiguration) GetBatchById(w http.ResponseWriter, r *http.Request, 
 	template.Data = dtoRecipesByBatchId
 	template.Error = nil
 
-	fmt.Println("------", template.Data)
 	err = template.Render(w)
 
 	if err != nil {

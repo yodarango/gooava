@@ -31,9 +31,10 @@
 <div>
   <a href="#" class="primary-selector-button mb-2">
     <div class="button-icon ordinal me-2">
-      <span>{{add $index 1}}. {{$recipe.Name}}</span>
+      <span>{{add $index 1}}</span>
     </div>
-    <div>
+    <p class="fw-800 w-100">{{$recipe.Name}}</p>
+    <div class="flex-shrink-0">
       <ion-icon name="chevron-forward"></ion-icon>
     </div>
   </a>

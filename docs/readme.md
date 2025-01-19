@@ -7,6 +7,12 @@
 - **POST:** should receive and respond with `json` data only. It must use the `models.HttpResponse` struct. May leverage the `models.ResponseError` struct.
 - **GET:** should respond with `templates` only. It must use the `utils.TemplateRenderer` struct. May leverage the `models.ResponseError` struct.
 
+## Static Content
+
+### CSS
+
+The files `tokens.css` and `app.css` should encompass all the global styles. Everything particular to each view should be located in the files to avoid multiple trips https calls.
+
 ## Stack
 
 **Database Design:** [Draw SQL](https://drawsql.app/)

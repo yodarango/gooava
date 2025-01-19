@@ -52,6 +52,13 @@ main {
 }
 
 .primary-selector-button,
+p {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.primary-selector-button,
 .input-selector-button .input-selector-button__top-content {
   ion-icon {
     margin-right: var(--dr-spacing-4);
