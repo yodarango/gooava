@@ -42,7 +42,8 @@ func Routes() http.Handler {
 	mux.HandleFunc(constants.ROUTE_RECIPEBATCHES+"/", func(w http.ResponseWriter, r *http.Request) {
 
 		// queto significa che loro volgliono vedere colo i ingredenti dentro da un batch
-		_, isIngredientsPath := utils.MakePathFromRoute(r.URL.Path, constants.ROUTE_RECIPEBATCHES_ID_INGREDIENTS)
+		_, isIngredientsPath := utils.MatchClientPathToConstant(r.URL.Path, constants.ROUTE_RECIPEBATCHES_ID_INGREDIENTS)
+
 		if isIngredientsPath {
 
 			// Prima di chiamare il batch, devo assicurarmi che il id e veramente valido
@@ -59,7 +60,7 @@ func Routes() http.Handler {
 		}
 
 		// se non vogliono i ingredenti, questo significa che vogliono vedere il batch compieto
-		_, isBatchByIdPath := utils.MakePathFromRoute(r.URL.Path, constants.ROUTE_RECIPEBATCHES_ID)
+		_, isBatchByIdPath := utils.MatchClientPathToConstant(r.URL.Path, constants.ROUTE_RECIPEBATCHES_ID)
 
 		if isBatchByIdPath {
 
@@ -88,7 +89,7 @@ func Routes() http.Handler {
 	/***************************************************************************************
 	 * GET: Fornisco tutte le recete per il usuario indicato
 	 ***************************************************************************************/
-	mux.HandleFunc(constants.ROUTE_RECIPES, apiv1.ApiConfig.GetAllRecipes)
+	// mux.HandleFunc(constants.ROUTE_RECIPES, apiv1.ApiConfig.GetAllRecipes)
 
 	return mux
 

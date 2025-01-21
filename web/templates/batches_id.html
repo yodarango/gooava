@@ -24,7 +24,9 @@
 <!-- Check if Recipes has items -->
 {{if gt (len .Data.Recipes) 0}}
 <p class="mb-4">Below are your newly created recipes:</p>
-<a class="secondary-button mb-4" href="#">See all ingredients needed</a>
+<a class="secondary-button mb-4" href="/recipe-batches/{{.Data.Id}}/ingredients"
+  >See all ingredients needed</a
+>
 
 <!-- Iterate through recipes -->
 {{range $index, $recipe := .Data.Recipes}}

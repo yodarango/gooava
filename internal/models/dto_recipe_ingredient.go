@@ -3,7 +3,7 @@ package models
 import "time"
 
 /**
-* LEFT OFF.Crea una definizione per questo e continua l achiamata di ingredienti per batch
+* LEFT OFF.Crea una descrizzione per questo struttura e continua l achiamata di ingredienti per batch
  */
 type DTORecipeIngredient struct {
 	RecipeIngredient

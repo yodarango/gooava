@@ -22,9 +22,16 @@ func MakeRouteFromPath(path string, replaceWith string) string {
 	return strings.Join(fixedPath, "/")
 }
 
-// Receives a dynamic route and maps it to a fixed path (e.g. recipes/123/ingredients -> recipes/:param/ingredients)
-// it returns the newly formed path and whether the two are the same.
-func MakePathFromRoute(route string, fixedPath string) (string, bool) {
+/**********************************************************************************
+* Recive il percorso del cliente (e.g. recipes/123/ingredients) e lo converte a un
+* percorso constant (recipes/:param/ingredients). Questo e fatto per verificare
+* se il cliente e richiedendo un percorso essistente nel programma oppure per
+* averiguare quale percorso il cliente sta richiedendo.
+*
+* Restituisce il percorso constante (recipes/:param/ingredients) e un booleano
+* dichiarando se le due stringhe sono le stesse.
+***********************************************************************************/
+func MatchClientPathToConstant(route string, fixedPath string) (string, bool) {
 	routeParts := strings.Split(route, "/")
 	fixedPathParts := strings.Split(fixedPath, "/")
 

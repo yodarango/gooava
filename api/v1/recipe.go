@@ -7,7 +7,7 @@ import (
 	"github.com/yodarango/gooava/internal/utils"
 )
 
-func (c *ApiConfiguration) GetRecipesByBatchId(w http.ResponseWriter, r *http.Request, id uint) {
+func GetRecipesByBatchId(w http.ResponseWriter, r *http.Request, id uint) {
 
 	// get the ingredients for this batch
 	templateRenderer := utils.TemplateRenderer{
@@ -19,7 +19,7 @@ func (c *ApiConfiguration) GetRecipesByBatchId(w http.ResponseWriter, r *http.Re
 	templateRenderer.Render(w)
 }
 
-func (c *ApiConfiguration) GetAllRecipes(w http.ResponseWriter, r *http.Request) {
+func GetAllRecipes(w http.ResponseWriter, r *http.Request) {
 
 	var recipes models.Recipe
 	// get the ingredients for this batch
@@ -30,4 +30,12 @@ func (c *ApiConfiguration) GetAllRecipes(w http.ResponseWriter, r *http.Request)
 	}
 
 	templateRenderer.Render(w)
+}
+
+/***************************************************************************************
+* Ottiene tutta la informazione relazionata con una recetta specifica per la Id. Non
+* fornice nessuna altra informazione che non sia relazionata con la recetta.
+***************************************************************************************/
+func GetREcipeById(w http.ResponseWriter, r *http.Request) {
+
 }

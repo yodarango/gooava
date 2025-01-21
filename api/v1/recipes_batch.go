@@ -30,8 +30,7 @@ func (c *ApiConfiguration) GetBathes(w http.ResponseWriter, r *http.Request) {
 }
 
 /***************************************************************************************
-* Ottiene tutta la informazione relazionata con una recetta specifica per la Id. Non
-* fornice nessuna altra informazione che non e relazionata con la recetta.
+* Ottiene il totale di ingredienti necessarie per cucinare tuttle recette nel batchId
 ***************************************************************************************/
 func (c *ApiConfiguration) GetSingleBatchIngredients(w http.ResponseWriter, r *http.Request, id uint) {
 	var template utils.TemplateRenderer
@@ -49,7 +48,7 @@ func (c *ApiConfiguration) GetSingleBatchIngredients(w http.ResponseWriter, r *h
 	data, err := recipeIngredients.GetIngredientsByBatchId(id)
 
 	if err != nil {
-
+		log.Println(err)
 		responseError.Title = "Could not find this Id"
 		responseError.Code = "Internal Erro"
 		responseError.Error = "I did not find any information pertaining to that Id"

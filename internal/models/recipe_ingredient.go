@@ -52,7 +52,7 @@ func (ri *RecipeIngredient) Validate() []map[string]interface{} {
 		errors = append(errors, map[string]interface{}{"Field": "Quantity", "Message": "Quantity cannot be zero"})
 	}
 
-	if strings.TrimSpace(ri.MeasuringUnits) == "" {
+	if strings.TrimSpace(ri.MeasuringUnit) == "" {
 		errors = append(errors, map[string]interface{}{"Field": "MeasuringUnit", "Message": "A unit of meassurement is needed"})
 	}
 
@@ -67,18 +67,18 @@ func (ri *RecipeIngredient) Validate() []map[string]interface{} {
 func (ri *RecipeIngredient) GetIngredientsByBatchId(id uint) ([]DTORecipeIngredient, error) {
 	// imposta la query
 	query := `
-	SELECT 
-		IFNULL(ri.id, 0), 
-		IFNULL(ri.recipe_id, 0), 
-		IFNULL(ri.batch_id, 0), 
-		IFNULL(ri.quantity, 0), 
-		IFNULL(ri.measuring_unit, ""),
-		IFNULL(i.id, 0), 
-		IFNULL(ri.name, "")
-	FROM recipe_ingredients as ri
-	JOIN ingredients as i
-	ON ri.recipe_id ON i.id
-	WHERE ri.batch_id = ?
+		SELECT 
+			IFNULL(ri.id, 0), 
+			IFNULL(ri.recipe_id, 0), 
+			IFNULL(ri.batch_id, 0), 
+			IFNULL(ri.quantity, 0), 
+			IFNULL(ri.measuring_unit, ""),
+			IFNULL(i.id, 0), 
+			IFNULL(i.name, "")
+		FROM recipe_ingredients as ri
+		JOIN ingredients as i
+		ON ri.ingredient_id = i.id
+		WHERE ri.id = ?;
 	`
 
 	// chiama la db
@@ -95,13 +95,14 @@ func (ri *RecipeIngredient) GetIngredientsByBatchId(id uint) ([]DTORecipeIngredi
 
 		var dtoRecipeIngredient DTORecipeIngredient
 
-		err := rows.Scan(dtoRecipeIngredient.Id,
-			dtoRecipeIngredient.RecipeId,
-			dtoRecipeIngredient.BatchId,
-			dtoRecipeIngredient.Quantity,
-			dtoRecipeIngredient.MeasuringUnit,
-			dtoRecipeIngredient.IngredientId,
-			dtoRecipeIngredient.Name,
+		err := rows.Scan(
+			&dtoRecipeIngredient.Id,
+			&dtoRecipeIngredient.RecipeId,
+			&dtoRecipeIngredient.BatchId,
+			&dtoRecipeIngredient.Quantity,
+			&dtoRecipeIngredient.MeasuringUnit,
+			&dtoRecipeIngredient.IngredientId,
+			&dtoRecipeIngredient.Name,
 		)
 
 		if err != nil {
@@ -111,21 +112,27 @@ func (ri *RecipeIngredient) GetIngredientsByBatchId(id uint) ([]DTORecipeIngredi
 		dtoRecipeIngredients = append(dtoRecipeIngredients, dtoRecipeIngredient)
 	}
 
-	// raggruppa i ingredenti in grupi per IngredientId
-	var ingredientGroups map[uint][]DTORecipeIngredient
+	// Aggruopa tutti i ingredienti necessarie per ingrediente unico (IngredientId)
+	// affinche possiamo summare la quantita totale di ciascuno
+	ingredientGroups := make(map[uint][]DTORecipeIngredient)
 
 	for _, ingredient := range dtoRecipeIngredients {
-		if !(len(ingredientGroups[ingredient.IngredientId]) > 0) {
+		if _, exists := ingredientGroups[ingredient.IngredientId]; !exists {
 			ingredientGroups[ingredient.IngredientId] = make([]DTORecipeIngredient, 0)
 		}
 
 		ingredientGroups[ingredient.IngredientId] = append(ingredientGroups[ingredient.IngredientId], ingredient)
 
 	}
-	// aggiunge tutti i ingredenti in ciasqun groupo
-	for _, group := range ingredientGroups {
-		// LEFT OFF 2
-	}
+
+	// Addesso che hai ingredienti unichi, troca la quantita di ciascuno
+	// LEFT OFF
+	fmt.Println("-----", ingredientGroups)
+	return nil, nil
+
+	fmt.Print(ingredientGroups)
+
+	return nil, nil
 
 	// imposta un nome per ogni totale per groupo
 }
