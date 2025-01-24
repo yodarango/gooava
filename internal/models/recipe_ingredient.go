@@ -68,21 +68,27 @@ func (ri *RecipeIngredient) GetIngredientsByBatchId(id uint) ([]DTORecipeIngredi
 	// imposta la query
 	query := `
 		SELECT 
-			IFNULL(ri.id, 0), 
-			IFNULL(ri.recipe_id, 0), 
-			IFNULL(ri.batch_id, 0), 
-			IFNULL(ri.quantity, 0), 
-			IFNULL(ri.measuring_unit, ""),
-			IFNULL(i.id, 0), 
-			IFNULL(i.name, "")
-		FROM recipe_ingredients as ri
-		JOIN ingredients as i
-		ON ri.ingredient_id = i.id
-		WHERE ri.id = ?;
+			IFNULL(ir.id, 0) AS id, 
+			IFNULL(ir.recipe_id, 0) AS recipe_id, 
+			IFNULL(ir.batch_id, 0) AS batch_id, 
+			IFNULL(ir.quantity, 0) AS quantity, 
+			IFNULL(ir.measuring_unit, '') AS measuring_unit, 
+			IFNULL(i.id, 0) AS ingredient_id, 
+			IFNULL(i.name, '') AS ingredient_name, 
+			aggregated.total_quantity
+		FROM recipe_ingredients ir
+		JOIN ingredients i ON ir.ingredient_id = i.id
+		JOIN (
+			SELECT ingredient_id, SUM(IFNULL(quantity, 0)) AS total_quantity
+			FROM recipe_ingredients
+			WHERE batch_id = ?
+			GROUP BY ingredient_id
+			) AS aggregated ON ir.ingredient_id = aggregated.ingredient_id
+		WHERE ir.batch_id = ?;
 	`
 
 	// chiama la db
-	rows, err := ModelConfig.AppRepo.DB.Connection.Query(query, id)
+	rows, err := ModelConfig.AppRepo.DB.Connection.Query(query, id, id)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not get ingredients for this batch: %w", err)
@@ -103,6 +109,7 @@ func (ri *RecipeIngredient) GetIngredientsByBatchId(id uint) ([]DTORecipeIngredi
 			&dtoRecipeIngredient.MeasuringUnit,
 			&dtoRecipeIngredient.IngredientId,
 			&dtoRecipeIngredient.Name,
+			&dtoRecipeIngredient.TotalQuantity,
 		)
 
 		if err != nil {
@@ -112,27 +119,5 @@ func (ri *RecipeIngredient) GetIngredientsByBatchId(id uint) ([]DTORecipeIngredi
 		dtoRecipeIngredients = append(dtoRecipeIngredients, dtoRecipeIngredient)
 	}
 
-	// Aggruopa tutti i ingredienti necessarie per ingrediente unico (IngredientId)
-	// affinche possiamo summare la quantita totale di ciascuno
-	ingredientGroups := make(map[uint][]DTORecipeIngredient)
-
-	for _, ingredient := range dtoRecipeIngredients {
-		if _, exists := ingredientGroups[ingredient.IngredientId]; !exists {
-			ingredientGroups[ingredient.IngredientId] = make([]DTORecipeIngredient, 0)
-		}
-
-		ingredientGroups[ingredient.IngredientId] = append(ingredientGroups[ingredient.IngredientId], ingredient)
-
-	}
-
-	// Addesso che hai ingredienti unichi, troca la quantita di ciascuno
-	// LEFT OFF
-	fmt.Println("-----", ingredientGroups)
-	return nil, nil
-
-	fmt.Print(ingredientGroups)
-
-	return nil, nil
-
-	// imposta un nome per ogni totale per groupo
+	return dtoRecipeIngredients, nil
 }

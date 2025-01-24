@@ -59,6 +59,7 @@ func (c *ApiConfiguration) GetSingleBatchIngredients(w http.ResponseWriter, r *h
 		return
 	}
 
+	// LEFT OFF. Sembra che tutto sia renderizzando bene, ma devo assicurarmi. I stili non stano bene
 	template.Data = data
 	template.Title = "Total ingredients needed for this batch"
 	template.Error = nil

@@ -1,4 +1,4 @@
-{{ define "batches_ingredients"}} {{ template "base" .}} {{end}} {{define
+{{ define "batches_id_ingredients"}} {{ template "base" .}} {{end}} {{define
 "styles"}}
 <style>
   .table-container {
@@ -66,7 +66,7 @@
       {{range $index, $value := .Data}}
       <tr>
         <td>{{.Name}}</td>
-        <td class="text-center">{{.Qty}}</td>
+        <td class="text-center">{{.TotalQuantity}}</td>
         <td class="d-flex align-items-center justify-content-center">
           <button class="p-0 m-0" onclick="toggleIcon(this, {{$index}})">
             <ion-icon class="fs-2"></ion-icon>
