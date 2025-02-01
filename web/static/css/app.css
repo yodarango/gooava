@@ -213,6 +213,12 @@ main {
   }
 }
 
+/* footer */
+footer {
+  height: 5rem;
+  width: 100%;
+}
+
 /* stateful images that describe the state */
 .state-avatar {
   object-position: center;

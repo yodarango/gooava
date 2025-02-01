@@ -36,6 +36,7 @@ func (c *ApiConfiguration) GetSingleBatchIngredients(w http.ResponseWriter, r *h
 	var template utils.TemplateRenderer
 	var recipeIngredients models.RecipeIngredient
 	var responseError models.ResponseError
+	var ingredientUnits models.IngredientUnit
 
 	// imposta le propieta dil template per default
 	var templateUIMeta utils.TemplateUIMEta
@@ -59,8 +60,26 @@ func (c *ApiConfiguration) GetSingleBatchIngredients(w http.ResponseWriter, r *h
 		return
 	}
 
-	// LEFT OFF. Sembra che tutto sia renderizzando bene, ma devo assicurarmi. I stili non stano bene
-	template.Data = data
+	units, err := ingredientUnits.GetAll()
+
+	fmt.Println(data)
+
+	if err != nil {
+		log.Println(err)
+		responseError.Title = "Failed to Get Recipe Units"
+		responseError.Code = "Internal Erro"
+		responseError.Error = "Sorry, I am having issues getting the recipe units"
+		template.Error = &responseError
+		template.Data = map[string]interface{}{}
+
+		template.Render(w)
+		return
+	}
+
+	template.Data = map[string]interface{}{
+		"IngredientUnits": units,
+		"Recipes":         data,
+	}
 	template.Title = "Total ingredients needed for this batch"
 	template.Error = nil
 

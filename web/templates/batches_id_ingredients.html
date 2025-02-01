@@ -4,28 +4,33 @@
   .table-container {
     box-shadow: 0 0.4rem 0.6rem rgba(var(--dr-beta-rgb), 0.1);
     background-color: var(--dr-zeta);
-    padding: var(--dr-spacing-5);
+    padding: var(--dr-spacing-2);
     border-radius: 2rem;
     margin: 0 auto;
   }
 
   .ingredients-table {
-    border-collapse: separate;
-    border-spacing: 0 8px;
+    border-collapse: collapse;
     width: 100%;
   }
 
   .ingredients-table th {
     border-bottom: 0.1rem solid rgba(var(--dr-eta-rgb), 0.2);
-    padding: 0 var(--dr-spacing-4) var(--dr-spacing-4);
-    color: var(--dr-beta);
+    padding: var(--dr-spacing-3);
     font-weight: bold;
   }
 
+  .ingredients-table th:first-of-type {
+    border-top-left-radius: 2rem;
+  }
+
+  .ingredients-table th:last-of-type {
+    border-top-right-radius: 2rem;
+  }
   .ingredients-table td {
-    border-bottom: 0.1rem solid rgba(var(--dr-eta-rgb), 0.1);
+    padding: var(--dr-spacing-3);
     color: var(--dr-beta);
-    padding: 10px 15px;
+    border: none;
   }
 
   .ingredients-table td button {
@@ -37,6 +42,10 @@
     padding-bottom: 0;
   }
 
+  table tr:nth-child(even) {
+    background: var(--dr-alpha);
+  }
+
   .checkmark.checked::after {
     content: "\2714";
     font-size: 14px;
@@ -46,30 +55,107 @@
     transform: translate(-50%, -50%);
     color: white;
   }
+
+  .interactiono-list {
+    width: 10rem;
+    display: block;
+  }
+
+  .ingredient-qty-input,
+  .ingredient-qty-select {
+    background-color: rgba(var(--dr-delta-rgb), 0.2);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 10rem;
+  }
 </style>
 {{end}} {{ define "body"}}
-<p class="mb-2">
-  Below are all the ingredients that you will need to create all the recipes
-  within this batch
+
+<div class="d-flex align-items-center justify-content-center gap-3 mb-3">
+  <img
+    src="/static/images/avatars/interaction_list.webp"
+    class="interactiono-list"
+    alt="image of a girl with a shopping list"
+  />
+  <p>
+    Below are all the ingredients that you will need to create all the recipes
+    within this batch.
+  </p>
+</div>
+<p class="p-2 rounded-2 color-alpha bg-lambda mb-4">
+  Try using this as you shopig list and click the button at the end to add the
+  selected ingredients to your pantry
 </p>
-<button class="primary-button mb-4">Try automatic shopping!</button>
+<!-- Might have to wait on this -->
+<!-- <button class="primary-button mb-4">Try automatic shopping!</button> -->
 <div class="table-container">
   <table class="ingredients-table">
     <thead>
       <tr>
-        <th>Item</th>
-        <th class="text-center">Qty</th>
-        <th class="text-center">Have</th>
+        <th class="text-center bg-delta">Item</th>
+        <th class="text-center bg-delta">Qty</th>
+        <th class="text-center bg-delta">Have</th>
       </tr>
     </thead>
     <tbody>
-      {{range $index, $value := .Data}}
+      {{range $index, $value := .Data.Recipes}}
       <tr>
-        <td>{{.Name}}</td>
-        <td class="text-center">{{.TotalQuantity}}</td>
+        <td><p>{{.Name}}</p></td>
+        <td class="text-center">
+          <!-- ingredinet specs -->
+          <div
+            class="ingredient-sepcs-container-{{$index}} d-flex align-items-center justify-content-start gap-3"
+          >
+            <button
+              class="p-0 m-0 d-flex align-items-center justify-content-center"
+              onclick="toggleEditSpecs(this, {{$index}})"
+            >
+              <ion-icon class="fs-1" name="create-outline"></ion-icon>
+            </button>
+            <p
+              id="current-total-ingredient-{{$index}}"
+              class="current-total-ingredient"
+            >
+              {{.TotalQuantity}} {{.MeasuringUnit}}
+            </p>
+          </div>
+          <!-- cnange the ingredient specs -->
+          <div
+            class="change-ingredient-sepcs-container-{{$index}} d-none align-items-center justify-content-start gap-2"
+          >
+            <button
+              class="p-0 m-0 d-flex align-items-center justify-content-center"
+              onclick="toggleEditSpecs(this, {{$index}})"
+            >
+              <ion-icon class="fs-1" name="close-outline"></ion-icon>
+            </button>
+            <input
+              id="ingredient-qty-input-{{$index}}"
+              class="ingredient-qty-input p-2 rounded-2"
+              name="ingredient-qty-{{$index}}"
+              placeholder="{{.TotalQuantity}}"
+              oninput="updateIngredientSpecs(this, {{$index}})"
+            />
+            <select
+              id="ingredient-qty-select-{{$index}}"
+              class="ingredient-qty-select p-2 border-0 rounded-2"
+              onchange="updateIngredientSpecs(this, {{$index}})"
+            >
+              {{range $index, $option := $.Data.IngredientUnits}}
+              <option>{{$option.Name}}</option>
+              {{end}}
+            </select>
+          </div>
+        </td>
         <td class="d-flex align-items-center justify-content-center">
-          <button class="p-0 m-0" onclick="toggleIcon(this, {{$index}})">
-            <ion-icon class="fs-2"></ion-icon>
+          <button
+            id="selected-ingredient-{{$index}}"
+            class="selected-ingredient p-0 m-0 d-flex align-items-center justify-content-center"
+            onclick="toggleIngredientAddIcon(this, {{$index}})"
+            data-ingredient-id="{{.TotalQuantity}}-{{.MeasuringUnit}}-{{$value.Id}}"
+          >
+            <ion-icon class="fs-1" name="ellipse-outline"></ion-icon>
           </button>
         </td>
       </tr>
@@ -77,41 +163,115 @@
     </tbody>
   </table>
 </div>
+<button class="primary-button mt-4">Add items to pantry</button>
 {{end}} {{define "js"}}
 
 <script>
-  // I toggle the ingredient icon and store the state in localStorage
-  function toggleIcon(button, index) {
+  function getLocalStorage() {
+    const ingredientSpecs = localStorage.getItem("ingredientSpecs");
+    try {
+      return ingredientSpecs ? JSON.parse(ingredientSpecs) : {};
+    } catch (error) {
+      console.error("Error parsing localStorage:", error);
+      return {};
+    }
+  }
+
+  /* *********************************************************************************************************************
+   * Sometimes the user might not find all the ingredient or even the ingredients in the units that the recipe calls for.
+   * In such instances, the user must have access to edit these values in order to match their shopping list.
+   * Yet, users must not be allowed to enter custom units of measurements, as this needs to be a controlled
+   * variable in the DB if there is to exist any form of organization.
+   ****************************************************************/
+  function updateIngredientSpecs(_, index) {
+    let data = getLocalStorage();
+
+    const currentIngredientSpecs = document.querySelector(
+      `#current-total-ingredient-${index}`
+    );
+    const totalIngredientQtyInput = document.querySelector(
+      `#ingredient-qty-input-${index}`
+    );
+    const ingredientUnit = document.querySelector(
+      `#ingredient-qty-select-${index}`
+    );
+
+    if (currentIngredientSpecs && totalIngredientQtyInput && ingredientUnit) {
+      const quantity =
+        totalIngredientQtyInput.value || totalIngredientQtyInput.placeholder;
+      const unit = ingredientUnit.value;
+      currentIngredientSpecs.textContent = `${quantity} ${unit}`;
+
+      if (!data[index]) {
+        data[index] = {};
+      }
+
+      data[index]["quantity"] = quantity;
+      data[index]["unit"] = unit;
+
+      localStorage.setItem("ingredientSpecs", JSON.stringify(data));
+    }
+  }
+
+  function getIngredientSpecsFromLocalStorage() {
+    const savedData = getLocalStorage();
+
+    document.querySelectorAll("tbody tr").forEach((row, index) => {
+      const input = row.querySelector(".ingredient-qty-input");
+      const select = row.querySelector(".ingredient-qty-select");
+      const paragraph = row.querySelector(".current-total-ingredient");
+
+      if (!savedData[index]) return;
+
+      if (input) input.value = savedData[index].quantity || "";
+      if (select) select.value = savedData[index].unit || "";
+
+      if (paragraph) {
+        paragraph.textContent = `${savedData[index].quantity || ""} ${
+          savedData[index].unit || ""
+        }`;
+      }
+    });
+  }
+
+  /* *********************************************************************************************************************
+   * Since the goal of this table is for it to act as a shopping list, users must be allow to mark off
+   * the ingredients as the place them in their cart. This must be stored in local storage for
+   * persistence.
+   ****************************************************************/
+  function toggleIngredientAddIcon(button, index) {
+    let data = getLocalStorage();
+
+    if (!data[index]) {
+      data[index] = {};
+    }
+
     const icon = button.querySelector("ion-icon");
-    let state = localStorage.getItem("ingredientState")
-      ? JSON.parse(localStorage.getItem("ingredientState"))
-      : {};
 
     if (icon.getAttribute("name") === "ellipse-outline") {
       icon.setAttribute("name", "checkmark-circle");
       icon.classList.remove("color-eta");
       icon.classList.add("color-delta");
-      state[index] = true; // Mark as checked
+      data[index]["isInCart"] = true;
     } else {
       icon.setAttribute("name", "ellipse-outline");
       icon.classList.remove("color-delta");
       icon.classList.add("color-eta");
-      state[index] = false; // Mark as unchecked
+      data[index]["isInCart"] = false;
     }
 
-    // Save the updated state to localStorage
-    localStorage.setItem("ingredientState", JSON.stringify(state));
+    localStorage.setItem("ingredientSpecs", JSON.stringify(data));
   }
 
-  // I initialize the icon states from localStorage on first load
-  function initializeIconStates() {
-    let state = localStorage.getItem("ingredientState")
-      ? JSON.parse(localStorage.getItem("ingredientState"))
-      : {};
+  function getingredientAddedIconStateFromLocalStorage() {
+    const savedData = getLocalStorage();
 
     document.querySelectorAll("tbody tr").forEach((row, index) => {
-      const icon = row.querySelector("ion-icon");
-      if (state[index]) {
+      const icon = row.querySelector(`#selected-ingredient-${index} ion-icon`);
+
+      if (!savedData[index]) return;
+
+      if (savedData[index]["isInCart"]) {
         icon.setAttribute("name", "checkmark-circle");
         icon.classList.add("color-delta");
       } else {
@@ -120,6 +280,88 @@
       }
     });
   }
-  initializeIconStates();
+
+  function toggleEditSpecs(_, index) {
+    const changeSpecsContainer = document.querySelector(
+      `.change-ingredient-sepcs-container-${index}`
+    );
+    const specsContainer = document.querySelector(
+      `.ingredient-sepcs-container-${index}`
+    );
+
+    if (changeSpecsContainer.classList.contains("d-flex")) {
+      changeSpecsContainer.classList.remove("d-flex");
+      changeSpecsContainer.classList.add("d-none");
+      specsContainer.classList.remove("d-none");
+      specsContainer.classList.add("d-flex");
+    } else {
+      changeSpecsContainer.classList.add("d-flex");
+      changeSpecsContainer.classList.remove("d-none");
+      specsContainer.classList.add("d-none");
+      specsContainer.classList.remove("d-flex");
+    }
+  }
+
+  /* *********************************************************************************************************************
+   * The user is done shopping their ingredients, save them to the pantry and if they are saved
+   * successfully, remove this data from the local storage and get the information from the
+   * property in the model instead.
+   *********************************/
+  async function sendSelectedIngredients() {
+    const data = getLocalStorage();
+    let selectedIngredients = [];
+
+    document.querySelectorAll("tbody tr").forEach((row, index) => {
+      if (!data[index]) return;
+
+      let name = row.querySelector("td:first-child").textContent.trim();
+      let quantityCell = row
+        .querySelector("td:nth-child(2)")
+        .textContent.trim();
+      let [quantity, unit] = quantityCell.split(" ");
+
+      selectedIngredients.push({
+        name: name,
+        quantity: parseFloat(quantity) || 0,
+        measuringUnit: unit || "",
+      });
+    });
+
+    if (selectedIngredients.length === 0) {
+      alert("No ingredients selected to add to the pantry.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/pantry/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ingredients: selectedIngredients }),
+      });
+
+      if (response.ok) {
+        alert("Ingredients successfully added to the pantry!");
+        localStorage.removeItem("ingredientSpecs");
+        getingredientAddedIconStateFromLocalStorage();
+      } else {
+        throw new Error("Failed to add ingredients. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert(error.message);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    getingredientAddedIconStateFromLocalStorage();
+    getIngredientSpecsFromLocalStorage();
+  });
+
+  document
+    .querySelector(".primary-button.mt-4")
+    .addEventListener("click", sendSelectedIngredients);
 </script>
+
 {{end}}

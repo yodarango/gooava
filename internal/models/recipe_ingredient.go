@@ -68,27 +68,19 @@ func (ri *RecipeIngredient) GetIngredientsByBatchId(id uint) ([]DTORecipeIngredi
 	// imposta la query
 	query := `
 		SELECT 
-			IFNULL(ir.id, 0) AS id, 
-			IFNULL(ir.recipe_id, 0) AS recipe_id, 
-			IFNULL(ir.batch_id, 0) AS batch_id, 
-			IFNULL(ir.quantity, 0) AS quantity, 
-			IFNULL(ir.measuring_unit, '') AS measuring_unit, 
-			IFNULL(i.id, 0) AS ingredient_id, 
-			IFNULL(i.name, '') AS ingredient_name, 
-			aggregated.total_quantity
+			IFNULL(i.id, 0) AS id, 
+			IFNULL(i.name, '') AS name, 
+			IFNULL(ir.measuring_unit, '') as measuring_unit,
+			SUM(IFNULL(ir.quantity, 0)) AS total_quantity
 		FROM recipe_ingredients ir
 		JOIN ingredients i ON ir.ingredient_id = i.id
-		JOIN (
-			SELECT ingredient_id, SUM(IFNULL(quantity, 0)) AS total_quantity
-			FROM recipe_ingredients
-			WHERE batch_id = ?
-			GROUP BY ingredient_id
-			) AS aggregated ON ir.ingredient_id = aggregated.ingredient_id
-		WHERE ir.batch_id = ?;
+		WHERE ir.batch_id = ?
+		GROUP BY i.id, i.name, ir.measuring_unit
+		ORDER BY total_quantity DESC;
 	`
 
 	// chiama la db
-	rows, err := ModelConfig.AppRepo.DB.Connection.Query(query, id, id)
+	rows, err := ModelConfig.AppRepo.DB.Connection.Query(query, id)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not get ingredients for this batch: %w", err)
@@ -103,14 +95,9 @@ func (ri *RecipeIngredient) GetIngredientsByBatchId(id uint) ([]DTORecipeIngredi
 
 		err := rows.Scan(
 			&dtoRecipeIngredient.Id,
-			&dtoRecipeIngredient.RecipeId,
-			&dtoRecipeIngredient.BatchId,
-			&dtoRecipeIngredient.Quantity,
-			&dtoRecipeIngredient.MeasuringUnit,
-			&dtoRecipeIngredient.IngredientId,
 			&dtoRecipeIngredient.Name,
-			&dtoRecipeIngredient.TotalQuantity,
-		)
+			&dtoRecipeIngredient.MeasuringUnit,
+			&dtoRecipeIngredient.TotalQuantity)
 
 		if err != nil {
 			return nil, fmt.Errorf("error scaning row: %w", err)
