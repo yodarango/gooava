@@ -315,32 +315,36 @@
    * property in the model instead.
    *********************************/
   async function sendSelectedIngredients() {
-    const data = getLocalStorage();
     let selectedIngredients = [];
 
+    // Get the data from the table, not from local storage. Local storage is only for
+    // persistency.
     document.querySelectorAll("tbody tr").forEach((row, index) => {
-      if (!data[index]) return;
-
-      let name = row.querySelector("td:first-child").textContent.trim();
-      let quantityCell = row
-        .querySelector("td:nth-child(2)")
-        .textContent.trim();
-      let [quantity, unit] = quantityCell.split(" ");
+      const name = row.querySelector("td p").textContent;
+      const quantity = row.querySelector(
+        ".current-total-ingredient"
+      ).textContent;
+      const unit = row.querySelector(".ingredient-qty-select").value;
+      const isChecked =
+        row
+          .querySelector(".selected-ingredient ion-icon")
+          .getAttribute("name") === "checkmark-circle";
 
       selectedIngredients.push({
         name: name,
         quantity: parseFloat(quantity) || 0,
         measuringUnit: unit || "",
+        inPantry: isChecked,
       });
     });
 
     if (selectedIngredients.length === 0) {
-      // createToast({
-      //   message: "No ingredients selected.",
-      //   duration: 5,
-      //   autoClose: true,
-      //   variant: "danger",
-      // });
+      createToast({
+        message: "No ingredients selected.",
+        duration: 5,
+        autoClose: true,
+        variant: "danger",
+      });
       return;
     }
 
@@ -350,24 +354,24 @@
       });
 
       if (post.success) {
-        // createToast({
-        //   message: "Ingredients added to pantry successfully.",
-        //   duration: 5,
-        //   autoClose: true,
-        //   variant: "success",
-        // });
+        createToast({
+          message: "Ingredients added to pantry successfully.",
+          duration: 5,
+          autoClose: true,
+          variant: "success",
+        });
         localStorage.removeItem("ingredientSpecs");
       } else {
         throw new Error("Failed to add ingredients. Please try again.");
       }
     } catch (error) {
       console.error("Error:", error);
-      // createToast({
-      //   message: error?.message,
-      //   duration: 5,
-      //   autoClose: true,
-      //   variant: "danger",
-      // });
+      createToast({
+        message: error?.message,
+        duration: 5,
+        autoClose: true,
+        variant: "danger",
+      });
     }
   }
 
