@@ -141,6 +141,7 @@
               id="ingredient-qty-select-{{$index}}"
               class="ingredient-qty-select p-2 border-0 rounded-2"
               onchange="updateIngredientSpecs(this, {{$index}})"
+              name="{{.MeasuringUnit}}"
             >
               {{range $index, $option := $.Data.IngredientUnits}}
               <option>{{$option.Name}}</option>
@@ -246,6 +247,12 @@
       data[index] = {};
     }
 
+    data[index] = {
+      quantity: document.querySelector(`#ingredient-qty-input-${index}`)
+        ?.placeholder,
+      unit: document.querySelector(`#ingredient-qty-select-${index}`)?.name,
+    };
+
     const icon = button.querySelector("ion-icon");
 
     if (icon.getAttribute("name") === "ellipse-outline") {
@@ -328,29 +335,39 @@
     });
 
     if (selectedIngredients.length === 0) {
-      alert("No ingredients selected to add to the pantry.");
+      // createToast({
+      //   message: "No ingredients selected.",
+      //   duration: 5,
+      //   autoClose: true,
+      //   variant: "danger",
+      // });
       return;
     }
 
     try {
-      const response = await fetch("/pantry/add", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ ingredients: selectedIngredients }),
+      const post = await postRequest("/pantry/add", {
+        ingredients: selectedIngredients,
       });
 
-      if (response.ok) {
-        alert("Ingredients successfully added to the pantry!");
+      if (post.success) {
+        // createToast({
+        //   message: "Ingredients added to pantry successfully.",
+        //   duration: 5,
+        //   autoClose: true,
+        //   variant: "success",
+        // });
         localStorage.removeItem("ingredientSpecs");
-        getingredientAddedIconStateFromLocalStorage();
       } else {
         throw new Error("Failed to add ingredients. Please try again.");
       }
     } catch (error) {
       console.error("Error:", error);
-      alert(error.message);
+      // createToast({
+      //   message: error?.message,
+      //   duration: 5,
+      //   autoClose: true,
+      //   variant: "danger",
+      // });
     }
   }
 
