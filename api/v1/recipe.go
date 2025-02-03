@@ -36,6 +36,6 @@ func GetAllRecipes(w http.ResponseWriter, r *http.Request) {
 * Ottiene tutta la informazione relazionata con una recetta specifica per la Id. Non
 * fornice nessuna altra informazione che non sia relazionata con la recetta.
 ***************************************************************************************/
-func GetREcipeById(w http.ResponseWriter, r *http.Request) {
+func GetRecipeById(w http.ResponseWriter, r *http.Request) {
 
 }
