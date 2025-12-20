@@ -1,0 +1,99 @@
+.custom-textarea {
+  padding: var(--dr-spacing-2) var(--dr-spacing-7) var(--dr-spacing-4)
+    var(--dr-spacing-4);
+  background: var(--dr-gamma);
+  color: var(--dr-alpha);
+  border-radius: 0.8rem;
+  outline: none;
+  width: 100%;
+  border: none;
+  resize: none;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1.5;
+  overflow: hidden;
+  transition: height 0.1s ease;
+}
+
+.custom-textarea:focus {
+  box-shadow: none !important;
+}
+
+.custom-textarea.shine-on-focus:focus {
+  box-shadow: 0 0 5px var(--dr-delta), -5px 0 20px var(--dr-delta),
+    5px 0 20px var(--dr-delta);
+}
+
+.custom-textarea::placeholder {
+  color: var(--dr-color-alpha);
+  opacity: 0.4;
+}
+
+/* Color variants */
+.custom-textarea.primary {
+  border: 0.1rem solid var(--dr-delta);
+}
+
+.custom-textarea.secondary {
+  border: 0.1rem solid var(--dr-alpha);
+}
+
+.custom-textarea.danger {
+  border: 0.1rem solid var(--dr-dnager);
+}
+
+.custom-textarea.warning {
+  border: 0.1rem solid var(--dr-warning);
+}
+
+.custom-textarea.success {
+  border: 0.1rem solid var(--dr-success);
+}
+
+/* Scrollbar styling for when maxRows is reached */
+.custom-textarea::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-textarea::-webkit-scrollbar-thumb {
+  background: var(--dr-delta);
+  border-radius: 3px;
+}
+
+.custom-textarea::-webkit-scrollbar-thumb:hover {
+  background: var(--dr-alpha);
+}
+
+/* Container and character count styling */
+.textarea-container {
+  width: 100%;
+  position: relative;
+}
+
+.character-count-overlay {
+  position: absolute;
+  bottom: var(--dr-spacing-2);
+  right: 0;
+  color: var(--dr-color-alpha);
+  font-size: var(--dr-font-size-5);
+  opacity: 0.4;
+  pointer-events: none;
+  padding: var(--dr-spacing-1) var(--dr-spacing-2);
+  border-radius: 0.5rem;
+  z-index: 1;
+}
+
+.character-count-overlay .color-warning {
+  color: var(--dr-warning);
+  opacity: 1;
+}
+
+.character-count-overlay .color-dnager {
+  color: var(--dr-danger);
+  opacity: 1;
+  font-weight: 500;
+}

@@ -1,0 +1,15 @@
+.simple-grid-34jt {
+  display: grid;
+}
+
+/* Assicura che i figli diretti abbiano altezza 100% */
+.simple-grid-34jt.equal-height > * {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Imposta righe di altezza uguale */
+.simple-grid-34jt.equal-height {
+  grid-auto-rows: 1fr;
+}

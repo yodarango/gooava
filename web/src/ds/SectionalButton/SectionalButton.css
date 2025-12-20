@@ -1,0 +1,18 @@
+.sectional-button-00it {
+  background-color: var(--dr-gamma);
+  box-shadow: var(--dr-shadow-4);
+  justify-content: space-between;
+  display: flex;
+  width: 100%;
+  padding: var(--dr-spacing-2);
+  border-radius: 1em;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 0.2rem var(--dr-mu), -0.2rem 0 1rem var(--dr-),
+    0.2rem 0 1rem var(--dr-mu);
+
+  &:hover {
+    transform: scale(0.98);
+    transition: all 0.3s ease;
+    box-shadow: none;
+  }
+}

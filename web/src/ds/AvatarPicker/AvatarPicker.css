@@ -1,0 +1,27 @@
+.avatar-picker-01lp {
+  padding-bottom: var(--dr-spacing-6);
+
+  .avatar-picker-01lp__avatar {
+    background-image: linear-gradient(
+      -10deg,
+      var(--dr-zeta),
+      var(--dr-epsilon)
+    );
+    border-radius: 50%;
+    overflow: hidden;
+    height: 13rem;
+    width: 13rem;
+
+    &:hover {
+      transform: scale(0.98);
+      transition: transform 0.2s ease-in-out;
+      cursor: pointer;
+    }
+
+    > div {
+      border-radius: 50%;
+      height: 12rem;
+      width: 12rem;
+    }
+  }
+}

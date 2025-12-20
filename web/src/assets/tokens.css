@@ -1,0 +1,63 @@
+/* This overrides the already defined tokens in fullds.min.css */
+
+:root {
+  color-scheme: dark;
+  /* --dr-alpha: #f1eaff;
+  --dr-alpha-rgb: 241, 234, 255;
+  --dr-beta: #130e21;
+  --dr-beta-rgb: 19, 14, 33;
+  --dr-gamma: #231645;
+  --dr-gamma-rgb: 35, 22, 69; */
+  --dr-delta: #794ef5;
+  --dr-delta-rgb: 121, 78, 245;
+  /* --dr-epsilon: #763ffb;
+  --dr-epsilon-rgb: 118, 63, 251;
+  --dr-zeta: #b293fe;
+  --dr-zeta-rgb: 178, 147, 254;
+  --dr-eta: #ff4d62;
+  --dr-eta-rgb: 255, 77, 98;
+  --dr-theta: #ffc107;
+  --dr-theta-rgb: 255, 193, 7;
+  --dr-iota: #ff00cb;
+  --dr-iota-rgb: 255, 0, 203; */
+  --dr-kappa: #00ffc3;
+  --dr-kappa-rgb: 0, 255, 195;
+  /* --dr-lambda: #00cfff;
+  --dr-lambda-rgb: 0, 207, 255;
+  --dr-mu: #350c8cab;
+  --dr-mu-rgb: 53, 12, 140, 0.67;
+  --dr-nu: transparent;
+  --dr-nu-rgb: 0, 0, 0, 0;
+  --dr-xi: #6d7ad9;
+  --dr-xi-rgb: 109, 122, 217;
+  --dr-omicron: #443564;
+  --dr-omicron-rgb: 68, 53, 100;
+  --dr-pi: #898eba;
+  --dr-pi-rgb: 137, 142, 186;
+  --dr-rho: #6d4faa;
+  --dr-rho-rgb: 109, 79, 170;
+  --dr-sigma: #24d75c;
+  --dr-sigma-rgb: 36, 215, 92;
+  --dr-tau: #38dbde;
+  --dr-tau-rgb: 56, 219, 222;
+  --dr-upsilon: #ffae00;
+  --dr-upsilon-rgb: 255, 174, 0;
+  --dr-phi: #fa5151;
+  --dr-phi-rgb: 250, 81, 81;
+  --dr-chi: #ef265f;
+  --dr-chi-rgb: 239, 38, 95;
+  --dr-psi: #76e5de;
+  --dr-psi-rgb: 118, 229, 222;
+  --dr-omega: #aaff41;
+  --dr-omega-rgb: 170, 255, 65;
+  --dr-success: var(--dr-kappa);
+  --dr-success-rgb: var(--dr-kappa-rgb);
+  --dr-info: var(--dr-lambda);
+  --dr-info-rgb: var(--dr-lambda-rgb);
+  --dr-warning: var(--dr-theta);
+  --dr-warning-rgb: var(--dr-theta-rgb);
+  --dr-danger: #ff4d62;
+  --dr-danger-rgb: var(--dr-eta-rgb); */
+}
+
+/* TODO when vieja chata is at work */

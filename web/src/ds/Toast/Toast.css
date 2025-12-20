@@ -1,0 +1,58 @@
+.toast-04hl {
+  animation: topToBottom 300ms ease-in-out;
+  transform: translateX(-50%);
+  border-radius: 1rem;
+  max-width: 50rem;
+  position: fixed;
+  left: calc(50%);
+  bottom: auto;
+  right: auto;
+  width: 92%;
+  top: 5rem;
+
+  &.toast-success {
+    border: 1px solid rgb(0, 255, 195);
+    background-color: #132d30;
+    color: var(--dr-alpha);
+  }
+  &.toast-danger {
+    border: 1px solid rgb(255, 0, 0);
+    background-color: #301313;
+    color: var(--dr-alpha);
+  }
+  &.toast-warning {
+    border: 1px solid rgb(255, 234, 0);
+    background-color: #302d13;
+    color: var(--dr-alpha);
+  }
+  &.toast-info {
+    border: 1px solid rgb(0, 119, 255);
+    background-color: #131e30;
+    color: var(--dr-alpha);
+  }
+  &.toast-default {
+    border: 1px solid rgb(19, 14, 33);
+    background-color: #131e30;
+    color: var(--dr-alpha);
+  }
+
+  ion-icon {
+    color: var(--dr-alpha);
+  }
+
+  div {
+    h5,
+    p {
+      color: inherit;
+    }
+  }
+}
+
+@keyframes topToBottom {
+  0% {
+    top: -6rem;
+  }
+  100% {
+    top: 5rem;
+  }
+}

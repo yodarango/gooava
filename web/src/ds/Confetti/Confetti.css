@@ -1,0 +1,7 @@
+.confetti {
+  height: 100vh;
+  left: 0;
+  position: fixed;
+  top: -4rem;
+  width: 100vw;
+}

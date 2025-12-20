@@ -1,0 +1,50 @@
+/* PopupMenu Container */
+.popup-menu {
+  background: var(--dr-gamma);
+  border: 0.1rem solid var(--dr-delta);
+  border-radius: 0.8rem;
+  box-shadow: 0 1rem 1.5rem -0.3rem rgba(0, 0, 0, 0.1),
+    0 0.4rem 0.6rem -0.2rem rgba(0, 0, 0, 0.05);
+  min-width: 16rem;
+  padding: 0.4rem 0;
+}
+
+/* Menu Items */
+.popup-menu-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.8rem 1.6rem;
+  font-size: 1.4rem;
+  color: var(--dr-alpha);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  gap: 1.6rem;
+
+  * {
+    text-wrap: nowrap;
+    flex-shrink: 0;
+  }
+}
+
+.popup-menu-item:hover {
+  background-color: rgba(var(--dr-delta-rgb), 0.1);
+}
+
+.popup-menu-item--disabled {
+  color: rgba(var(--dr-alpha-rgb), 0.5);
+  cursor: not-allowed;
+}
+
+.popup-menu-item--disabled:hover {
+  background-color: transparent;
+}
+
+/* Menu Divider */
+.popup-menu-divider {
+  background-color: var(--dr-delta);
+  margin: 0;
+  height: 0.1rem;
+}

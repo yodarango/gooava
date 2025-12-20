@@ -1,0 +1,113 @@
+.custom-switch {
+  font-size: 0;
+  position: relative;
+  display: inline-block;
+  width: 5rem;
+  height: 3rem;
+  cursor: pointer;
+}
+
+.custom-switch.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.custom-switch .custom-switch-track {
+  background: var(--dr-delta-40);
+  border: 1px solid var(--dr-delta);
+  border-radius: 24px;
+  display: block;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  transition: all 120ms cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.custom-switch .custom-switch-thumb {
+  display: block;
+  width: 2rem;
+  height: 2rem;
+  top: 0.5rem;
+  left: 0.5rem;
+  border-radius: 16px;
+  background-color: var(--dr-alpha);
+  position: relative;
+  transition: all 120ms cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.custom-switch.checked .custom-switch-thumb {
+  left: 2.5rem;
+  background-color: var(--dr-alpha);
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.custom-switch.checked .custom-switch-track {
+  border: none;
+  background: var(--dr-epsilon);
+}
+
+/* Color variants */
+.custom-switch.switch-primary.checked .custom-switch-track {
+  background: rgb(0, 119, 255);
+  border: 1px solid rgb(0, 119, 255);
+}
+
+.custom-switch.switch-primary.checked .custom-switch-thumb {
+  background-color: var(--dr-alpha);
+}
+
+.custom-switch.switch-secondary.checked .custom-switch-track {
+  background: rgba(var(--dr-alpha-rgb), 0.3);
+  border: 0.1rem solid var(--dr-alpha);
+}
+
+.custom-switch.switch-secondary.checked .custom-switch-thumb {
+  background-color: var(--dr-alpha);
+}
+
+.custom-switch.switch-danger.checked .custom-switch-track {
+  background: rgb(255, 0, 0);
+  border: 1px solid rgb(255, 0, 0);
+}
+
+.custom-switch.switch-danger.checked .custom-switch-thumb {
+  background-color: var(--dr-alpha);
+}
+
+.custom-switch.switch-warning.checked .custom-switch-track {
+  background: rgb(255, 234, 0);
+  border: 1px solid rgb(255, 234, 0);
+}
+
+.custom-switch.switch-warning.checked .custom-switch-thumb {
+  background-color: var(--dr-beta);
+}
+
+.custom-switch.switch-success.checked .custom-switch-track {
+  background: rgb(0, 255, 195);
+  border: 1px solid rgb(0, 255, 195);
+}
+
+.custom-switch.switch-success.checked .custom-switch-thumb {
+  background-color: var(--dr-beta);
+}
+
+/* Custom color support - must be last to override other colors */
+.custom-switch[style*="--switch-custom-color"].checked .custom-switch-track {
+  background: var(--switch-custom-color) !important;
+  border: 1px solid var(--switch-custom-color) !important;
+}
+
+.custom-switch .custom-switch-input {
+  cursor: inherit;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  z-index: 1;
+  margin: 0;
+}

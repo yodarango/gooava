@@ -1,0 +1,27 @@
+.index-layout-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.features-grid {
+  margin-top: 3rem;
+  padding: 2rem 0;
+}
+
+.features-grid .simple-grid-34jt {
+  gap: 2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .index-layout-container {
+    padding: 0 0.5rem;
+  }
+
+  .features-grid {
+    margin-top: 2rem;
+    padding: 1rem 0;
+  }
+}

@@ -1,0 +1,12 @@
+.main-layout-56yl {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  .main-layout-56yl__content {
+    flex: 1;
+    margin: auto;
+    max-width: 60rem;
+    width: 92%;
+  }
+}

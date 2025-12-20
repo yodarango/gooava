@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Title and description -->
+    <title>Keewee - Master Languages with Spaced Repetition & Flashcards</title>
+    <meta
+      name="description"
+      content="Master languages through intelligent spaced repetition and traditional flashcards. Learn from pre-made card sets for popular languages with cross-compatibility. Start your polyglot journey today!"
+    />
+    <meta name="author" content="Daniel Rangel" />
+    <meta
+      name="keywords"
+      content="language learning, spaced repetition, SRS, flashcards, polyglot, multilingual, vocabulary, Daniel Rangel, keewee, language cards, bilingual"
+    />
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <!-- Favicon -->
+    <link rel="icon" href="/logo.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/logo.png" />
+    <link rel="shortcut icon" href="/logo.png" type="image/png" />
+
+    <!-- Open Graph (Facebook, LinkedIn, WhatsApp, etc.) -->
+    <meta
+      property="og:title"
+      content="Keewee - Master Languages with Spaced Repetition & Flashcards"
+    />
+    <meta
+      property="og:description"
+      content="Master languages through intelligent spaced repetition and traditional flashcards. Learn from pre-made card sets for popular languages with cross-compatibility. Start your polyglot journey today!"
+    />
+    <meta property="og:image" content="https://keewee.shrood.app/splash.png" />
+    <meta property="og:url" content="https://keewee.shrood.app" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="keewee" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Keewee - Master Languages with Spaced Repetition & Flashcards"
+    />
+    <meta
+      name="twitter:description"
+      content="Master languages through intelligent spaced repetition and traditional flashcards. Learn from pre-made card sets for popular languages with cross-compatibility. Start your polyglot journey today!"
+    />
+    <meta name="twitter:image" content="https://keewee.shrood.app/splash.png" />
+    <meta name="twitter:site" content="@danielrangel" />
+    <meta name="twitter:creator" content="@danielrangel" />
+
+    <!-- Generic meta tags for search engines -->
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow" />
+    <meta name="bingbot" content="index, follow" />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://keewee.shrood.app" />
+
+    <!-- Theme color for mobile devices -->
+    <meta name="theme-color" content="#5200ff" />
+    <meta name="msapplication-TileColor" content="#5200ff" />
+
+    <!-- Preload to improve performance -->
+    <link rel="preload" href="/public/splash.png" as="image" />
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- PWA meta tags -->
+    <meta name="theme-color" content="#130e21" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="keewee" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <link rel="apple-touch-icon" href="/public/splash.png" />
+
+    <script
+      type="module"
+      src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"
+    ></script>
+    <script
+      nomodule
+      src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"
+    ></script>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.danielrangel.net/fullds.min.css"
+    />
+    <!-- Service Worker Registration -->
+    <!-- <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/sw.js")
+            .then((registration) => {
+              console.log("SW registered: ", registration);
+            })
+            .catch((registrationError) => {
+              console.log("SW registration failed: ", registrationError);
+            });
+        });
+      }
+    </script> -->
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

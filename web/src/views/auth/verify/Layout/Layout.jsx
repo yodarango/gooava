@@ -1,0 +1,200 @@
+import { useAppContext } from "../../../context/appContextProvider";
+import { API_GET_VERIFY_EMAIL, ROUTE_SESSIONS } from "@constants";
+import React, { useState, useEffect, useRef } from "react";
+import ThankyouImage from "@images/statuses/thank_you.webp";
+import { Button, Thumbnail, IfElse } from "@ds";
+import { Link } from "react-router-dom";
+import { usePost } from "@utils";
+
+// styles
+import "./Layout.css";
+
+export const Layout = () => {
+  const { showToast, setupAuth } = useAppContext();
+  const inputRefs = useRef([]);
+
+  const [verificationCode, setVerificationCode] = useState([
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+  ]);
+
+  const { post, loading, success, error } = usePost({
+    url: API_GET_VERIFY_EMAIL,
+    callback: (responseData) => {
+      if (responseData) {
+        localStorage.setItem(
+          "auth",
+          responseData.AuthToken.replace("Bearer ", "")
+        );
+
+        setupAuth();
+
+        showToast({
+          type: "success",
+          message: "Email verified successfully! Welcome to Keewee!",
+        });
+      }
+    },
+  });
+
+  const handleInputChange = (index, value) => {
+    if (value.length > 1) return;
+
+    const newCode = [...verificationCode];
+    newCode[index] = value.toUpperCase();
+    setVerificationCode(newCode);
+
+    // Auto-focus next input
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (index, e) => {
+    if (e.key === "Backspace" && !verificationCode[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text").trim();
+
+    // Check if pasted data is exactly 6 characters (alphanumeric)
+    if (pastedData.length === 6 && /^[A-Za-z0-9]{6}$/.test(pastedData)) {
+      const newCode = pastedData.toUpperCase().split("");
+      setVerificationCode(newCode);
+
+      // Focus the last input
+      inputRefs.current[5]?.focus();
+    } else {
+      showToast({
+        type: "danger",
+        message: "Please paste a valid 6-digit verification code",
+      });
+    }
+  };
+
+  const handleVerify = () => {
+    const code = verificationCode.join("");
+
+    if (code.length !== 6) {
+      showToast({
+        type: "danger",
+        message: "Please enter the complete 6-digit verification code.",
+      });
+      return;
+    }
+
+    post({ code });
+  };
+
+  function handlePasteCode() {
+    navigator.clipboard.readText().then((text) => {
+      if (text.length === 6) {
+        setVerificationCode(text.split(""));
+      } else {
+        showToast({
+          type: "danger",
+          message: "Invalid verification code",
+        });
+      }
+    });
+  }
+
+  useEffect(() => {
+    if (error) {
+      showToast({
+        type: "danger",
+        message: error,
+      });
+    }
+  }, [error]);
+
+  if (success) {
+    return (
+      <div className='auth-verify-container'>
+        <div className='bg-gamma p-5 rounded-3'>
+          <div className='d-flex align-items-center justify-content-center gap-3 mb-4'>
+            <ion-icon
+              name='checkmark-circle'
+              className='color-success'
+            ></ion-icon>
+            <h3 className='m-0'>Your email has been verified</h3>
+          </div>
+          <p className='mb-4 text-center'>
+            Welcome to Keewee! You can not proceed to start learning
+          </p>
+          {/* welcoming thumbnail */}
+          <Thumbnail
+            className='mb-4 mx-auto d-block'
+            alt='Welcome to Keewee'
+            src={ThankyouImage}
+            maxWidth='40rem'
+            width='100%'
+          />
+          <div>
+            <Link to={ROUTE_SESSIONS}>
+              <Button success className='w-100'>
+                Start Learning
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className='auth-verify-container'>
+      <div className='bg-gamma p-5 rounded-3'>
+        <div className='d-flex align-items-center justify-content-center gap-3 mb-4'>
+          <ion-icon name='mail-outline'></ion-icon>
+          <h3 className='m-0'>Verify Your Email</h3>
+        </div>
+        <p className='mb-4 text-center'>
+          Enter the 6-digit verification code sent to your email address.
+        </p>
+
+        <div className='auth-verification-digits d-flex align-items-center justify-content-center gap-2 w-100 mb-4'>
+          {verificationCode.map((digit, index) => (
+            <input
+              className='bg-beta border py-4 px-2 rounded-2 text-center fs-2 fw-8'
+              onChange={(e) => handleInputChange(index, e.target.value)}
+              ref={(el) => (inputRefs.current[index] = el)}
+              onKeyDown={(e) => handleKeyDown(index, e)}
+              onPaste={handlePaste}
+              value={digit}
+              maxLength={1}
+              key={index}
+              type='text'
+            />
+          ))}
+        </div>
+
+        <IfElse condition={verificationCode.join("").length === 6}>
+          <div>
+            <Button
+              disabled={verificationCode.join("").length !== 6}
+              onClick={handleVerify}
+              isLoading={loading}
+              className='w-100'
+              primary
+            >
+              Verify Email
+            </Button>
+          </div>
+          <div>
+            <Button onClick={handlePasteCode} className='w-100' secondary>
+              Paste Code
+            </Button>
+          </div>
+        </IfElse>
+      </div>
+    </div>
+  );
+};
