@@ -1,3 +1,15 @@
+# Goilerplate
+
+A clean boilerplate for full-stack applications built with Go and React.
+
+## What's included
+
+- Go backend with sample auth routes and JWT authentication
+- MySQL database setup with migrations
+- React frontend with Vite, React Router, and a custom design system
+- Docker and Docker Compose configuration
+- Email templates for verification, welcome, and password reset
+
 ## NAMING CONVENTIONS
 
 - All dates prefixed with at are in `time.Time` format

@@ -1,5 +1,5 @@
 import { IndexView, AuthView, AuthVerifyView } from "@views";
-import { MainLayout, ProtectedRoute } from "@components";
+import { MainLayout } from "@components";
 import {
   createRoutesFromElements,
   createBrowserRouter,
@@ -18,8 +18,8 @@ const router = createBrowserRouter(
       <Route path={ROUTE_HOME} element={<IndexView />} />
       <Route path={ROUTE_AUTH} element={<AuthView />} />
       <Route path={ROUTE_AUTH_VERIFY} element={<AuthVerifyView />} />
-    </Route>
-  )
+    </Route>,
+  ),
 );
 
 export default function App() {

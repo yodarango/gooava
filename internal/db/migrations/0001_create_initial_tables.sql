@@ -1,5 +1,4 @@
 -- Drop tables if they exist (for clean reinstall)
-DROP TABLE IF EXISTS study_sessions;
 DROP TABLE IF EXISTS users;
 
 -- Users table

@@ -38,8 +38,6 @@ WORKDIR /root/
 COPY --from=backend-build /app/server .
 COPY --from=backend-build /app/.env .
 COPY --from=backend-build /app/templates ./templates
-COPY --from=backend-build /app/internal/languages ./internal/languages
-COPY --from=backend-build /app/internal/recordings ./internal/recordings
 COPY --from=frontend-build /app/web/dist ./web/dist
 
 EXPOSE 8008

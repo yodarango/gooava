@@ -1,5 +1,5 @@
 services:
-  keewee_app:
+  goilerplate_app:
     build: .
     container_name: ${COMPOSE_PROJECT_NAME}
     ports:
@@ -11,14 +11,14 @@ services:
       - DB_NAME=${DB_NAME}
       - STATIC_PATH=web/dist
     depends_on:
-      keewee_mysql:
+      goilerplate_mysql:
         condition: service_healthy
     networks:
       - app-network
     volumes:
       - .:/app
 
-  keewee_mysql:
+  goilerplate_mysql:
     image: mysql:8.0
     container_name: ${COMPOSE_MYSQL_CONTAINER_NAME}
     environment:

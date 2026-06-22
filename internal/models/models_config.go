@@ -1,7 +1,7 @@
 package models
 
 import (
-	"keewee/repo"
+	"goilerplate/repo"
 )
 
 var ModelsRepo *repo.AppRepo

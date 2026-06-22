@@ -6,31 +6,15 @@
 
   <!-- Homepage -->
   <url>
-    <loc>https://goiler_plate.shrood.app/</loc>
+    <loc>https://goilerplate.shrood.app/</loc>
     <lastmod>2025-01-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
 
-  <!-- SRS (Spaced Repetition System) -->
-  <url>
-    <loc>https://goiler_plate.shrood.app/srs</loc>
-    <lastmod>2025-01-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- Flashcards -->
-  <url>
-    <loc>https://goiler_plate.shrood.app/flash-cards</loc>
-    <lastmod>2025-01-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
   <!-- Authentication -->
   <url>
-    <loc>https://goiler_plate.shrood.app/auth</loc>
+    <loc>https://goilerplate.shrood.app/auth</loc>
     <lastmod>2025-01-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
@@ -38,7 +22,7 @@
 
   <!-- Auth Verification -->
   <url>
-    <loc>https://goiler_plate.shrood.app/auth/verify</loc>
+    <loc>https://goilerplate.shrood.app/auth/verify</loc>
     <lastmod>2025-01-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>

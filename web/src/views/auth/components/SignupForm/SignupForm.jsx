@@ -1,8 +1,7 @@
 import { useAppContext } from "../../../context/appContextProvider";
-import { Input, Button, Modal, Thumbnail, IfElse } from "@ds";
+import { Input, Button, Modal, Thumbnail, IfElse, AvatarPicker } from "@ds";
 import React, { useState, useEffect } from "react";
 import { API_POST_SIGNUP } from "@constants";
-import { AvatarPicker } from "@components";
 import { usePost } from "@utils";
 import { avatars } from "@images";
 
@@ -36,7 +35,7 @@ export const SignupForm = () => {
       setupAuth();
 
       showToast({
-        message: "Account created successfully! Welcome to Keewee.",
+        message: "Account created successfully! Welcome to Goilerplate.",
         type: "success",
       });
     },

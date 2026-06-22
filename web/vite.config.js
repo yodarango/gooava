@@ -20,11 +20,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // Proxy audio recordings to Go backend
-      "/recordings": {
-        target: "http://localhost:8008",
-        changeOrigin: true,
-      },
+      // Add development proxies here when needed
     },
   },
 });

@@ -1,5 +1,5 @@
 import { useAppContext } from "../../../context/appContextProvider";
-import { API_GET_VERIFY_EMAIL, ROUTE_SESSIONS } from "@constants";
+import { API_GET_VERIFY_EMAIL, ROUTE_HOME } from "@constants";
 import React, { useState, useEffect, useRef } from "react";
 import ThankyouImage from "@images/statuses/thank_you.webp";
 import { Button, Thumbnail, IfElse } from "@ds";
@@ -28,14 +28,14 @@ export const Layout = () => {
       if (responseData) {
         localStorage.setItem(
           "auth",
-          responseData.AuthToken.replace("Bearer ", "")
+          responseData.AuthToken.replace("Bearer ", ""),
         );
 
         setupAuth();
 
         showToast({
           type: "success",
-          message: "Email verified successfully! Welcome to Keewee!",
+          message: "Email verified successfully! Welcome to Goilerplate!",
         });
       }
     },
@@ -127,20 +127,20 @@ export const Layout = () => {
             <h3 className='m-0'>Your email has been verified</h3>
           </div>
           <p className='mb-4 text-center'>
-            Welcome to Keewee! You can not proceed to start learning
+            Welcome to Goilerplate! Your account is ready to use.
           </p>
           {/* welcoming thumbnail */}
           <Thumbnail
             className='mb-4 mx-auto d-block'
-            alt='Welcome to Keewee'
+            alt='Welcome to Goilerplate'
             src={ThankyouImage}
             maxWidth='40rem'
             width='100%'
           />
           <div>
-            <Link to={ROUTE_SESSIONS}>
+            <Link to={ROUTE_HOME}>
               <Button success className='w-100'>
-                Start Learning
+                Go Home
               </Button>
             </Link>
           </div>

@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"goilerplate/internal/lib"
+	"goilerplate/internal/utils"
 	"io"
-	"keewee/internal/lib"
-	"keewee/internal/utils"
 
 	"golang.org/x/crypto/bcrypt"
 )

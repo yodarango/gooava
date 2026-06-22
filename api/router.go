@@ -3,9 +3,9 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"keewee/constants"
-	"keewee/internal/models"
-	"keewee/internal/utils"
+	"goilerplate/constants"
+	"goilerplate/internal/models"
+	"goilerplate/internal/utils"
 	"net/http"
 	"os"
 )

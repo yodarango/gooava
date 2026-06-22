@@ -20,7 +20,7 @@ Disallow: /private/
 Allow: /
 
 # Sitemap location
-Sitemap: https://goiler_plate.shrood.app/sitemap.xml
+Sitemap: https://goilerplate.shrood.app/sitemap.xml
 
 # Crawl delay (optional - 1 second delay between requests)
 Crawl-delay: 1

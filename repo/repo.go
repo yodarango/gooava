@@ -1,8 +1,8 @@
 package repo
 
 import (
-	"keewee/config"
-	"keewee/internal/db"
+	"goilerplate/config"
+	"goilerplate/internal/db"
 )
 
 

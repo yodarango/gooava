@@ -1,6 +1,6 @@
 package api
 
-import "keewee/repo"
+import "goilerplate/repo"
 
 var RouterConfig *repo.AppRepo
 

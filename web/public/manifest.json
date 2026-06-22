@@ -1,7 +1,7 @@
 {
-  "name": "goiler_plate",
-  "short_name": "goiler_plate",
-  "description": "goiler_plate",
+  "name": "goilerplate",
+  "short_name": "goilerplate",
+  "description": "goilerplate - Boilerplate for Go and React apps",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#130e21",
@@ -50,21 +50,21 @@
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "goiler_plate Dashboard"
+      "label": "goilerplate Dashboard"
     },
     {
       "src": "/splash.png",
       "sizes": "750x1334",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "goiler_plate Mobile Interface"
+      "label": "goilerplate Mobile Interface"
     }
   ],
   "shortcuts": [
     {
-      "name": "goiler_plate",
-      "short_name": "goiler_plate",
-      "description": "goiler_plate Description",
+      "name": "goilerplate",
+      "short_name": "goilerplate",
+      "description": "goilerplate shortcut",
       "url": "/",
       "icons": [
         {

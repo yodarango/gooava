@@ -1,9 +1,9 @@
-// Service Worker for goiler_plate PWA
-const CACHE_NAME = "goiler_plate";
+// Service Worker for goilerplate PWA
+const CACHE_NAME = "goilerplate";
 const urlsToCache = [
   "/",
-  "/login",
-  "/signup",
+  "/auth",
+  "/auth/verify",
   "/logo.png",
   "/splash.png",
   "/manifest.json",
@@ -23,7 +23,7 @@ self.addEventListener("install", (event) => {
       })
       .catch((error) => {
         console.error("Failed to cache resources:", error);
-      })
+      }),
   );
 });
 
@@ -44,7 +44,7 @@ self.addEventListener("fetch", (event) => {
         if (event.request.destination === "document") {
           return caches.match("/");
         }
-      })
+      }),
   );
 });
 
@@ -58,9 +58,9 @@ self.addEventListener("activate", (event) => {
             console.log("Deleting old cache:", cacheName);
             return caches.delete(cacheName);
           }
-        })
+        }),
       );
-    })
+    }),
   );
 });
 
@@ -91,7 +91,7 @@ self.addEventListener("push", (event) => {
     actions: [
       {
         action: "explore",
-        title: "Open goiler_plate",
+        title: "Open goilerplate",
         icon: "/logo.png",
       },
       {
@@ -102,7 +102,7 @@ self.addEventListener("push", (event) => {
     ],
   };
 
-  event.waitUntil(self.registration.showNotification("goiler_plate", options));
+  event.waitUntil(self.registration.showNotification("goilerplate", options));
 });
 
 // Notification click handling

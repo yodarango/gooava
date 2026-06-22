@@ -72,7 +72,7 @@ func (es *EmailService) SendVerificationEmail(toEmail, firstName, verificationCo
 	data := VerificationEmailData{
 		FirstName:        firstName,
 		VerificationCode: verificationCode,
-		BaseURL:          fmt.Sprintf(os.Getenv("BASE_URL") + "/auth/verify"),
+		BaseURL:          os.Getenv("BASE_URL") + "/auth/verify",
 	}
 	
 	err = tmpl.Execute(&body, data)

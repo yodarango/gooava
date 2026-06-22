@@ -2,12 +2,7 @@ import { useAppContext } from "../../views/context/appContextProvider";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Header } from "./Header/Header";
 import { Footer } from "./Footer/Footer";
-import {
-  ROUTE_AUTH_VERIFY,
-  ROUTE_SESSIONS,
-  ROUTE_HOME,
-  ROUTE_AUTH,
-} from "@constants";
+import { ROUTE_AUTH_VERIFY, ROUTE_HOME, ROUTE_AUTH } from "@constants";
 
 // styles
 import "./MainLayout.css";
@@ -18,8 +13,10 @@ export const MainLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  function redirectUser() {
-    // If the user is logged in and this account needs to be verified before proceeding
+  useEffect(() => {
+    if (state.isLoading) return;
+
+    // If the user is logged in but still needs to verify their email
     if (
       location.pathname === ROUTE_HOME &&
       state.isAuthenticated &&
@@ -28,34 +25,26 @@ export const MainLayout = () => {
       return navigate(ROUTE_AUTH_VERIFY);
     }
 
-    // if the user is tryng to study but it is not logged in
+    // If the user is verified and tries to access auth pages, send them home
     if (
-      location.pathname.startsWith(ROUTE_SESSIONS) &&
-      !state.isAuthenticated
+      [ROUTE_AUTH, ROUTE_AUTH_VERIFY].includes(location.pathname) &&
+      state.isActive
     ) {
-      return navigate(ROUTE_AUTH);
+      return navigate(ROUTE_HOME);
     }
 
-    // if the user is logged in but is trying to hit th auth page
-    if (location.pathname === ROUTE_AUTH_VERIFY && state.isActive) {
-      return navigate(ROUTE_SESSIONS);
-    }
-
-    // if the user is NOT logged in but is trying to hit the email verification page
+    // If the user is not logged in but is trying to access the verification page
     if (location.pathname === ROUTE_AUTH_VERIFY && !state.isAuthenticated) {
       return navigate(ROUTE_AUTH);
     }
-
-    if (location.pathname === ROUTE_AUTH && state.isAuthenticated) {
-      return navigate(ROUTE_SESSIONS);
-    }
-  }
-
-  useEffect(() => {
-    if (state.isLoading) return;
-
-    redirectUser();
-  }, [location, state.isAuthenticated, state.isPending, state.isActive]);
+  }, [
+    location,
+    navigate,
+    state.isAuthenticated,
+    state.isActive,
+    state.isLoading,
+    state.isPending,
+  ]);
 
   return (
     <div className='main-layout-56yl'>

@@ -1,11 +1,11 @@
 package main
 
 import (
-	"keewee/api"
-	"keewee/config"
-	"keewee/internal/db"
-	"keewee/internal/models"
-	"keewee/repo"
+	"goilerplate/api"
+	"goilerplate/config"
+	"goilerplate/internal/db"
+	"goilerplate/internal/models"
+	"goilerplate/repo"
 	"log"
 	"net/http"
 	"os"
