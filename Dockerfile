@@ -12,6 +12,9 @@ RUN npm run build
 # Build stage for Go backend
 FROM golang:1.24-alpine AS backend-build
 
+# Install build tools required for CGO (SQLite driver)
+RUN apk add --no-cache build-base
+
 WORKDIR /app
 
 COPY go.mod go.sum ./
@@ -31,7 +34,7 @@ RUN go build -o server ./cmd/main
 # Final stage
 FROM alpine:latest
 
-RUN apk --no-cache add ca-certificates
+RUN apk --no-cache add ca-certificates libgcc
 
 WORKDIR /root/
 

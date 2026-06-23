@@ -485,7 +485,7 @@ func (u *User) ForgotPassword(body io.ReadCloser) error {
 	// Update user password in database
 	updateQuery := `
 		UPDATE users
-		SET password = ?, updated_at = NOW()
+		SET password = ?, updated_at = CURRENT_TIMESTAMP
 		WHERE id = ?
 	`
 
@@ -582,8 +582,8 @@ func (u *User) ChangePassword(body io.ReadCloser, userId uint) error {
 
 	// Update password in database
 	updateQuery := `
-		UPDATE users 
-		SET password = ?, updated_at = NOW()
+		UPDATE users
+		SET password = ?, updated_at = CURRENT_TIMESTAMP
 		WHERE id = ?
 	`
 

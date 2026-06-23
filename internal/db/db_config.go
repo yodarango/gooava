@@ -4,9 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"path/filepath"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 
@@ -17,28 +18,30 @@ type DBConfig struct {
 
 func DBConnection() (*sql.DB, error) {
 
-	err := godotenv.Load()
-	if err != nil {
-		return nil, fmt.Errorf("could not read env file \n %w", err)
-	}
-	// db constants
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbUser := os.Getenv("DB_USER")
-	dbHost := os.Getenv("DB_HOST")
-	dbPort := os.Getenv("DB_PORT")
-	dbName := os.Getenv("DB_NAME")
+	// Load environment variables if a .env file is present.
+	// The file is optional: a default SQLite path is used when DB_PATH is not set.
+	_ = godotenv.Load()
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=UTC",
-		dbUser, dbPassword, dbHost, dbPort, dbName)
-
-	db, err := sql.Open("mysql", dsn)
-
-	// assicuarti che non avviano errori prima di continuare 
-	if err != nil {
-		return nil, fmt.Errorf("failed to start db: \n %w", err)
+	dbPath := os.Getenv("DB_PATH")
+	if dbPath == "" {
+		dbPath = "./data/app.db"
 	}
 
-	// Controlla che la DB sia funzionando 
+	// Ensure the directory that will hold the database file exists.
+	if dir := filepath.Dir(dbPath); dir != "" && dir != "." {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return nil, fmt.Errorf("could not create db directory: %w", err)
+		}
+	}
+
+	dsn := fmt.Sprintf("%s?_fk=true&_journal_mode=WAL", dbPath)
+
+	db, err := sql.Open("sqlite3", dsn)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open db: \n %w", err)
+	}
+
+	// Make sure the database is reachable before continuing.
 	err = db.Ping()
 	if err != nil {
 		return nil, fmt.Errorf("unable to ping db: \n %w", err)
