@@ -1,8 +1,8 @@
 import { useAppContext } from "../../../views/context/appContextProvider";
-import { UtensilsCrossed, CookingPot, House, DoorOpen, Receipt, ReceiptText } from "lucide";
+import { UtensilsCrossed, CookingPot, House, DoorOpen, CircleDollarSign, HandCoins } from "lucide";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MorphIcon } from "morphicons/react";
-import { ROUTE_HOME } from "@constants";
+import { ROUTE_FINANCES, ROUTE_HOME } from "@constants";
 import { useState } from "react";
 
 // styles
@@ -16,6 +16,7 @@ export const BottomNav = () => {
   const [hoveredItem, setHoveredItem] = useState(null);
 
   const isHomeActive = location.pathname === ROUTE_HOME;
+  const isFinancesActive = location.pathname === ROUTE_FINANCES;
 
   const comingSoon = (feature) => () =>
     showToast({ message: `${feature} are coming soon!`, type: "info" });
@@ -58,17 +59,21 @@ export const BottomNav = () => {
         </button>
 
         <button
-          onMouseEnter={() => setHoveredItem("bills")}
+          onMouseEnter={() => setHoveredItem("finances")}
           onMouseLeave={() => setHoveredItem(null)}
-          className='bottom-nav-9x2k__item'
-          onClick={comingSoon("Bills")}
-          aria-label='Bills'
+          className={`bottom-nav-9x2k__item ${isFinancesActive ? "active" : ""}`}
+          onClick={() => navigate(ROUTE_FINANCES)}
+          aria-label='Finances'
           type='button'
         >
           <MorphIcon
-            icon={hoveredItem === "bills" ? ReceiptText : Receipt}
+            icon={
+              hoveredItem === "finances" || isFinancesActive
+                ? HandCoins
+                : CircleDollarSign
+            }
             spring='snappy'
-            label='Bills'
+            label='Finances'
             size={24}
           />
         </button>

@@ -2,6 +2,7 @@ import { SignupForm } from "../components/SignupForm/SignupForm";
 import { LoginForm } from "../components/LoginForm/LoginForm";
 import React, { useState } from "react";
 import { Button, IfElse } from "@ds";
+import "./Layout.css";
 
 export const Layout = () => {
   const [isLogin, setIsLogin] = useState(true);

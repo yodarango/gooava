@@ -66,7 +66,7 @@ export function ForgotPassword() {
         </Button>
       </Modal>
       <button
-        className='bg-nu p-0 m-0 color-zeta text-center w-100 mt-1'
+        className='bg-nu p-0 m-0 color-delta text-center w-100 mt-1'
         onClick={() => setShowForgotPasswordModal(true)}
       >
         Forgot password?

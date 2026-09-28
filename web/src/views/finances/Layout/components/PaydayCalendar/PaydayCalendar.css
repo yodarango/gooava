@@ -1,0 +1,106 @@
+.payday-calendar-7m3q {
+  background-color: var(--dr-zeta);
+  border: 1px solid rgba(var(--dr-eta-rgb), 0.1);
+  border-radius: 1.5rem;
+  box-shadow: 0 0.2rem 0.4rem rgba(var(--dr-beta-rgb), 0.2);
+  padding: var(--dr-spacing-4);
+}
+
+.payday-calendar-7m3q__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--dr-spacing-3);
+
+  h3 {
+    color: var(--dr-beta);
+    font-size: var(--dr-font-size-3);
+  }
+
+  button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.6rem;
+    height: 3.6rem;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--dr-eta);
+    cursor: pointer;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+
+    &:hover {
+      background-color: rgba(var(--dr-delta-rgb), 0.08);
+      color: var(--dr-delta);
+    }
+  }
+}
+
+.payday-calendar-7m3q__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.4rem;
+}
+
+.payday-calendar-7m3q__weekday {
+  text-align: center;
+  font-size: var(--dr-font-size-6);
+  font-weight: var(--dr-font-weight-7);
+  color: rgba(var(--dr-beta-rgb), 0.5);
+  text-transform: uppercase;
+  padding: var(--dr-spacing-1) 0;
+}
+
+.payday-calendar-7m3q__day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  font-size: var(--dr-font-size-4);
+  color: var(--dr-beta);
+  border: 0.2rem solid transparent;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+
+  &.payday {
+    background-color: var(--dr-delta);
+    color: var(--dr-zeta);
+    font-weight: var(--dr-font-weight-7);
+  }
+
+  &.payday:hover {
+    transform: scale(1.08);
+  }
+
+  &.today {
+    border-color: var(--dr-delta);
+    font-weight: var(--dr-font-weight-7);
+  }
+
+  /* today + payday: solid crimson with a white ring */
+  &.payday.today {
+    box-shadow: inset 0 0 0 0.2rem var(--dr-zeta);
+  }
+}
+
+.payday-calendar-7m3q__legend {
+  display: flex;
+  align-items: center;
+  gap: var(--dr-spacing-2);
+  margin: var(--dr-spacing-3) 0 0;
+  font-size: var(--dr-font-size-5);
+  color: rgba(var(--dr-beta-rgb), 0.6);
+}
+
+.payday-calendar-7m3q__legend-payday {
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  background-color: var(--dr-delta);
+  display: inline-block;
+}

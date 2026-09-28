@@ -10,7 +10,7 @@
 }
 
 .shrood-modal-0elj__backdrop {
-  background-color: rgb(var(--dr-epsilon-rgb), 0.4);
+  background-color: rgb(var(--dr-delta-rgb), 0.4);
   -webkit-tap-highlight-color: transparent;
   overflow: hidden;
   position: fixed;
