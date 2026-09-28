@@ -1,6 +1,6 @@
 package api
 
-import "goilerplate/repo"
+import "gooava/repo"
 
 var RouterConfig *repo.AppRepo
 

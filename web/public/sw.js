@@ -1,5 +1,5 @@
-// Service Worker for goilerplate PWA
-const CACHE_NAME = "goilerplate";
+// Service Worker for gooava PWA
+const CACHE_NAME = "gooava";
 const urlsToCache = [
   "/",
   "/auth",
@@ -91,7 +91,7 @@ self.addEventListener("push", (event) => {
     actions: [
       {
         action: "explore",
-        title: "Open goilerplate",
+        title: "Open gooava",
         icon: "/logo.png",
       },
       {
@@ -102,7 +102,7 @@ self.addEventListener("push", (event) => {
     ],
   };
 
-  event.waitUntil(self.registration.showNotification("goilerplate", options));
+  event.waitUntil(self.registration.showNotification("gooava", options));
 });
 
 // Notification click handling

@@ -3,9 +3,9 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"goilerplate/constants"
-	"goilerplate/internal/models"
-	"goilerplate/internal/utils"
+	"gooava/constants"
+	"gooava/internal/models"
+	"gooava/internal/utils"
 	"net/http"
 	"os"
 )

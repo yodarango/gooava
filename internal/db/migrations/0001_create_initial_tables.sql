@@ -3,7 +3,7 @@ DROP TABLE IF EXISTS users;
 
 -- Users table
 CREATE TABLE users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(255) NOT NULL,
     last_name VARCHAR(255) NOT NULL,
     username VARCHAR(255) NOT NULL UNIQUE,
@@ -13,14 +13,5 @@ CREATE TABLE users (
     status CHAR(10) NOT NULL DEFAULT 'pending',
     verification_code CHAR(10) DEFAULT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
--- Trigger to keep updated_at current on every row update (SQLite equivalent of MySQL's ON UPDATE CURRENT_TIMESTAMP)
-DROP TRIGGER IF EXISTS trigger_users_updated_at;
-CREATE TRIGGER trigger_users_updated_at
-AFTER UPDATE ON users
-FOR EACH ROW
-BEGIN
-    UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
-END;
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

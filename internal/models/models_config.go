@@ -1,7 +1,7 @@
 package models
 
 import (
-	"goilerplate/repo"
+	"gooava/repo"
 )
 
 var ModelsRepo *repo.AppRepo

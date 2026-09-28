@@ -1,11 +1,10 @@
 .app-header-56yl {
-  background-color: var(--dr-gamma);
-  border-bottom: 1px solid var(--dr-delta);
+  background-color: rgba(var(--dr-zeta-rgb), 0.95);
+  box-shadow: 0 0.2rem 0.4rem rgba(var(--dr-beta-rgb), 0.1);
   position: sticky;
   top: 0;
   z-index: 10;
   backdrop-filter: blur(10px);
-  background-color: rgba(var(--dr-gamma-rgb), 0.95);
   margin-bottom: 5rem;
 }
 
@@ -25,7 +24,7 @@
   align-items: center;
   gap: 0.75rem;
   text-decoration: none;
-  color: var(--dr-alpha);
+  color: var(--dr-beta);
   font-weight: 600;
   font-size: 1.25rem;
   transition: opacity 0.2s ease;
@@ -34,7 +33,7 @@
 .app-header-56yl__brand:hover {
   opacity: 0.8;
   text-decoration: none;
-  color: var(--dr-alpha);
+  color: var(--dr-beta);
 }
 
 .app-header-56yl__logo {
@@ -52,7 +51,7 @@
 .app-header-56yl__title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--dr-alpha);
+  color: var(--dr-beta);
 }
 
 /* Navigation */
@@ -69,7 +68,7 @@
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
   text-decoration: none;
-  color: var(--dr-alpha);
+  color: var(--dr-beta);
   font-weight: 500;
   transition: all 0.2s ease;
 }
@@ -105,12 +104,12 @@
   gap: 0.75rem;
   padding: 0.5rem;
   border-radius: 2rem;
-  background-color: rgba(var(--dr-alpha-rgb), 0.05);
+  background-color: rgba(var(--dr-beta-rgb), 0.05);
   transition: all 0.2s ease;
 }
 
 .app-header-56yl__avatar-container:hover {
-  background-color: rgba(var(--dr-alpha-rgb), 0.1);
+  background-color: rgba(var(--dr-beta-rgb), 0.1);
   transform: translateY(-1px);
 }
 
@@ -139,7 +138,7 @@
 }
 
 .app-header-56yl__username {
-  color: var(--dr-alpha);
+  color: var(--dr-beta);
   font-weight: 600;
   font-size: 0.9rem;
 }
@@ -151,16 +150,16 @@
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   text-decoration: none;
-  color: var(--dr-alpha);
+  color: var(--dr-beta);
   font-weight: 500;
   transition: all 0.2s ease;
-  border: 1px solid rgba(var(--dr-alpha-rgb), 0.2);
+  border: 1px solid rgba(var(--dr-beta-rgb), 0.2);
 }
 
 .app-header-56yl__login:hover {
-  background-color: rgba(var(--dr-primary-rgb), 0.1);
-  border-color: var(--dr-primary);
-  color: var(--dr-primary);
+  background-color: rgba(var(--dr-delta-rgb), 0.1);
+  border-color: var(--dr-delta);
+  color: var(--dr-delta);
   text-decoration: none;
 }
 

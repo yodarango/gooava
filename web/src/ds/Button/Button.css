@@ -1,48 +1,49 @@
+/* Styled after the original gooava app's primary/secondary buttons */
 .button {
-  transition: background-color 0.3s ease-in-out;
+  box-shadow: 0 0.2rem 0.4rem rgba(var(--dr-beta-rgb), 0.2);
+  transition: background-color 0.3s ease;
   display: flex;
   justify-content: center;
   align-items: center;
-  color: var(--dr-alpha);
-  padding: 10px 16px;
-  border-radius: 5px;
+  background-color: var(--dr-delta);
+  padding: var(--dr-spacing-2) var(--dr-spacing-4);
+  color: var(--dr-zeta);
+  border-radius: 1.8rem;
   font-weight: bold;
   cursor: pointer;
   border: none;
 }
 
-.button-primary {
-  border: 1px solid rgb(0, 119, 255);
-  background-color: #0f395370;
+.button-primary,
+.button-default {
+  background-color: var(--dr-delta);
+  color: var(--dr-zeta);
 }
 
 .button-secondary {
-  background-color: rgba(var(--dr-alpha-rgb), 0.3);
-  color: var(--dr-alpha);
-  backdrop-filter: blur(10px);
-  border: 0.1rem solid var(--dr-alpha);
+  background-color: var(--dr-zeta);
+  color: var(--dr-delta);
 }
 
 .button-danger {
-  border: 1px solid rgb(255, 0, 0);
-  background-color: #530f0f70;
+  background-color: var(--dr-danger);
+  color: var(--dr-zeta);
 }
 
 .button-warning {
-  border: 1px solid rgb(255, 234, 0);
-  background-color: #534c0f70;
+  background-color: var(--dr-warning);
+  color: var(--dr-beta);
 }
 
 .button-success {
-  border: 1px solid rgb(0, 255, 195);
-  background-color: #0f534370;
-}
-
-.button-default {
-  border: 1px solid rgb(0, 119, 255);
-  background-color: #0f395370;
+  background-color: var(--dr-success);
+  color: var(--dr-zeta);
 }
 
 .button:hover {
-  opacity: 0.8;
+  opacity: 0.85;
+}
+
+.button:active {
+  box-shadow: 0 0.1rem 0.2rem rgba(var(--dr-beta-rgb), 0.1);
 }

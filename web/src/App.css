@@ -1,3 +1,15 @@
+/* Overwrite the CDN's body colors, same as the original gooava app */
+body {
+  background-color: var(--dr-alpha);
+  color: var(--dr-beta);
+  overflow-x: hidden;
+  width: 100%;
+}
+
+body * {
+  color: var(--dr-beta);
+}
+
 .main-container-092jt {
   max-width: 60rem;
   margin: 0 auto;
@@ -5,5 +17,5 @@
 }
 
 .shadow {
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }

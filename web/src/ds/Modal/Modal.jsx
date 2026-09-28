@@ -48,7 +48,7 @@ export const Modal = ({
       >
         {showCloseButton && (
           <button
-            className='shrood-modal-0elj__close color-alpha bg-nu'
+            className='shrood-modal-0elj__close color-beta bg-nu'
             onClick={onClose}
           >
             <ion-icon name='close-outline' />

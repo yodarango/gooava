@@ -1,11 +1,11 @@
 package main
 
 import (
-	"goilerplate/api"
-	"goilerplate/config"
-	"goilerplate/internal/db"
-	"goilerplate/internal/models"
-	"goilerplate/repo"
+	"gooava/api"
+	"gooava/config"
+	"gooava/internal/db"
+	"gooava/internal/models"
+	"gooava/repo"
 	"log"
 	"net/http"
 	"os"
@@ -44,7 +44,7 @@ func main (){
 
 	// inizialize the server
 	server := &http.Server{
-		Addr: ":8008",
+		Addr: ":8016",
 		Handler: api.Router(),
 		MaxHeaderBytes: 5 << 20 ,
 

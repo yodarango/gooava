@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"goilerplate/internal/lib"
-	"goilerplate/internal/utils"
+	"gooava/internal/lib"
+	"gooava/internal/utils"
 	"io"
 
 	"golang.org/x/crypto/bcrypt"

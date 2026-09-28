@@ -9,5 +9,7 @@
   input {
     width: 5rem;
     flex-grow: 1;
+    color: var(--dr-beta);
+    border-color: var(--dr-delta);
   }
 }

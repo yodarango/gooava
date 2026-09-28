@@ -2,10 +2,6 @@
 
 source ~/.zshrc
 
-# Delete this line
-echo "Please set up deployment file before proceeding."
-exit 1
-
 # Check if a commit message was provided
 if [ "$#" -ne 1 ]; then
     echo "Please provide a commit message"
@@ -35,14 +31,20 @@ fi
 
 # Copy the files to the VPS
 ssh_main "\
-cd /var/www/repos/where?; \
+cd /var/www/repos/gooava/app; \
 git reset --hard origin/main; \
 git pull; \
 echo '👍 pulled changes from git and reset to origin'; \
 echo 'Current directory: '; pwd; \
 echo '🏗️ Building docker now...';\
-docker compose down
-docker compose up -d --build; \
+docker compose down; \
+export DOCKER_BUILDKIT=1; \
+export COMPOSE_DOCKER_CLI_BUILD=1; \
+docker compose build --parallel; \
+docker compose up -d; \
+echo '🧹 Cleaning old docker build cache and dangling images...'; \
+docker image prune -f; \
+docker builder prune -f --filter until=24h; \
 echo '🚀🚀🚀 Deployment successful'"
 
 

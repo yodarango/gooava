@@ -20,7 +20,7 @@
   font-size: 3.5rem;
   font-weight: 800;
   margin-bottom: 1rem;
-  color: var(--dr-alpha);
+  color: var(--dr-beta);
   animation: slideInDown 1s ease-out;
 }
 
@@ -43,22 +43,6 @@
 
 .welcome-image:hover {
   transform: scale(1.05) rotate(2deg);
-}
-
-/* CTA Section */
-.intro-cta {
-  border: 1px solid rgb(0, 119, 255);
-  background-color: #0f395370;
-  border-radius: 1rem;
-  animation: fadeInUp 0.8s ease-out;
-}
-
-.cta-button {
-  transition: transform 0.3s ease;
-}
-
-.cta-button:hover {
-  transform: translateY(-3px);
 }
 
 /* Animations */

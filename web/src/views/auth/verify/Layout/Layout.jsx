@@ -35,7 +35,7 @@ export const Layout = () => {
 
         showToast({
           type: "success",
-          message: "Email verified successfully! Welcome to Goilerplate!",
+          message: "Email verified successfully! Welcome to Gooava!",
         });
       }
     },
@@ -127,12 +127,12 @@ export const Layout = () => {
             <h3 className='m-0'>Your email has been verified</h3>
           </div>
           <p className='mb-4 text-center'>
-            Welcome to Goilerplate! Your account is ready to use.
+            Welcome to Gooava! Your account is ready to use.
           </p>
           {/* welcoming thumbnail */}
           <Thumbnail
             className='mb-4 mx-auto d-block'
-            alt='Welcome to Goilerplate'
+            alt='Welcome to Gooava'
             src={ThankyouImage}
             maxWidth='40rem'
             width='100%'
@@ -163,7 +163,7 @@ export const Layout = () => {
         <div className='auth-verification-digits d-flex align-items-center justify-content-center gap-2 w-100 mb-4'>
           {verificationCode.map((digit, index) => (
             <input
-              className='bg-beta border py-4 px-2 rounded-2 text-center fs-2 fw-8'
+              className='bg-epsilon border py-4 px-2 rounded-2 text-center fs-2 fw-8'
               onChange={(e) => handleInputChange(index, e.target.value)}
               ref={(el) => (inputRefs.current[index] = el)}
               onKeyDown={(e) => handleKeyDown(index, e)}

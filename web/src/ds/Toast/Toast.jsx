@@ -37,11 +37,11 @@ export const Toast = (props) => {
 
   const toastContent = (
     <div
-      className={`toast-04hl ${closeClass} ${cardClass} d-flex align-items-center justify-content-start gap-3 color-beta`}
+      className={`toast-04hl ${closeClass} ${cardClass} d-flex align-items-center justify-content-start gap-3`}
       style={{ zIndex, ...props.style }}
     >
       {icon && (
-        <div className='color-beta flex-shrink-0'>
+        <div className='flex-shrink-0'>
           <ion-icon name={icon} />
         </div>
       )}
@@ -53,7 +53,7 @@ export const Toast = (props) => {
           </div>
           <If condition={!!onClose}>
             <button
-              className='btn-base flex-shrink-0 color-beta'
+              className='btn-base flex-shrink-0'
               onClick={onClose}
             >
               <ion-icon name='close' />

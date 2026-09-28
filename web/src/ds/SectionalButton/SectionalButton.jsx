@@ -27,7 +27,7 @@ export const SectionalButtom = (props) => {
       {...rest}
     >
       <span>{label}</span>
-      <span className='d-inline-flex align-items-center color-alpha justify-content-end gap-2'>
+      <span className='d-inline-flex align-items-center color-beta justify-content-end gap-2'>
         <span>{value}</span>
         <ion-icon name={icon} />
       </span>

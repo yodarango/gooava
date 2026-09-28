@@ -1,8 +1,8 @@
 package repo
 
 import (
-	"goilerplate/config"
-	"goilerplate/internal/db"
+	"gooava/config"
+	"gooava/internal/db"
 )
 
 

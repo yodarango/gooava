@@ -6,7 +6,7 @@
 
   <!-- Homepage -->
   <url>
-    <loc>https://goilerplate.shrood.app/</loc>
+    <loc>https://gooava.shrood.app/</loc>
     <lastmod>2025-01-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
@@ -14,7 +14,7 @@
 
   <!-- Authentication -->
   <url>
-    <loc>https://goilerplate.shrood.app/auth</loc>
+    <loc>https://gooava.shrood.app/auth</loc>
     <lastmod>2025-01-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
@@ -22,7 +22,7 @@
 
   <!-- Auth Verification -->
   <url>
-    <loc>https://goilerplate.shrood.app/auth/verify</loc>
+    <loc>https://gooava.shrood.app/auth/verify</loc>
     <lastmod>2025-01-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>

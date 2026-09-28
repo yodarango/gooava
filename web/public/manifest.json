@@ -1,11 +1,11 @@
 {
-  "name": "goilerplate",
-  "short_name": "goilerplate",
-  "description": "goilerplate - Boilerplate for Go and React apps",
+  "name": "gooava",
+  "short_name": "gooava",
+  "description": "Gooava - Personal home automation",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#130e21",
-  "theme_color": "#5200ff",
+  "background_color": "#f9e5e8",
+  "theme_color": "#f24c66",
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "en",
@@ -50,21 +50,21 @@
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "goilerplate Dashboard"
+      "label": "Gooava Dashboard"
     },
     {
       "src": "/splash.png",
       "sizes": "750x1334",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "goilerplate Mobile Interface"
+      "label": "Gooava Mobile Interface"
     }
   ],
   "shortcuts": [
     {
-      "name": "goilerplate",
-      "short_name": "goilerplate",
-      "description": "goilerplate shortcut",
+      "name": "gooava",
+      "short_name": "gooava",
+      "description": "gooava shortcut",
       "url": "/",
       "icons": [
         {

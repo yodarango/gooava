@@ -1,6 +1,6 @@
-# Goilerplate
+# Gooava
 
-A clean boilerplate for full-stack applications built with Go and React.
+A personal home automation tool built with Go and React.
 
 ## What's included
 

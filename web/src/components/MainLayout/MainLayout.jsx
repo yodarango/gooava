@@ -1,7 +1,7 @@
 import { useAppContext } from "../../views/context/appContextProvider";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { BottomNav } from "./BottomNav/BottomNav";
 import { Header } from "./Header/Header";
-import { Footer } from "./Footer/Footer";
 import { ROUTE_AUTH_VERIFY, ROUTE_HOME, ROUTE_AUTH } from "@constants";
 
 // styles
@@ -52,7 +52,7 @@ export const MainLayout = () => {
       <main className='main-layout-56yl__content'>
         <Outlet />
       </main>
-      <Footer />
+      <BottomNav />
     </div>
   );
 };

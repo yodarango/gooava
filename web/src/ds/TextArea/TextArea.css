@@ -1,9 +1,9 @@
 .custom-textarea {
   padding: var(--dr-spacing-2) var(--dr-spacing-7) var(--dr-spacing-4)
     var(--dr-spacing-4);
-  background: var(--dr-gamma);
-  color: var(--dr-alpha);
-  border-radius: 0.8rem;
+  background: var(--dr-epsilon);
+  color: rgba(var(--dr-beta-rgb), 0.8);
+  border-radius: 1rem;
   outline: none;
   width: 100%;
   border: none;
@@ -25,7 +25,7 @@
 }
 
 .custom-textarea::placeholder {
-  color: var(--dr-color-alpha);
+  color: var(--dr-beta);
   opacity: 0.4;
 }
 
@@ -35,7 +35,7 @@
 }
 
 .custom-textarea.secondary {
-  border: 0.1rem solid var(--dr-alpha);
+  border: 0.1rem solid var(--dr-eta);
 }
 
 .custom-textarea.danger {
@@ -65,7 +65,7 @@
 }
 
 .custom-textarea::-webkit-scrollbar-thumb:hover {
-  background: var(--dr-alpha);
+  background: var(--dr-eta);
 }
 
 /* Container and character count styling */
@@ -78,7 +78,7 @@
   position: absolute;
   bottom: var(--dr-spacing-2);
   right: 0;
-  color: var(--dr-color-alpha);
+  color: var(--dr-beta);
   font-size: var(--dr-font-size-5);
   opacity: 0.4;
   pointer-events: none;

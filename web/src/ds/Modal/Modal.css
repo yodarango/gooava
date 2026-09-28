@@ -18,7 +18,8 @@
 }
 
 .shrood-modal-0elj__content {
-  background-color: var(--dr-beta);
+  background-color: var(--dr-zeta);
+  box-shadow: 0 0.4rem 1.6rem rgba(var(--dr-beta-rgb), 0.2);
   position: relative;
   border-radius: 1em;
   overflow: hidden;

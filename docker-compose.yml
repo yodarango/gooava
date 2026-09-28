@@ -1,21 +1,51 @@
 services:
-  goilerplate_app:
-    build: .
+  gooava_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: ${COMPOSE_PROJECT_NAME}
     ports:
-      - "8008:8008"
+      - "8016:8016"
     environment:
-      - DB_PATH=${DB_PATH:-/app/data/app.db}
+      - DB_HOST=gooava_mysql
+      - DB_PORT=3306
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME:-gooava}
       - STATIC_PATH=web/dist
     networks:
       - app-network
     volumes:
       - .:/app
-      - sqlite_data:/app/data
+      - ${HOST_DATA_PATH:-./data}:/app/data
+    depends_on:
+      gooava_mysql:
+        condition: service_healthy
+
+  gooava_mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    ports:
+      - "3309:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME:-gooava}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - gooava_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - app-network
 
 networks:
   app-network:
     driver: bridge
+
 volumes:
-  sqlite_data:
+  gooava_mysql_data:
     driver: local

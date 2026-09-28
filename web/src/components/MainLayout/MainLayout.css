@@ -2,6 +2,8 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  /* room for the floating bottom nav pill */
+  padding-bottom: 11rem;
 
   .main-layout-56yl__content {
     flex: 1;

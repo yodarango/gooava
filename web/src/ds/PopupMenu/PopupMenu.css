@@ -1,7 +1,7 @@
 /* PopupMenu Container */
 .popup-menu {
-  background: var(--dr-gamma);
-  border: 0.1rem solid var(--dr-delta);
+  background: var(--dr-zeta);
+  border: 0.1rem solid rgba(var(--dr-beta-rgb), 0.1);
   border-radius: 0.8rem;
   box-shadow: 0 1rem 1.5rem -0.3rem rgba(0, 0, 0, 0.1),
     0 0.4rem 0.6rem -0.2rem rgba(0, 0, 0, 0.05);
@@ -16,7 +16,7 @@
   width: 100%;
   padding: 0.8rem 1.6rem;
   font-size: 1.4rem;
-  color: var(--dr-alpha);
+  color: var(--dr-beta);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -34,7 +34,7 @@
 }
 
 .popup-menu-item--disabled {
-  color: rgba(var(--dr-alpha-rgb), 0.5);
+  color: rgba(var(--dr-beta-rgb), 0.5);
   cursor: not-allowed;
 }
 
