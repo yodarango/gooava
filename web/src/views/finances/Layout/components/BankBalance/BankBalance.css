@@ -1,0 +1,72 @@
+.bank-balance-6pw1 {
+  background-color: var(--dr-zeta);
+  border: 1px solid rgba(var(--dr-eta-rgb), 0.1);
+  border-radius: 1.5rem;
+  box-shadow: 0 0.2rem 0.4rem rgba(var(--dr-beta-rgb), 0.2);
+  padding: var(--dr-spacing-4);
+
+  .bank-balance-6pw1__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dr-spacing-2);
+    margin-bottom: var(--dr-spacing-2);
+  }
+
+  .bank-balance-6pw1__label {
+    color: rgba(var(--dr-beta-rgb), 0.5);
+    font-size: var(--dr-font-size-5);
+    font-weight: var(--dr-font-weight-6);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+  }
+
+  .bank-balance-6pw1__accounts {
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+    margin: 0 0 var(--dr-spacing-2);
+    padding: 0;
+  }
+
+  .bank-balance-6pw1__account {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dr-spacing-2);
+    padding: var(--dr-spacing-1) 0;
+
+    & + .bank-balance-6pw1__account {
+      border-top: 1px solid rgba(var(--dr-eta-rgb), 0.1);
+    }
+  }
+
+  .bank-balance-6pw1__account-name {
+    color: rgba(var(--dr-beta-rgb), 0.7);
+    font-size: var(--dr-font-size-5);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .bank-balance-6pw1__account-amount {
+    flex-shrink: 0;
+    color: rgba(var(--dr-beta-rgb), 0.7);
+    font-size: var(--dr-font-size-5);
+    font-weight: var(--dr-font-weight-6);
+  }
+
+  .bank-balance-6pw1__total {
+    color: var(--dr-delta);
+    font-size: var(--dr-font-size-0);
+    font-weight: var(--dr-font-weight-8);
+    margin: 0;
+  }
+
+  .bank-balance-6pw1__hint {
+    color: rgba(var(--dr-beta-rgb), 0.5);
+    font-size: var(--dr-font-size-5);
+    margin: var(--dr-spacing-2) 0 0;
+  }
+}

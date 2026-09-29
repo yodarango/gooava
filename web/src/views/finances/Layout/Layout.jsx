@@ -1,6 +1,10 @@
+import { BankBalance } from "./components/BankBalance/BankBalance";
+import { PlaidConnect } from "./components/PlaidConnect/PlaidConnect";
+import { Transactions } from "./components/Transactions/Transactions";
 import { PaydayStrip } from "./components/PaydayStrip/PaydayStrip";
 import { useAppContext } from "../../context/appContextProvider";
-import { daysUntilPayday, nextPaydayDate } from "@utils";
+import { daysUntilPayday, nextPaydayDate, useGet } from "@utils";
+import { API_GET_PLAID_STATUS } from "@constants";
 import { Pencil, Check, X } from "lucide"; // data, not components
 import { MorphIcon } from "morphicons/react";
 import { useEffect, useState } from "react";
@@ -35,6 +39,15 @@ export const Layout = () => {
   const [draft, setDraft] = useState("");
   const [editing, setEditing] = useState(false);
   const [now, setNow] = useState(() => new Date());
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Bank connection status — when connected, the manual balance card and the
+  // connect card are swapped for live bank data.
+  const status = useGet({
+    url: API_GET_PLAID_STATUS,
+    dependencies: [refreshKey],
+  });
+  const bankConnected = !!status.data?.connected;
 
   // Live clock so the header date/time stays current
   useEffect(() => {
@@ -97,7 +110,13 @@ export const Layout = () => {
       <p className='finances-layout-4f8d__today'>{formatToday(now)}</p>
 
       <div className='finances-layout-4f8d__cards'>
-        {/* Editable bank balance */}
+        {/* Bank balance — pulled live once a bank is connected, editable manually otherwise */}
+        {bankConnected ? (
+          <BankBalance
+            refreshKey={refreshKey}
+            onSynced={() => setRefreshKey((key) => key + 1)}
+          />
+        ) : (
         <section className='finances-layout-4f8d__card'>
           <p className='finances-layout-4f8d__label'>In the bank</p>
 
@@ -148,6 +167,7 @@ export const Layout = () => {
             Updated manually by you — no bank connection.
           </p>
         </section>
+        )}
 
         {/* Payday countdown */}
         <section className='finances-layout-4f8d__card countdown'>
@@ -173,6 +193,14 @@ export const Layout = () => {
       </div>
 
       <PaydayStrip />
+
+      {/* The connect card goes away once a bank is linked (and stays hidden
+          while the status is still loading to avoid a flash) */}
+      {!status.loading && !bankConnected && (
+        <PlaidConnect onSynced={() => setRefreshKey((key) => key + 1)} />
+      )}
+
+      <Transactions refreshKey={refreshKey} />
     </div>
   );
 };

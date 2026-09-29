@@ -25,6 +25,14 @@ func Router () http.Handler {
 	mux.HandleFunc(constants.ROUTE_POST_SIGNUP, Signup)
 	mux.HandleFunc(constants.ROUTE_POST_LOGIN, Login)
 
+	// plaid routes (authentication required)
+	mux.HandleFunc(constants.ROUTE_POST_PLAID_LINK_TOKEN, models.Authenticate(PlaidCreateLinkToken))
+	mux.HandleFunc(constants.ROUTE_POST_PLAID_EXCHANGE, models.Authenticate(PlaidExchangePublicToken))
+	mux.HandleFunc(constants.ROUTE_POST_PLAID_SYNC, models.Authenticate(PlaidSyncTransactions))
+	mux.HandleFunc(constants.ROUTE_GET_PLAID_TRANSACTIONS, models.Authenticate(PlaidListTransactions))
+	mux.HandleFunc(constants.ROUTE_GET_PLAID_ACCOUNTS, models.Authenticate(PlaidListAccounts))
+	mux.HandleFunc(constants.ROUTE_GET_PLAID_STATUS, models.Authenticate(PlaidStatus))
+
 
 	// Serve static files from the frontend build
 	staticPath := os.Getenv("STATIC_PATH")

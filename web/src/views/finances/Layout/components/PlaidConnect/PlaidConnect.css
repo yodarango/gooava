@@ -1,0 +1,35 @@
+.plaid-connect-3xk7 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--dr-spacing-4);
+  background-color: var(--dr-zeta);
+  border: 1px solid rgba(var(--dr-eta-rgb), 0.1);
+  border-radius: 1.5rem;
+  box-shadow: 0 0.2rem 0.4rem rgba(var(--dr-beta-rgb), 0.2);
+  padding: var(--dr-spacing-4);
+
+  .plaid-connect-3xk7__info {
+    min-width: 0;
+  }
+
+  .plaid-connect-3xk7__label {
+    color: rgba(var(--dr-beta-rgb), 0.5);
+    font-size: var(--dr-font-size-5);
+    font-weight: var(--dr-font-weight-6);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--dr-spacing-2);
+  }
+
+  .plaid-connect-3xk7__hint {
+    color: rgba(var(--dr-beta-rgb), 0.5);
+    font-size: var(--dr-font-size-5);
+    margin: 0;
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
