@@ -10,6 +10,12 @@
     font-weight: var(--dr-font-weight-8);
   }
 
+  .finances-layout-4f8d__today {
+    color: var(--dr-delta);
+    font-size: var(--dr-font-size-0);
+    font-weight: var(--dr-font-weight-8);
+  }
+
   .finances-layout-4f8d__cards {
     display: grid;
     grid-template-columns: 1fr 1fr;

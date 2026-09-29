@@ -2,6 +2,7 @@ export const ROUTE_HOME = "/";
 export const ROUTE_AUTH = "/auth";
 export const ROUTE_AUTH_VERIFY = "/auth/verify";
 export const ROUTE_FINANCES = "/finances";
+export const ROUTE_CALENDAR = "/calendar";
 
 // api base
 export const API_BASE = import.meta.env.VITE_API_BASE || "/api";

@@ -1,8 +1,8 @@
 import { useAppContext } from "../../../views/context/appContextProvider";
-import { UtensilsCrossed, CookingPot, House, DoorOpen, CircleDollarSign, HandCoins } from "lucide";
+import { UtensilsCrossed, CookingPot, House, DoorOpen, CircleDollarSign, HandCoins, Calendar, CalendarDays } from "lucide";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MorphIcon } from "morphicons/react";
-import { ROUTE_FINANCES, ROUTE_HOME } from "@constants";
+import { ROUTE_FINANCES, ROUTE_CALENDAR, ROUTE_HOME } from "@constants";
 import { useState } from "react";
 
 // styles
@@ -17,6 +17,7 @@ export const BottomNav = () => {
 
   const isHomeActive = location.pathname === ROUTE_HOME;
   const isFinancesActive = location.pathname === ROUTE_FINANCES;
+  const isCalendarActive = location.pathname === ROUTE_CALENDAR;
 
   const comingSoon = (feature) => () =>
     showToast({ message: `${feature} are coming soon!`, type: "info" });
@@ -74,6 +75,26 @@ export const BottomNav = () => {
             }
             spring='snappy'
             label='Finances'
+            size={24}
+          />
+        </button>
+
+        <button
+          onMouseEnter={() => setHoveredItem("calendar")}
+          onMouseLeave={() => setHoveredItem(null)}
+          className={`bottom-nav-9x2k__item ${isCalendarActive ? "active" : ""}`}
+          onClick={() => navigate(ROUTE_CALENDAR)}
+          aria-label='Calendar'
+          type='button'
+        >
+          <MorphIcon
+            icon={
+              hoveredItem === "calendar" || isCalendarActive
+                ? CalendarDays
+                : Calendar
+            }
+            spring='snappy'
+            label='Calendar'
             size={24}
           />
         </button>

@@ -45,7 +45,11 @@ export function ForgotPassword() {
 
   return (
     <>
-      <Modal title='Forgot Password' open={showForgotPasswordModal}>
+      <Modal
+        onClose={() => setShowForgotPasswordModal(false)}
+        title='Forgot Password'
+        open={showForgotPasswordModal}
+      >
         <p className='mb-4'>
           Please enter your email below and a temporary password will be sent to
           you.

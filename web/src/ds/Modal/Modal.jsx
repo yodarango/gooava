@@ -30,7 +30,7 @@ export const Modal = ({
   // handle the click on the content propagation unless it is the close button or the closeOnBackdropClick is true
   const handleContentClick = (e) => {
     if (e.target.classList.contains("shrood-modal-0elj__close")) {
-      onClose();
+      onClose?.();
     } else {
       e.stopPropagation();
     }

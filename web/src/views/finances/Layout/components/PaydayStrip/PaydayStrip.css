@@ -1,0 +1,39 @@
+.payday-strip-9k2x {
+  display: flex;
+  align-items: center;
+  gap: var(--dr-spacing-4);
+  overflow-x: auto;
+  background-color: var(--dr-zeta);
+  border: 1px solid rgba(var(--dr-eta-rgb), 0.1);
+  border-radius: 1.5rem;
+  box-shadow: 0 0.2rem 0.4rem rgba(var(--dr-beta-rgb), 0.2);
+  padding: var(--dr-spacing-4);
+  -webkit-overflow-scrolling: touch;
+}
+
+.payday-strip-9k2x__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--dr-spacing-1);
+  flex: 0 0 auto;
+}
+
+.payday-strip-9k2x__month {
+  font-size: var(--dr-font-size-6);
+  font-weight: var(--dr-font-weight-6);
+  color: var(--dr-beta);
+}
+
+.payday-strip-9k2x__circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background-color: var(--dr-delta);
+  color: var(--dr-zeta);
+  font-size: var(--dr-font-size-4);
+  font-weight: var(--dr-font-weight-7);
+}

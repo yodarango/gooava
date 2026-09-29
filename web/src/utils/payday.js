@@ -34,3 +34,15 @@ export function nextPaydayDate(fromDate = new Date()) {
   date.setDate(date.getDate() + daysUntilPayday(date));
   return date;
 }
+
+// The next `count` paydays (starting with the upcoming one), every other Friday
+export function upcomingPaydays(count = 12, fromDate = new Date()) {
+  const first = nextPaydayDate(fromDate);
+  const paydays = [];
+  for (let i = 0; i < count; i++) {
+    const date = new Date(first);
+    date.setDate(first.getDate() + i * PAY_PERIOD_DAYS);
+    paydays.push(date);
+  }
+  return paydays;
+}

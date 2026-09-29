@@ -6,6 +6,7 @@ export { useGet } from "./useGet";
 export {
   daysUntilPayday,
   nextPaydayDate,
+  upcomingPaydays,
   stripTime,
   isPayday,
 } from "./payday";

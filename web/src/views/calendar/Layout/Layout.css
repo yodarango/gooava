@@ -1,0 +1,6 @@
+.calendar-layout-2p7c {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dr-spacing-4);
+  animation: fadeInUp 0.8s ease-out;
+}

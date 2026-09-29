@@ -1,4 +1,4 @@
-import { PaydayCalendar } from "./components/PaydayCalendar/PaydayCalendar";
+import { PaydayStrip } from "./components/PaydayStrip/PaydayStrip";
 import { useAppContext } from "../../context/appContextProvider";
 import { daysUntilPayday, nextPaydayDate } from "@utils";
 import { Pencil, Check, X } from "lucide"; // data, not components
@@ -18,12 +18,29 @@ const formatUSD = (value) =>
     currency: "USD",
   }).format(value);
 
+// e.g. "Oct. 29 08:10 AM"
+const formatToday = (date) => {
+  const month = date.toLocaleDateString("en-US", { month: "short" });
+  const time = date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return `${month}. ${date.getDate()} ${time}`;
+};
+
 export const Layout = () => {
   const { state, showToast } = useAppContext();
 
   const [balance, setBalance] = useState(null);
   const [draft, setDraft] = useState("");
   const [editing, setEditing] = useState(false);
+  const [now, setNow] = useState(() => new Date());
+
+  // Live clock so the header date/time stays current
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
 
   const userId = state.user?.id;
   const daysLeft = daysUntilPayday();
@@ -77,6 +94,7 @@ export const Layout = () => {
   return (
     <div className='finances-layout-4f8d'>
       <h1 className='finances-layout-4f8d__title'>Finances</h1>
+      <p className='finances-layout-4f8d__today'>{formatToday(now)}</p>
 
       <div className='finances-layout-4f8d__cards'>
         {/* Editable bank balance */}
@@ -154,7 +172,7 @@ export const Layout = () => {
         </section>
       </div>
 
-      <PaydayCalendar />
+      <PaydayStrip />
     </div>
   );
 };
