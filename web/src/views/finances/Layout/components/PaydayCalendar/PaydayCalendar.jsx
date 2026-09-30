@@ -22,9 +22,18 @@ function buildCells(year, month) {
 /*********************************************************************************************************
  * Custom-made calendar (no library) that highlights paydays — every other Friday, anchored to the
  * Oct 2, 2026 payday — and today's date.
+ *
+ * Optional selection props (used by the expense form's recurring pickers):
+ * - onDaySelect({ year, month, day }): makes days clickable (month is 1-based)
+ * - selectedDays: day numbers (1-31) highlighted in every viewed month
+ * - selectedDate: { month, day } highlighted only in that month
+ * With no props it renders exactly as before (Calendar page).
  * ******************************************************************************************************
  */
-export const PaydayCalendar = () => {
+export const PaydayCalendar = (props) => {
+  const { onDaySelect, selectedDays = [], selectedDate = null } = props;
+  const selectable = typeof onDaySelect === "function";
+
   const today = stripTime(new Date());
   const [viewed, setViewed] = useState(() => ({
     year: today.getFullYear(),
@@ -79,31 +88,58 @@ export const PaydayCalendar = () => {
           const date = new Date(viewed.year, viewed.month, day);
           const payday = isPayday(date);
           const isToday = stripTime(date).getTime() === today.getTime();
+          const isSelected =
+            selectable &&
+            (selectedDays.includes(day) ||
+              (selectedDate !== null &&
+                selectedDate.month === viewed.month + 1 &&
+                selectedDate.day === day));
 
           const className = [
             "payday-calendar-7m3q__day",
             payday ? "payday" : "",
             isToday ? "today" : "",
+            selectable ? "selectable" : "",
+            isSelected ? "selected" : "",
           ]
             .filter(Boolean)
             .join(" ");
 
+          if (!selectable) {
+            return (
+              <span
+                key={day}
+                className={className}
+                title={payday ? "Payday 💸" : undefined}
+              >
+                {day}
+              </span>
+            );
+          }
+
           return (
-            <span
-              key={day}
-              className={className}
+            <button
+              onClick={() =>
+                onDaySelect({ year: viewed.year, month: viewed.month + 1, day })
+              }
               title={payday ? "Payday 💸" : undefined}
+              aria-pressed={isSelected}
+              className={className}
+              type='button'
+              key={day}
             >
               {day}
-            </span>
+            </button>
           );
         })}
       </div>
 
-      <p className='payday-calendar-7m3q__legend'>
-        <span className='payday-calendar-7m3q__legend-payday' /> Payday (every
-        other Friday)
-      </p>
+      {!selectable && (
+        <p className='payday-calendar-7m3q__legend'>
+          <span className='payday-calendar-7m3q__legend-payday' /> Payday (every
+          other Friday)
+        </p>
+      )}
     </div>
   );
 };

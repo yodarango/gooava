@@ -13,12 +13,16 @@ const ROUTE_POST_UPDATE_PROFILE = ROUTE_API_BASE + "/update-profile"
 const ROUTE_GET_AUTH_SAMPLE = ROUTE_API_BASE + "/auth-sample"
 const ROUTE_GET_PUBLIC_SAMPLE = ROUTE_API_BASE + "/public-sample"
 
+// expenses
+const ROUTE_POST_EXPENSES = ROUTE_API_BASE + "/expenses"
+
 // plaid
 const ROUTE_POST_PLAID_LINK_TOKEN = ROUTE_API_BASE + "/plaid/link-token/create"
 const ROUTE_POST_PLAID_EXCHANGE = ROUTE_API_BASE + "/plaid/exchange"
 const ROUTE_POST_PLAID_SYNC = ROUTE_API_BASE + "/plaid/sync"
 const ROUTE_GET_PLAID_TRANSACTIONS = ROUTE_API_BASE + "/plaid/transactions"
 const ROUTE_GET_PLAID_ACCOUNTS = ROUTE_API_BASE + "/plaid/accounts"
+const ROUTE_GET_PLAID_ITEMS = ROUTE_API_BASE + "/plaid/items"
 const ROUTE_GET_PLAID_STATUS = ROUTE_API_BASE + "/plaid/status"
 
 // context must have a predefined custom context key type

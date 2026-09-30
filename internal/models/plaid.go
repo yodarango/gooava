@@ -16,6 +16,7 @@ type PlaidItem struct {
 
 type PlaidAccountRow struct {
 	AccountID        string   `json:"account_id"`
+	PlaidItemID      int64    `json:"plaid_item_id"`
 	Name             string   `json:"name"`
 	Mask             string   `json:"mask"`
 	Type             string   `json:"type"`
@@ -106,17 +107,60 @@ func GetPlaidCursor(userID uint) (string, error) {
 }
 
 /**************************************************************************************
-* SavePlaidCursor stores the latest transactions/sync cursor on the user's item.
+* SavePlaidCursor stores the latest transactions/sync cursor on a Plaid item.
 **************************************************************************************/
-func SavePlaidCursor(userID uint, cursor string) error {
-	query := "UPDATE plaid_items SET `cursor` = ? WHERE user_id = ?"
+func SavePlaidCursor(itemDBID int64, cursor string) error {
+	query := "UPDATE plaid_items SET `cursor` = ? WHERE id = ?"
 
-	_, err := ModelsRepo.DB.Conn.Exec(query, cursor, userID)
+	_, err := ModelsRepo.DB.Conn.Exec(query, cursor, itemDBID)
 	if err != nil {
 		return fmt.Errorf("could not save plaid cursor: %w", err)
 	}
 
 	return nil
+}
+
+/**************************************************************************************
+* ListPlaidItems returns every Plaid item (bank connection) the user has, oldest first.
+* Never includes the access token.
+**************************************************************************************/
+func ListPlaidItems(userID uint) ([]PlaidItem, error) {
+	query := "SELECT id, user_id, item_id, COALESCE(institution_name, '') FROM plaid_items WHERE user_id = ? ORDER BY id"
+
+	rows, err := ModelsRepo.DB.Conn.Query(query, userID)
+	if err != nil {
+		return nil, fmt.Errorf("could not list plaid items: %w", err)
+	}
+	defer rows.Close()
+
+	items := make([]PlaidItem, 0)
+	for rows.Next() {
+		var item PlaidItem
+		if err := rows.Scan(&item.Id, &item.UserID, &item.ItemID, &item.InstitutionName); err != nil {
+			return nil, fmt.Errorf("could not scan plaid item: %w", err)
+		}
+		items = append(items, item)
+	}
+
+	return items, nil
+}
+
+/**************************************************************************************
+* GetPlaidItemById returns one of the user's Plaid items by its database id
+* (including the access token and sync cursor), or sql.ErrNoRows when not found.
+**************************************************************************************/
+func GetPlaidItemById(userID uint, itemDBID int64) (*PlaidItem, error) {
+	query := "SELECT id, user_id, item_id, access_token, COALESCE(`cursor`, ''), COALESCE(institution_name, '') " +
+		"FROM plaid_items WHERE id = ? AND user_id = ?"
+
+	var item PlaidItem
+	row := ModelsRepo.DB.Conn.QueryRow(query, itemDBID, userID)
+	err := row.Scan(&item.Id, &item.UserID, &item.ItemID, &item.AccessToken, &item.Cursor, &item.InstitutionName)
+	if err != nil {
+		return nil, err
+	}
+
+	return &item, nil
 }
 
 /**************************************************************************************
@@ -279,7 +323,7 @@ func ListPlaidTransactions(userID uint, limit int) ([]PlaidTransactionWithAccoun
 **************************************************************************************/
 func ListPlaidAccounts(userID uint) ([]PlaidAccountRow, error) {
 	query := `
-		SELECT account_id, name, COALESCE(mask, ''), COALESCE(type, ''), COALESCE(subtype, ''),
+		SELECT account_id, plaid_item_id, name, COALESCE(mask, ''), COALESCE(type, ''), COALESCE(subtype, ''),
 			COALESCE(current_balance, 0), available_balance, COALESCE(iso_currency_code, 'USD')
 		FROM plaid_accounts
 		WHERE user_id = ?
@@ -296,8 +340,8 @@ func ListPlaidAccounts(userID uint) ([]PlaidAccountRow, error) {
 	for rows.Next() {
 		var account PlaidAccountRow
 		err := rows.Scan(
-			&account.AccountID, &account.Name, &account.Mask, &account.Type, &account.Subtype,
-			&account.CurrentBalance, &account.AvailableBalance, &account.IsoCurrencyCode,
+			&account.AccountID, &account.PlaidItemID, &account.Name, &account.Mask, &account.Type,
+			&account.Subtype, &account.CurrentBalance, &account.AvailableBalance, &account.IsoCurrencyCode,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("could not scan plaid account: %w", err)

@@ -1,3 +1,4 @@
+import { FinancesSettings } from "./components/FinancesSettings/FinancesSettings";
 import { BankBalance } from "./components/BankBalance/BankBalance";
 import { PlaidConnect } from "./components/PlaidConnect/PlaidConnect";
 import { Transactions } from "./components/Transactions/Transactions";
@@ -106,7 +107,10 @@ export const Layout = () => {
 
   return (
     <div className='finances-layout-4f8d'>
-      <h1 className='finances-layout-4f8d__title'>Finances</h1>
+      <div className='finances-layout-4f8d__header'>
+        <h1 className='finances-layout-4f8d__title'>Finances</h1>
+        <FinancesSettings onChanged={() => setRefreshKey((key) => key + 1)} />
+      </div>
       <p className='finances-layout-4f8d__today'>{formatToday(now)}</p>
 
       <div className='finances-layout-4f8d__cards'>

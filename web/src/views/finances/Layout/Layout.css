@@ -4,6 +4,13 @@
   gap: var(--dr-spacing-4);
   animation: fadeInUp 0.8s ease-out;
 
+  .finances-layout-4f8d__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dr-spacing-4);
+  }
+
   .finances-layout-4f8d__title {
     color: var(--dr-beta);
     font-size: var(--dr-font-size-0);
@@ -21,7 +28,7 @@
     grid-template-columns: 1fr 1fr;
     gap: var(--dr-spacing-4);
 
-    @media (max-width: 480px) {
+    @media (max-width: 800px) {
       grid-template-columns: 1fr;
     }
   }

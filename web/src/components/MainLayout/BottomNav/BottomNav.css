@@ -44,22 +44,30 @@
 }
 
 .bottom-nav-9x2k__item.active {
-  color: var(--dr-delta);
-  background-color: rgba(var(--dr-delta-rgb), 0.12);
+  color: var(--dr-zeta);
+  background-color: var(--dr-delta);
 }
 
-/* raised center home button */
+/* raised center home button — neutral until home is the active page */
 .bottom-nav-9x2k__item--home {
-  background-color: var(--dr-delta);
-  color: var(--dr-zeta);
+  background-color: var(--dr-zeta);
+  color: var(--dr-eta);
   width: 5.6rem;
   height: 5.6rem;
   margin: -1.6rem 0;
-  box-shadow: 0 0.4rem 1rem rgba(var(--dr-delta-rgb), 0.35);
+  border: 1px solid rgba(var(--dr-beta-rgb), 0.06);
+  box-shadow: 0 0.4rem 1rem rgba(var(--dr-beta-rgb), 0.15);
 }
 
-.bottom-nav-9x2k__item--home:hover,
-.bottom-nav-9x2k__item--home.active {
+.bottom-nav-9x2k__item--home:hover {
+  background-color: rgba(var(--dr-delta-rgb), 0.08);
+  color: var(--dr-delta);
+}
+
+.bottom-nav-9x2k__item--home.active,
+.bottom-nav-9x2k__item--home.active:hover {
   background-color: var(--dr-delta);
   color: var(--dr-zeta);
+  border-color: transparent;
+  box-shadow: 0 0.4rem 1rem rgba(var(--dr-delta-rgb), 0.35);
 }

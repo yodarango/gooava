@@ -15,12 +15,16 @@ export const API_POST_FORGOT_PASSWORD = API_BASE + "/forgot-password";
 export const API_POST_CHANGE_PASSWORD = API_BASE + "/change-password";
 export const API_POST_UPDATE_PROFILE = API_BASE + "/update-profile";
 
+// api expense routes
+export const API_POST_EXPENSES = API_BASE + "/expenses";
+
 // api plaid routes
 export const API_POST_PLAID_LINK_TOKEN = API_BASE + "/plaid/link-token/create";
 export const API_POST_PLAID_EXCHANGE = API_BASE + "/plaid/exchange";
 export const API_POST_PLAID_SYNC = API_BASE + "/plaid/sync";
 export const API_GET_PLAID_TRANSACTIONS = API_BASE + "/plaid/transactions";
 export const API_GET_PLAID_ACCOUNTS = API_BASE + "/plaid/accounts";
+export const API_GET_PLAID_ITEMS = API_BASE + "/plaid/items";
 export const API_GET_PLAID_STATUS = API_BASE + "/plaid/status";
 
 // user statuses

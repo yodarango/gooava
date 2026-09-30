@@ -1,0 +1,185 @@
+/* gear button next to the Finances title */
+.finances-settings-8h3j__trigger {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: var(--dr-beta);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+
+  &:hover {
+    background-color: rgba(var(--dr-beta-rgb), 0.08);
+  }
+
+  &:active {
+    transform: scale(0.92);
+  }
+}
+
+/* drawer — below the toast (z-index 15), above the bottom nav (12) */
+.finances-settings-8h3j__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 13;
+  background-color: rgba(var(--dr-beta-rgb), 0.4);
+  animation: finances-settings-8h3j-fade 0.2s ease-out;
+}
+
+.finances-settings-8h3j__drawer {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 14;
+  width: 100%;
+  max-width: 80rem;
+  height: 100vh;
+  height: 100dvh;
+  background-color: var(--dr-gamma);
+  box-shadow: -0.4rem 0 1.6rem rgba(var(--dr-beta-rgb), 0.2);
+  animation: finances-settings-8h3j-slide 0.25s ease-out;
+}
+
+.finances-settings-8h3j__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--dr-spacing-4);
+  padding: var(--dr-spacing-4);
+  border-bottom: 1px solid rgba(var(--dr-eta-rgb), 0.1);
+}
+
+.finances-settings-8h3j__title {
+  color: var(--dr-beta);
+  font-size: var(--dr-font-size-2);
+  font-weight: var(--dr-font-weight-8);
+  margin: 0;
+}
+
+.finances-settings-8h3j__close {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: var(--dr-beta);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(var(--dr-beta-rgb), 0.08);
+  }
+}
+
+.finances-settings-8h3j__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--dr-spacing-4);
+}
+
+/* make the ds tabs fill the drawer: titles fixed at the top, active tab content
+   stretches and its body scrolls while the footer stays pinned */
+.finances-settings-8h3j__drawer .tabs-container {
+  flex: 1;
+  min-height: 0;
+}
+
+.finances-settings-8h3j__drawer .tabs-container__titles {
+  padding: 0 var(--dr-spacing-4);
+  margin-bottom: 0;
+}
+
+.finances-settings-8h3j__drawer .tabs-container__content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 0;
+}
+
+.finances-settings-8h3j__drawer .tabs-container__content > div {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.finances-settings-8h3j__empty {
+  color: rgba(var(--dr-beta-rgb), 0.5);
+  font-size: var(--dr-font-size-4);
+  margin: 0;
+}
+
+.finances-settings-8h3j__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dr-spacing-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.finances-settings-8h3j__item {
+  background-color: var(--dr-zeta);
+  border: 1px solid rgba(var(--dr-eta-rgb), 0.1);
+  border-radius: 1.5rem;
+  box-shadow: 0 0.2rem 0.4rem rgba(var(--dr-beta-rgb), 0.2);
+  padding: var(--dr-spacing-4);
+}
+
+.finances-settings-8h3j__institution {
+  color: var(--dr-beta);
+  font-size: var(--dr-font-size-4);
+  font-weight: var(--dr-font-weight-7);
+  margin: 0;
+}
+
+.finances-settings-8h3j__accounts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dr-spacing-1);
+  color: rgba(var(--dr-beta-rgb), 0.5);
+  font-size: var(--dr-font-size-5);
+  list-style: none;
+  margin: var(--dr-spacing-2) 0 0;
+  padding: 0;
+}
+
+.finances-settings-8h3j__footer {
+  padding: var(--dr-spacing-4);
+  border-top: 1px solid rgba(var(--dr-eta-rgb), 0.1);
+}
+
+@keyframes finances-settings-8h3j-slide {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes finances-settings-8h3j-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

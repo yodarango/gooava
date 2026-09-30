@@ -31,7 +31,11 @@ func Router () http.Handler {
 	mux.HandleFunc(constants.ROUTE_POST_PLAID_SYNC, models.Authenticate(PlaidSyncTransactions))
 	mux.HandleFunc(constants.ROUTE_GET_PLAID_TRANSACTIONS, models.Authenticate(PlaidListTransactions))
 	mux.HandleFunc(constants.ROUTE_GET_PLAID_ACCOUNTS, models.Authenticate(PlaidListAccounts))
+	mux.HandleFunc(constants.ROUTE_GET_PLAID_ITEMS, models.Authenticate(PlaidListItems))
 	mux.HandleFunc(constants.ROUTE_GET_PLAID_STATUS, models.Authenticate(PlaidStatus))
+
+	// expense routes (authentication required)
+	mux.HandleFunc(constants.ROUTE_POST_EXPENSES, models.Authenticate(CreateExpense))
 
 
 	// Serve static files from the frontend build

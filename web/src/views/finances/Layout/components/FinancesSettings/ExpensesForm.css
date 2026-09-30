@@ -1,0 +1,121 @@
+.expenses-form-2nb5 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dr-spacing-4);
+
+  .expenses-form-2nb5__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--dr-spacing-2);
+  }
+
+  .expenses-form-2nb5__label {
+    color: rgba(var(--dr-beta-rgb), 0.5);
+    font-size: var(--dr-font-size-5);
+    font-weight: var(--dr-font-weight-6);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .expenses-form-2nb5__select {
+    background: var(--dr-epsilon);
+    color: rgba(var(--dr-beta-rgb), 0.8);
+    border: none;
+    border-radius: 1rem;
+    outline: none;
+    padding: var(--dr-spacing-2) var(--dr-spacing-4);
+    font-size: var(--dr-font-size-2);
+    font-weight: var(--dr-font-weight-7);
+    width: 100%;
+    cursor: pointer;
+  }
+
+  /* the label field anchors the autocomplete dropdown */
+  .expenses-form-2nb5__label-field {
+    position: relative;
+  }
+
+  .expenses-form-2nb5__suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+    margin: var(--dr-spacing-1) 0 0;
+    padding: var(--dr-spacing-1);
+    background-color: var(--dr-zeta);
+    border: 1px solid rgba(var(--dr-eta-rgb), 0.1);
+    border-radius: 1rem;
+    box-shadow: 0 0.4rem 1.6rem rgba(var(--dr-beta-rgb), 0.2);
+    max-height: 22rem;
+    overflow-y: auto;
+  }
+
+  .expenses-form-2nb5__suggestion {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    border-radius: 0.8rem;
+    cursor: pointer;
+    color: var(--dr-beta);
+    font-size: var(--dr-font-size-4);
+    padding: var(--dr-spacing-2) var(--dr-spacing-3);
+    transition: background-color 0.15s ease;
+
+    &:hover {
+      background-color: rgba(var(--dr-delta-rgb), 0.08);
+    }
+  }
+
+  /* current picks next to the picker hint, e.g. "Pick 2 days — 5 & 20" */
+  .expenses-form-2nb5__picks {
+    color: var(--dr-delta);
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  /* quarterly month cards */
+  .expenses-form-2nb5__months {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--dr-spacing-2);
+    margin-top: var(--dr-spacing-2);
+  }
+
+  .expenses-form-2nb5__month {
+    background-color: var(--dr-zeta);
+    border: 1px solid rgba(var(--dr-eta-rgb), 0.15);
+    border-radius: 1rem;
+    color: var(--dr-beta);
+    cursor: pointer;
+    font-size: var(--dr-font-size-4);
+    font-weight: var(--dr-font-weight-6);
+    padding: var(--dr-spacing-2) 0;
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease;
+
+    &:hover:not(:disabled) {
+      background-color: rgba(var(--dr-delta-rgb), 0.08);
+    }
+
+    &.picked {
+      background-color: var(--dr-delta);
+      border-color: transparent;
+      color: var(--dr-zeta);
+    }
+
+    /* the anchor month comes from the calendar date — locked in */
+    &.anchor {
+      background-color: var(--dr-beta);
+      border-color: transparent;
+      color: var(--dr-zeta);
+      cursor: not-allowed;
+    }
+  }
+}

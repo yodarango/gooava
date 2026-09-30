@@ -134,8 +134,17 @@ func PlaidExchangePublicToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Initial transactions sync so the list is populated right after linking.
-	_, _, _, syncErr := runTransactionsSync(r.Context(), authUser.Id)
+	// Initial transactions sync for this item so the list is populated right after linking.
+	item, err := models.GetPlaidItemById(authUser.Id, itemDBID)
+	if err != nil {
+		httpResponse.Error = fmt.Sprintf("bank connected, but could not load it: %v", err)
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	_, _, _, syncErr := runTransactionsSync(r.Context(), item)
 	if syncErr != nil {
 		httpResponse.Error = fmt.Sprintf("bank connected, but the initial sync failed: %v", syncErr)
 		httpResponse.Success = false
@@ -170,9 +179,42 @@ func PlaidSyncTransactions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	added, modified, removed, err := runTransactionsSync(r.Context(), authUser.Id)
+	items, err := models.ListPlaidItems(authUser.Id)
 	if err != nil {
 		httpResponse.Error = fmt.Sprintf("%v", err)
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	if len(items) == 0 {
+		httpResponse.Error = "no bank connected"
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	// Sync every connected source; one failing bank should not block the others.
+	added, modified, removed, failed := 0, 0, 0, 0
+	var firstErr error
+	for i := range items {
+		a, m, r, syncErr := runTransactionsSync(r.Context(), &items[i])
+		if syncErr != nil {
+			failed++
+			if firstErr == nil {
+				firstErr = syncErr
+			}
+			continue
+		}
+		added += a
+		modified += m
+		removed += r
+	}
+
+	if failed == len(items) {
+		httpResponse.Error = fmt.Sprintf("%v", firstErr)
 		httpResponse.Success = false
 		httpResponse.Data = nil
 		httpResponse.Send(w)
@@ -183,6 +225,7 @@ func PlaidSyncTransactions(w http.ResponseWriter, r *http.Request) {
 		"added":    added,
 		"modified": modified,
 		"removed":  removed,
+		"failed":   failed,
 	}
 	httpResponse.Success = true
 	httpResponse.Error = nil
@@ -266,6 +309,39 @@ func PlaidListAccounts(w http.ResponseWriter, r *http.Request) {
 }
 
 /************************************************************************
+* Lists the authenticated user's connected Plaid items (bank sources).
+* Access tokens are never exposed (json:"-" on the struct field).
+*
+* status: ✅
+************************************************************************/
+func PlaidListItems(w http.ResponseWriter, r *http.Request) {
+	var httpResponse models.HttpResponse
+
+	authUser, ok := r.Context().Value(constants.USER_CONTEXT_AUTH_KEY).(*models.AuthUser)
+	if !ok {
+		httpResponse.Error = "Authentication required"
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	items, err := models.ListPlaidItems(authUser.Id)
+	if err != nil {
+		httpResponse.Error = fmt.Sprintf("%v", err)
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	httpResponse.Data = items
+	httpResponse.Success = true
+	httpResponse.Error = nil
+	httpResponse.Send(w)
+}
+
+/************************************************************************
 * Reports whether the authenticated user has a bank connected.
 *
 * status: ✅
@@ -307,19 +383,12 @@ func PlaidStatus(w http.ResponseWriter, r *http.Request) {
 }
 
 /**************************************************************************************
-* runTransactionsSync pages through /transactions/sync with the stored cursor (empty
-* cursor = full history), applies added/modified/removed to the database and persists
-* the final cursor.
+* runTransactionsSync pages through /transactions/sync for one Plaid item with its
+* stored cursor (empty cursor = full history), applies added/modified/removed to the
+* database, refreshes account balances, and persists the final cursor.
 **************************************************************************************/
-func runTransactionsSync(ctx context.Context, userID uint) (addedN, modifiedN, removedN int, err error) {
-	item, err := models.GetPlaidItemByUser(userID)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return 0, 0, 0, fmt.Errorf("no bank connected")
-		}
-		return 0, 0, 0, err
-	}
-
+func runTransactionsSync(ctx context.Context, item *models.PlaidItem) (addedN, modifiedN, removedN int, err error) {
+	userID := item.UserID
 	cursor := item.Cursor
 	added := make([]models.PlaidTransactionRow, 0)
 	modified := make([]models.PlaidTransactionRow, 0)
@@ -370,7 +439,7 @@ func runTransactionsSync(ctx context.Context, userID uint) (addedN, modifiedN, r
 	if err := models.DeletePlaidTransactions(userID, removedIDs); err != nil {
 		return 0, 0, 0, err
 	}
-	if err := models.SavePlaidCursor(userID, cursor); err != nil {
+	if err := models.SavePlaidCursor(item.Id, cursor); err != nil {
 		return 0, 0, 0, err
 	}
 

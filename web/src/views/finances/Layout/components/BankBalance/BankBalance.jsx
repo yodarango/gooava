@@ -33,9 +33,12 @@ export const BankBalance = (props) => {
     callback: (data) => {
       if (!data) return;
 
+      const failed = data.failed || 0;
       showToast({
-        message: `Bank synced — ${data.added} new, ${data.modified} updated, ${data.removed} removed`,
-        type: "success",
+        message:
+          `Bank synced — ${data.added} new, ${data.modified} updated, ${data.removed} removed` +
+          (failed > 0 ? ` — ${failed} source${failed > 1 ? "s" : ""} failed` : ""),
+        type: failed > 0 ? "warning" : "success",
       });
       if (onSynced) onSynced();
     },
