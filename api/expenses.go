@@ -35,42 +35,12 @@ func CreateExpense(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	expense.Label = strings.TrimSpace(expense.Label)
-	if expense.Label == "" {
-		httpResponse.Error = "label is required"
-		httpResponse.Success = false
-		httpResponse.Data = nil
-		httpResponse.Send(w)
-		return
-	}
-
-	if expense.Amount <= 0 {
-		httpResponse.Error = "amount must be greater than 0"
-		httpResponse.Success = false
-		httpResponse.Data = nil
-		httpResponse.Send(w)
-		return
-	}
-
-	if !allowedRecurringFrequencies[expense.Recurring] {
-		httpResponse.Error = "invalid recurring value"
-		httpResponse.Success = false
-		httpResponse.Data = nil
-		httpResponse.Send(w)
-		return
-	}
-
-	if err := validateRecurRule(expense.Recurring, expense.RecurRule); err != nil {
+	if err := validateExpensePayload(&expense); err != nil {
 		httpResponse.Error = fmt.Sprintf("%v", err)
 		httpResponse.Success = false
 		httpResponse.Data = nil
 		httpResponse.Send(w)
 		return
-	}
-
-	// daily and one-time expenses carry no rule
-	if expense.Recurring == "" || expense.Recurring == "daily" {
-		expense.RecurRule = nil
 	}
 
 	expense.UserID = authUser.Id
@@ -89,6 +59,173 @@ func CreateExpense(w http.ResponseWriter, r *http.Request) {
 	httpResponse.Success = true
 	httpResponse.Error = nil
 	httpResponse.Send(w)
+}
+
+/************************************************************************
+* Lists the authenticated user's expenses, newest first.
+*
+* status: ✅
+************************************************************************/
+func ListExpenses(w http.ResponseWriter, r *http.Request) {
+	var httpResponse models.HttpResponse
+
+	authUser, ok := r.Context().Value(constants.USER_CONTEXT_AUTH_KEY).(*models.AuthUser)
+	if !ok {
+		httpResponse.Error = "Authentication required"
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	expenses, err := models.ListExpenses(authUser.Id)
+	if err != nil {
+		httpResponse.Error = fmt.Sprintf("%v", err)
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	httpResponse.Data = expenses
+	httpResponse.Success = true
+	httpResponse.Error = nil
+	httpResponse.Send(w)
+}
+
+/************************************************************************
+* Updates one of the authenticated user's expenses (every editable field).
+*
+* status: ✅
+************************************************************************/
+func UpdateExpense(w http.ResponseWriter, r *http.Request) {
+	var httpResponse models.HttpResponse
+
+	authUser, ok := r.Context().Value(constants.USER_CONTEXT_AUTH_KEY).(*models.AuthUser)
+	if !ok {
+		httpResponse.Error = "Authentication required"
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	var expense models.Expense
+	if err := json.NewDecoder(r.Body).Decode(&expense); err != nil {
+		httpResponse.Error = "Invalid request format"
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	if expense.Id <= 0 {
+		httpResponse.Error = "id is required"
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	if err := validateExpensePayload(&expense); err != nil {
+		httpResponse.Error = fmt.Sprintf("%v", err)
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	expense.UserID = authUser.Id
+
+	if err := expense.Update(); err != nil {
+		httpResponse.Error = fmt.Sprintf("%v", err)
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	httpResponse.Data = map[string]string{
+		"message": "Expense updated",
+	}
+	httpResponse.Success = true
+	httpResponse.Error = nil
+	httpResponse.Send(w)
+}
+
+/************************************************************************
+* Deletes one of the authenticated user's expenses by id.
+*
+* status: ✅
+************************************************************************/
+func DeleteExpense(w http.ResponseWriter, r *http.Request) {
+	var httpResponse models.HttpResponse
+
+	authUser, ok := r.Context().Value(constants.USER_CONTEXT_AUTH_KEY).(*models.AuthUser)
+	if !ok {
+		httpResponse.Error = "Authentication required"
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	var requestBody struct {
+		Id int64 `json:"id"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil || requestBody.Id <= 0 {
+		httpResponse.Error = "id is required"
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	if err := models.DeleteExpense(authUser.Id, requestBody.Id); err != nil {
+		httpResponse.Error = fmt.Sprintf("%v", err)
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	httpResponse.Data = map[string]string{
+		"message": "Expense deleted",
+	}
+	httpResponse.Success = true
+	httpResponse.Error = nil
+	httpResponse.Send(w)
+}
+
+/**************************************************************************************
+* validateExpensePayload runs the shared create/update checks and normalizes the
+* expense in place (trims the label, drops the rule for one-time/daily expenses).
+**************************************************************************************/
+func validateExpensePayload(expense *models.Expense) error {
+	expense.Label = strings.TrimSpace(expense.Label)
+	if expense.Label == "" {
+		return fmt.Errorf("label is required")
+	}
+
+	if expense.Amount <= 0 {
+		return fmt.Errorf("amount must be greater than 0")
+	}
+
+	if !allowedRecurringFrequencies[expense.Recurring] {
+		return fmt.Errorf("invalid recurring value")
+	}
+
+	if err := validateRecurRule(expense.Recurring, expense.RecurRule); err != nil {
+		return err
+	}
+
+	// daily and one-time expenses carry no rule
+	if expense.Recurring == "" || expense.Recurring == "daily" {
+		expense.RecurRule = nil
+	}
+
+	return nil
 }
 
 var allowedRecurringFrequencies = map[string]bool{

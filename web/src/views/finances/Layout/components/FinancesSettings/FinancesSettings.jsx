@@ -5,7 +5,8 @@ import { Settings, X } from "lucide"; // data, not components
 import { MorphIcon } from "morphicons/react";
 import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
-import { ExpensesForm } from "./ExpensesForm";
+import { CategoriesPane } from "./CategoriesPane";
+import { ExpensesPane } from "./ExpensesPane";
 import { useGet } from "@utils";
 
 // styles
@@ -46,7 +47,12 @@ const SettingsDrawer = (props) => {
   const accountList = Array.isArray(accounts.data) ? accounts.data : [];
 
   return (
-    <div className='finances-settings-8h3j' role='dialog' aria-modal='true' aria-label='Connected banks'>
+    <div
+      className='finances-settings-8h3j'
+      role='dialog'
+      aria-modal='true'
+      aria-label='Connected banks'
+    >
       <div className='finances-settings-8h3j__backdrop' onClick={onClose} />
 
       <aside className='finances-settings-8h3j__drawer'>
@@ -62,58 +68,73 @@ const SettingsDrawer = (props) => {
           </button>
         </div>
 
-        <Tabs>
-          <TabItem>Accounts</TabItem>
-          <TabItem>Expenses</TabItem>
+        <div className='finances-settings-8h3j__body'>
+          <Tabs>
+            <TabItem>Accounts</TabItem>
+            <TabItem>Expenses</TabItem>
+            <TabItem>Categories</TabItem>
 
-          <TabContent>
-            <div className='finances-settings-8h3j__body'>
-              {items.loading ? (
-                <p className='finances-settings-8h3j__empty'>Loading…</p>
-              ) : itemList.length === 0 ? (
-                <p className='finances-settings-8h3j__empty'>No banks connected yet.</p>
-              ) : (
-                <ul className='finances-settings-8h3j__list'>
-                  {itemList.map((item) => {
-                    const itemAccounts = accountList.filter(
-                      (account) => account.plaid_item_id === item.id
-                    );
+            <TabContent>
+              <div className='finances-settings-8h3j__body'>
+                {items.loading ? (
+                  <p className='finances-settings-8h3j__empty'>Loading…</p>
+                ) : itemList.length === 0 ? (
+                  <p className='finances-settings-8h3j__empty'>
+                    No banks connected yet.
+                  </p>
+                ) : (
+                  <ul className='finances-settings-8h3j__list'>
+                    {itemList.map((item) => {
+                      const itemAccounts = accountList.filter(
+                        (account) => account.plaid_item_id === item.id,
+                      );
 
-                    return (
-                      <li key={item.id} className='finances-settings-8h3j__item'>
-                        <p className='finances-settings-8h3j__institution'>
-                          {item.institution_name || "Connected institution"}
-                        </p>
-                        {itemAccounts.length > 0 && (
-                          <ul className='finances-settings-8h3j__accounts'>
-                            {itemAccounts.map((account) => (
-                              <li key={account.account_id}>
-                                {account.name}
-                                {account.mask ? ` ••${account.mask}` : ""}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </div>
+                      return (
+                        <li
+                          key={item.id}
+                          className='finances-settings-8h3j__item'
+                        >
+                          <p className='finances-settings-8h3j__institution'>
+                            {item.institution_name || "Connected institution"}
+                          </p>
+                          {itemAccounts.length > 0 && (
+                            <ul className='finances-settings-8h3j__accounts'>
+                              {itemAccounts.map((account) => (
+                                <li key={account.account_id}>
+                                  {account.name}
+                                  {account.mask ? ` ••${account.mask}` : ""}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
 
-            <div className='finances-settings-8h3j__footer'>
-              <Button primary onClick={connect} isLoading={isLoading} className='w-100'>
-                Add bank
-              </Button>
-            </div>
-          </TabContent>
+              <div className='finances-settings-8h3j__footer'>
+                <Button
+                  primary
+                  onClick={connect}
+                  isLoading={isLoading}
+                  className='w-100'
+                >
+                  Add bank
+                </Button>
+              </div>
+            </TabContent>
 
-          <TabContent>
-            <div className='finances-settings-8h3j__body'>
-              <ExpensesForm />
-            </div>
-          </TabContent>
-        </Tabs>
+            <TabContent>
+              <ExpensesPane />
+            </TabContent>
+
+            <TabContent>
+              <CategoriesPane />
+            </TabContent>
+          </Tabs>
+        </div>
       </aside>
     </div>
   );
@@ -141,8 +162,11 @@ export const FinancesSettings = (props) => {
 
       {open &&
         createPortal(
-          <SettingsDrawer onClose={() => setOpen(false)} onChanged={onChanged} />,
-          document.body
+          <SettingsDrawer
+            onClose={() => setOpen(false)}
+            onChanged={onChanged}
+          />,
+          document.body,
         )}
     </>
   );

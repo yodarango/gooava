@@ -35,7 +35,13 @@ func Router () http.Handler {
 	mux.HandleFunc(constants.ROUTE_GET_PLAID_STATUS, models.Authenticate(PlaidStatus))
 
 	// expense routes (authentication required)
-	mux.HandleFunc(constants.ROUTE_POST_EXPENSES, models.Authenticate(CreateExpense))
+	// GET and POST share some paths, so those are method-qualified patterns (Go 1.22+ mux)
+	mux.HandleFunc("POST "+constants.ROUTE_POST_EXPENSES, models.Authenticate(CreateExpense))
+	mux.HandleFunc("GET "+constants.ROUTE_GET_EXPENSES, models.Authenticate(ListExpenses))
+	mux.HandleFunc(constants.ROUTE_POST_EXPENSES_UPDATE, models.Authenticate(UpdateExpense))
+	mux.HandleFunc(constants.ROUTE_POST_EXPENSES_DELETE, models.Authenticate(DeleteExpense))
+	mux.HandleFunc("GET "+constants.ROUTE_GET_EXPENSE_CATEGORIES, models.Authenticate(ListExpenseCategories))
+	mux.HandleFunc("POST "+constants.ROUTE_POST_EXPENSE_CATEGORIES, models.Authenticate(CreateExpenseCategory))
 
 
 	// Serve static files from the frontend build

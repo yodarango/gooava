@@ -118,4 +118,11 @@
       cursor: not-allowed;
     }
   }
+
+  /* submit + cancel row */
+  .expenses-form-2nb5__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--dr-spacing-2);
+  }
 }

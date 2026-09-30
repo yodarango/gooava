@@ -1,6 +1,13 @@
 import { useAppContext } from "../../../../context/appContextProvider";
 import { PaydayCalendar } from "../PaydayCalendar/PaydayCalendar";
-import { API_GET_PLAID_TRANSACTIONS, API_POST_EXPENSES } from "@constants";
+import {
+  API_GET_EXPENSE_CATEGORIES,
+  API_GET_PLAID_TRANSACTIONS,
+  API_POST_EXPENSES_UPDATE,
+  API_POST_EXPENSES,
+  DAYS_OF_WEEK,
+  MONTH_NAMES,
+} from "@constants";
 import { useEffect, useMemo, useState } from "react";
 import { useGet, usePost } from "@utils";
 import { Button, Input } from "@ds";
@@ -21,30 +28,20 @@ const RECURRING_OPTIONS = [
   { value: "yearly", label: "yearly" },
 ];
 
-// values follow the JS Date convention: 0 = Sunday … 6 = Saturday
-const DAYS_OF_WEEK = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
-
-const MONTH_NAMES = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
-
 /*********************************************************************************************************
  * Form to enter an expense manually. The label field autocompletes from the labels of synced Plaid
  * transactions (merchant name, falling back to the transaction name) as a typing aid only — the label
  * is always saved as a plain string, so expenses and transactions can later be linked by string
  * equivalence.
+ *
+ * Props: expense (object) puts the form in edit mode and prefills every field, null means "add";
+ * onDone is called after a successful save, onCancel renders a Cancel button.
  * ******************************************************************************************************
  */
-export const ExpensesForm = () => {
+export const ExpensesForm = (props) => {
+  const { expense, onDone, onCancel } = props;
+  const editing = !!expense;
+
   const { showToast } = useAppContext();
 
   const [category, setCategory] = useState(EXPENSE_CATEGORIES[0]);
@@ -59,30 +56,93 @@ export const ExpensesForm = () => {
   const [selectedDate, setSelectedDate] = useState(null); // { month, day } — quarterly / yearly
   const [selectedMonths, setSelectedMonths] = useState([]); // quarterly: 3 extra months
 
-  // source for the label autocomplete
-  const transactions = useGet({ url: API_GET_PLAID_TRANSACTIONS + "?limit=200" });
+  // editing mode: prefill the form from the expense (add mode starts blank)
+  useEffect(() => {
+    setDayOfWeek(5);
+    setSelectedDays([]);
+    setSelectedDate(null);
+    setSelectedMonths([]);
 
-  const expense = usePost({
-    url: API_POST_EXPENSES,
-    callback: (data) => {
-      if (!data) return;
-
-      showToast({ message: "Expense added", type: "success" });
+    if (!expense) {
       setCategory(EXPENSE_CATEGORIES[0]);
       setAmount("");
       setLabel("");
       setRecurring("");
-      setDayOfWeek(5);
-      setSelectedDays([]);
-      setSelectedDate(null);
-      setSelectedMonths([]);
-    },
+      return;
+    }
+
+    const rule = expense.recur_rule || {};
+
+    setCategory(expense.category || EXPENSE_CATEGORIES[0]);
+    setAmount(expense.amount != null ? String(expense.amount) : "");
+    setLabel(expense.label || "");
+    setRecurring(expense.recurring || "");
+
+    switch (expense.recurring) {
+      case "weekly":
+        setDayOfWeek(rule.day_of_week ?? 5);
+        break;
+      case "biweekly":
+        setSelectedDays(rule.days_of_month || []);
+        break;
+      case "monthly":
+        setSelectedDays(rule.day_of_month ? [rule.day_of_month] : []);
+        break;
+      case "quarterly": {
+        const months = rule.months || [];
+        setSelectedDate({ month: months[0] || 1, day: rule.day || 1 });
+        setSelectedMonths(months.slice(1));
+        break;
+      }
+      case "yearly":
+        setSelectedDate({ month: rule.month || 1, day: rule.day || 1 });
+        break;
+    }
+  }, [expense]);
+
+  // source for the label autocomplete
+  const transactions = useGet({ url: API_GET_PLAID_TRANSACTIONS + "?limit=200" });
+
+  // category dropdown options — the user's live categories plus the built-in fallback
+  const categories = useGet({ url: API_GET_EXPENSE_CATEGORIES });
+
+  const categoryOptions = useMemo(() => {
+    const labels = (Array.isArray(categories.data) ? categories.data : []).map(
+      (category) => category.label
+    );
+    const options = [...new Set([...EXPENSE_CATEGORIES, ...labels])];
+
+    // keep the current value selectable even if its category was removed
+    if (expense?.category && !options.includes(expense.category)) {
+      options.push(expense.category);
+    }
+
+    return options;
+  }, [categories.data, expense]);
+
+  const handleSaved = (message) => (data) => {
+    if (!data) return;
+    showToast({ message, type: "success" });
+    if (onDone) onDone();
+  };
+
+  const create = usePost({
+    url: API_POST_EXPENSES,
+    callback: handleSaved("Expense added"),
   });
+
+  const update = usePost({
+    url: API_POST_EXPENSES_UPDATE,
+    callback: handleSaved("Expense updated"),
+  });
+
+  const isLoading = create.loading || update.loading;
 
   // surface request errors as toasts
   useEffect(() => {
-    if (expense.error) showToast({ message: String(expense.error), type: "danger" });
-  }, [expense.error]);
+    const message = create.error || update.error;
+    if (message) showToast({ message: String(message), type: "danger" });
+  }, [create.error, update.error]);
 
   // unique transaction labels, merchant name preferred
   const knownLabels = useMemo(() => {
@@ -223,13 +283,19 @@ export const ExpensesForm = () => {
       return;
     }
 
-    expense.post({
+    const payload = {
       category,
       amount: Math.round(parsedAmount * 100) / 100,
       label: trimmedLabel,
       recurring,
       ...(rule ? { recur_rule: rule } : {}),
-    });
+    };
+
+    if (editing) {
+      update.post({ id: expense.id, ...payload });
+    } else {
+      create.post(payload);
+    }
   };
 
   return (
@@ -244,7 +310,7 @@ export const ExpensesForm = () => {
           id='expense-category'
           value={category}
         >
-          {EXPENSE_CATEGORIES.map((option) => (
+          {categoryOptions.map((option) => (
             <option key={option} value={option}>
               {option}
             </option>
@@ -425,9 +491,16 @@ export const ExpensesForm = () => {
         </div>
       )}
 
-      <Button primary type='submit' isLoading={expense.loading} className='w-100'>
-        Add expense
-      </Button>
+      <div className='expenses-form-2nb5__actions'>
+        <Button primary type='submit' isLoading={isLoading} className='w-100'>
+          {editing ? "Save changes" : "Add expense"}
+        </Button>
+        {onCancel && (
+          <Button secondary type='button' onClick={onCancel}>
+            Cancel
+          </Button>
+        )}
+      </div>
     </form>
   );
 };

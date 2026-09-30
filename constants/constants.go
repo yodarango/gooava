@@ -15,6 +15,11 @@ const ROUTE_GET_PUBLIC_SAMPLE = ROUTE_API_BASE + "/public-sample"
 
 // expenses
 const ROUTE_POST_EXPENSES = ROUTE_API_BASE + "/expenses"
+const ROUTE_GET_EXPENSES = ROUTE_API_BASE + "/expenses"
+const ROUTE_POST_EXPENSES_UPDATE = ROUTE_API_BASE + "/expenses/update"
+const ROUTE_POST_EXPENSES_DELETE = ROUTE_API_BASE + "/expenses/delete"
+const ROUTE_GET_EXPENSE_CATEGORIES = ROUTE_API_BASE + "/expenses/categories"
+const ROUTE_POST_EXPENSE_CATEGORIES = ROUTE_API_BASE + "/expenses/categories"
 
 // plaid
 const ROUTE_POST_PLAID_LINK_TOKEN = ROUTE_API_BASE + "/plaid/link-token/create"
