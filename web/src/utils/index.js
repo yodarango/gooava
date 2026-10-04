@@ -10,3 +10,8 @@ export {
   stripTime,
   isPayday,
 } from "./payday";
+export {
+  billOccurrences,
+  upcomingBills,
+  totalUpcomingBills,
+} from "./recurring";

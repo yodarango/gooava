@@ -1,6 +1,7 @@
 import { useAppContext } from "../../../../context/appContextProvider";
 import { ExpensesForm } from "./ExpensesForm";
 import {
+  API_GET_EXPENSE_CATEGORIES,
   API_POST_EXPENSES_DELETE,
   DAYS_OF_WEEK,
   API_GET_EXPENSES,
@@ -8,7 +9,7 @@ import {
 } from "@constants";
 import { Pencil, Plus, Trash2, X } from "lucide"; // data, not components
 import { MorphIcon } from "morphicons/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useGet, usePost } from "@utils";
 
 // styles
@@ -57,6 +58,19 @@ export const ExpensesPane = () => {
   const [refreshKey, setRefreshKey] = useState(0);
 
   const expenses = useGet({ url: API_GET_EXPENSES, dependencies: [refreshKey] });
+
+  // category label -> color, for the dot next to each expense title
+  const categories = useGet({
+    url: API_GET_EXPENSE_CATEGORIES,
+    dependencies: [refreshKey],
+  });
+
+  const colorByLabel = useMemo(() => {
+    const map = {};
+    const list = Array.isArray(categories.data) ? categories.data : [];
+    for (const category of list) map[category.label] = category.color;
+    return map;
+  }, [categories.data]);
 
   const deleteExpense = usePost({
     url: API_POST_EXPENSES_DELETE,
@@ -141,9 +155,22 @@ export const ExpensesPane = () => {
             {expenseList.map((expense) => (
               <li key={expense.id} className='expenses-pane-4rt8__row'>
                 <div className='expenses-pane-4rt8__details'>
-                  <span className='expenses-pane-4rt8__label'>{expense.label}</span>
+                  <span className='expenses-pane-4rt8__label'>
+                    <span
+                      className='expenses-pane-4rt8__dot'
+                      style={{
+                        backgroundColor:
+                          colorByLabel[expense.category] ||
+                          "rgba(var(--dr-beta-rgb), 0.35)",
+                      }}
+                    />
+                    <span className='expenses-pane-4rt8__label-text'>
+                      {expense.label}
+                    </span>
+                  </span>
                   <span className='expenses-pane-4rt8__meta'>
                     {expense.category} · {recurringSummary(expense)}
+                    {expense.notes ? ` · ${expense.notes}` : ""}
                   </span>
                 </div>
 

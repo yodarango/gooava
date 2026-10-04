@@ -1,0 +1,79 @@
+.upcoming-bills-5xk3 {
+  background-color: var(--dr-zeta);
+  border: 1px solid rgba(var(--dr-eta-rgb), 0.1);
+  border-radius: 1.5rem;
+  box-shadow: 0 0.2rem 0.4rem rgba(var(--dr-beta-rgb), 0.2);
+  padding: var(--dr-spacing-4);
+  text-align: left;
+
+  .upcoming-bills-5xk3__label {
+    color: rgba(var(--dr-beta-rgb), 0.5);
+    font-size: var(--dr-font-size-5);
+    font-weight: var(--dr-font-weight-6);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--dr-spacing-2);
+  }
+
+  .upcoming-bills-5xk3__total {
+    color: var(--dr-delta);
+    font-size: var(--dr-font-size-0);
+    font-weight: var(--dr-font-weight-8);
+    margin: 0;
+  }
+
+  .upcoming-bills-5xk3__hint {
+    color: rgba(var(--dr-beta-rgb), 0.5);
+    font-size: var(--dr-font-size-5);
+    margin: var(--dr-spacing-2) 0 0;
+  }
+
+  .upcoming-bills-5xk3__list {
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+    margin: var(--dr-spacing-3) 0 0;
+    padding: var(--dr-spacing-2) 0 0;
+    border-top: 1px solid rgba(var(--dr-eta-rgb), 0.1);
+  }
+
+  .upcoming-bills-5xk3__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dr-spacing-4);
+    padding: var(--dr-spacing-2) 0;
+
+    & + .upcoming-bills-5xk3__row {
+      border-top: 1px solid rgba(var(--dr-eta-rgb), 0.1);
+    }
+  }
+
+  .upcoming-bills-5xk3__details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--dr-spacing-1);
+    min-width: 0;
+  }
+
+  .upcoming-bills-5xk3__name {
+    color: var(--dr-beta);
+    font-size: var(--dr-font-size-4);
+    font-weight: var(--dr-font-weight-6);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .upcoming-bills-5xk3__meta {
+    color: rgba(var(--dr-beta-rgb), 0.5);
+    font-size: var(--dr-font-size-5);
+  }
+
+  .upcoming-bills-5xk3__amount {
+    flex-shrink: 0;
+    color: var(--dr-beta);
+    font-size: var(--dr-font-size-4);
+    font-weight: var(--dr-font-weight-7);
+  }
+}

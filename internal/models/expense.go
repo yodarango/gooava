@@ -13,6 +13,7 @@ type Expense struct {
 	Label     string          `json:"label"`
 	Recurring string          `json:"recurring"`  // "" (one-time), daily, weekly, biweekly, monthly, quarterly, yearly
 	RecurRule json.RawMessage `json:"recur_rule"` // JSON blob with the recurrence details, NULL when not recurring/daily
+	Notes     string          `json:"notes"`      // free-text (e.g. payment method); read-only via the API for now
 	CreatedAt string          `json:"created_at"`
 }
 
@@ -64,7 +65,7 @@ func (e *Expense) Create() error {
 **************************************************************************************/
 func ListExpenses(userID uint) ([]Expense, error) {
 	query := `
-		SELECT id, category, amount, label, COALESCE(recurring, ''), recur_rule
+		SELECT id, category, amount, label, COALESCE(recurring, ''), recur_rule, COALESCE(notes, '')
 		FROM expenses
 		WHERE user_id = ?
 		ORDER BY id DESC
@@ -80,7 +81,7 @@ func ListExpenses(userID uint) ([]Expense, error) {
 	for rows.Next() {
 		var expense Expense
 		var recurRule []byte
-		err := rows.Scan(&expense.Id, &expense.Category, &expense.Amount, &expense.Label, &expense.Recurring, &recurRule)
+		err := rows.Scan(&expense.Id, &expense.Category, &expense.Amount, &expense.Label, &expense.Recurring, &recurRule, &expense.Notes)
 		if err != nil {
 			return nil, fmt.Errorf("could not scan expense: %w", err)
 		}

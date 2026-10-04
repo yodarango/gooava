@@ -97,12 +97,28 @@
   }
 
   .expenses-pane-4rt8__label {
+    display: flex;
+    align-items: center;
+    gap: var(--dr-spacing-2);
+    min-width: 0;
     color: var(--dr-beta);
     font-size: var(--dr-font-size-4);
     font-weight: var(--dr-font-weight-6);
+  }
+
+  .expenses-pane-4rt8__label-text {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  /* 16px category color dot to the left of the expense title */
+  .expenses-pane-4rt8__dot {
+    flex-shrink: 0;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px rgba(var(--dr-beta-rgb), 0.1);
   }
 
   .expenses-pane-4rt8__meta {

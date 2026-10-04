@@ -1,4 +1,5 @@
 import { FinancesSettings } from "./components/FinancesSettings/FinancesSettings";
+import { UpcomingBills } from "./components/UpcomingBills/UpcomingBills";
 import { BankBalance } from "./components/BankBalance/BankBalance";
 import { PlaidConnect } from "./components/PlaidConnect/PlaidConnect";
 import { Transactions } from "./components/Transactions/Transactions";
@@ -195,6 +196,8 @@ export const Layout = () => {
           </p>
         </section>
       </div>
+
+      <UpcomingBills />
 
       <PaydayStrip />
 
