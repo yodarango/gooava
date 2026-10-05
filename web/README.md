@@ -1,14 +1,20 @@
 # Gooava
 
-A personal home automation tool built with Go and React.
+A full home management app built with Go and React — from finances to recipes, everything your household needs in one place.
 
-## What's included
+## Features
 
-- Go backend with sample auth routes and JWT authentication
-- MySQL database setup with migrations
+- **Finances** — track expenses and incomes, manage recurring bills, and plan spending around your paychecks
+- **Bank sync** — connect your bank via Plaid to sync balances and transactions automatically
+- **Calendar** — see paydays, bill due dates, and household events at a glance
+- **Meals & recipes** — plan meals and keep your favorite recipes (coming soon)
+- **Accounts** — email verification, welcome, and password reset flows
+
+## Stack
+
+- Go backend with JWT authentication and MySQL (migrations included)
 - React frontend with Vite, React Router, and a custom design system
 - Docker and Docker Compose configuration
-- Email templates for verification, welcome, and password reset
 
 ## NAMING CONVENTIONS
 

@@ -1,7 +1,7 @@
 {
   "name": "gooava",
   "short_name": "gooava",
-  "description": "Gooava - Personal home automation",
+  "description": "Gooava - Full home management: finances, bills, meals, recipes, and more in one app.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f9e5e8",
@@ -9,7 +9,7 @@
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "en",
-  "categories": ["category one", "category two", "category three"],
+  "categories": ["finance", "food", "lifestyle", "productivity"],
   "icons": [
     {
       "src": "/logo.png",
@@ -64,7 +64,7 @@
     {
       "name": "gooava",
       "short_name": "gooava",
-      "description": "gooava shortcut",
+      "description": "Open your gooava home",
       "url": "/",
       "icons": [
         {

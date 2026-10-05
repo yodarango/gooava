@@ -20,7 +20,8 @@ export const IntroSection = () => {
             />
           </div>
           <p className='intro-hero__subtitle mb-2'>
-            Your personal home automation hub.
+            Your personal home management hub — finances, meals, and everything
+            in between.
           </p>
         </div>
       </div>
