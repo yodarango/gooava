@@ -20,6 +20,17 @@ const ROUTE_POST_EXPENSES_UPDATE = ROUTE_API_BASE + "/expenses/update"
 const ROUTE_POST_EXPENSES_DELETE = ROUTE_API_BASE + "/expenses/delete"
 const ROUTE_GET_EXPENSE_CATEGORIES = ROUTE_API_BASE + "/expenses/categories"
 const ROUTE_POST_EXPENSE_CATEGORIES = ROUTE_API_BASE + "/expenses/categories"
+const ROUTE_POST_EXPENSE_OCCURRENCES_ENSURE = ROUTE_API_BASE + "/expenses/occurrences/ensure"
+const ROUTE_POST_EXPENSE_OCCURRENCES_PAID = ROUTE_API_BASE + "/expenses/occurrences/paid"
+
+// incomes
+const ROUTE_GET_INCOMES = ROUTE_API_BASE + "/incomes"
+const ROUTE_POST_INCOMES = ROUTE_API_BASE + "/incomes"
+const ROUTE_POST_INCOMES_UPDATE = ROUTE_API_BASE + "/incomes/update"
+const ROUTE_POST_INCOMES_DELETE = ROUTE_API_BASE + "/incomes/delete"
+const ROUTE_GET_INCOME_ENTRIES = ROUTE_API_BASE + "/incomes/entries"
+const ROUTE_POST_INCOME_ENTRIES_APPROVE = ROUTE_API_BASE + "/incomes/entries/approve"
+const ROUTE_POST_INCOME_ENTRIES_REJECT = ROUTE_API_BASE + "/incomes/entries/reject"
 
 // plaid
 const ROUTE_POST_PLAID_LINK_TOKEN = ROUTE_API_BASE + "/plaid/link-token/create"
@@ -32,4 +43,5 @@ const ROUTE_GET_PLAID_STATUS = ROUTE_API_BASE + "/plaid/status"
 
 // context must have a predefined custom context key type
 type contextKey string
+
 const USER_CONTEXT_AUTH_KEY contextKey = "currentUser"

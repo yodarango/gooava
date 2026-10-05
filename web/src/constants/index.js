@@ -22,6 +22,17 @@ export const API_POST_EXPENSES_UPDATE = API_BASE + "/expenses/update";
 export const API_POST_EXPENSES_DELETE = API_BASE + "/expenses/delete";
 export const API_GET_EXPENSE_CATEGORIES = API_BASE + "/expenses/categories";
 export const API_POST_EXPENSE_CATEGORIES = API_BASE + "/expenses/categories";
+export const API_POST_EXPENSE_OCCURRENCES_ENSURE = API_BASE + "/expenses/occurrences/ensure";
+export const API_POST_EXPENSE_OCCURRENCES_PAID = API_BASE + "/expenses/occurrences/paid";
+
+// api income routes
+export const API_POST_INCOMES = API_BASE + "/incomes";
+export const API_GET_INCOMES = API_BASE + "/incomes";
+export const API_POST_INCOMES_UPDATE = API_BASE + "/incomes/update";
+export const API_POST_INCOMES_DELETE = API_BASE + "/incomes/delete";
+export const API_GET_INCOME_ENTRIES = API_BASE + "/incomes/entries";
+export const API_POST_INCOME_ENTRIES_APPROVE = API_BASE + "/incomes/entries/approve";
+export const API_POST_INCOME_ENTRIES_REJECT = API_BASE + "/incomes/entries/reject";
 
 // api plaid routes
 export const API_POST_PLAID_LINK_TOKEN = API_BASE + "/plaid/link-token/create";

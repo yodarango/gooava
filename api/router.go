@@ -42,6 +42,18 @@ func Router () http.Handler {
 	mux.HandleFunc(constants.ROUTE_POST_EXPENSES_DELETE, models.Authenticate(DeleteExpense))
 	mux.HandleFunc("GET "+constants.ROUTE_GET_EXPENSE_CATEGORIES, models.Authenticate(ListExpenseCategories))
 	mux.HandleFunc("POST "+constants.ROUTE_POST_EXPENSE_CATEGORIES, models.Authenticate(CreateExpenseCategory))
+	mux.HandleFunc(constants.ROUTE_POST_EXPENSE_OCCURRENCES_ENSURE, models.Authenticate(EnsureExpenseOccurrences))
+	mux.HandleFunc(constants.ROUTE_POST_EXPENSE_OCCURRENCES_PAID, models.Authenticate(SetExpenseOccurrencePaid))
+
+	// income routes (authentication required)
+	// GET and POST share some paths, so those are method-qualified patterns (Go 1.22+ mux)
+	mux.HandleFunc("POST "+constants.ROUTE_POST_INCOMES, models.Authenticate(CreateIncome))
+	mux.HandleFunc("GET "+constants.ROUTE_GET_INCOMES, models.Authenticate(ListIncomes))
+	mux.HandleFunc(constants.ROUTE_POST_INCOMES_UPDATE, models.Authenticate(UpdateIncome))
+	mux.HandleFunc(constants.ROUTE_POST_INCOMES_DELETE, models.Authenticate(DeleteIncome))
+	mux.HandleFunc("GET "+constants.ROUTE_GET_INCOME_ENTRIES, models.Authenticate(ListIncomeEntries))
+	mux.HandleFunc(constants.ROUTE_POST_INCOME_ENTRIES_APPROVE, models.Authenticate(ApproveIncomeEntry))
+	mux.HandleFunc(constants.ROUTE_POST_INCOME_ENTRIES_REJECT, models.Authenticate(RejectIncomeEntry))
 
 
 	// Serve static files from the frontend build

@@ -12,6 +12,17 @@ export {
 } from "./payday";
 export {
   billOccurrences,
+  billWindows,
   upcomingBills,
   totalUpcomingBills,
 } from "./recurring";
+export {
+  firstIncomeOccurrence,
+  formatDateKey,
+  incomeOccursOn,
+  incomeOccurrences,
+  incomePaydays,
+  parseDateKey,
+  pendingIncomeOccurrences,
+  upcomingIncomeDates,
+} from "./income";

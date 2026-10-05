@@ -87,3 +87,20 @@ export function upcomingBills(expenses, fromDate, toDate) {
 export function totalUpcomingBills(bills) {
   return bills.reduce((sum, bill) => sum + (bill.expense.amount || 0), 0);
 }
+
+/*********************************************************************************************************
+ * Groups upcoming bill occurrences into consecutive windows that each end at a payday:
+ * window 0 = [fromDate, ends[0]), window 1 = [ends[0], ends[1]), and so on.
+ * Returns [{ start, end, bills, total }].
+ * ******************************************************************************************************
+ */
+export function billWindows(expenses, fromDate, ends) {
+  let start = stripTime(new Date(fromDate));
+
+  return ends.map((end) => {
+    const bills = upcomingBills(expenses, start, end);
+    const result = { start, end, bills, total: totalUpcomingBills(bills) };
+    start = stripTime(new Date(end));
+    return result;
+  });
+}

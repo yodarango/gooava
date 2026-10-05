@@ -96,6 +96,7 @@
     height: 3.6rem;
     border-radius: 50%;
     border: none;
+    margin: 0;
     cursor: pointer;
     transition: opacity 0.2s ease;
 

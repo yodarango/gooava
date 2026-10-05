@@ -7,6 +7,7 @@ import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
 import { CategoriesPane } from "./CategoriesPane";
 import { ExpensesPane } from "./ExpensesPane";
+import { IncomePane } from "./IncomePane";
 import { useGet } from "@utils";
 
 // styles
@@ -72,6 +73,7 @@ const SettingsDrawer = (props) => {
           <Tabs>
             <TabItem>Accounts</TabItem>
             <TabItem>Expenses</TabItem>
+            <TabItem>Income</TabItem>
             <TabItem>Categories</TabItem>
 
             <TabContent>
@@ -128,6 +130,10 @@ const SettingsDrawer = (props) => {
 
             <TabContent>
               <ExpensesPane />
+            </TabContent>
+
+            <TabContent>
+              <IncomePane />
             </TabContent>
 
             <TabContent>

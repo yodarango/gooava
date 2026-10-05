@@ -1,6 +1,7 @@
 /* gear button next to the Finances title */
 .finances-settings-8h3j__trigger {
   padding: 0;
+  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -68,6 +69,7 @@
 
 .finances-settings-8h3j__close {
   padding: 0;
+  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;

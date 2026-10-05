@@ -1,11 +1,12 @@
 import { FinancesSettings } from "./components/FinancesSettings/FinancesSettings";
+import { IncomeApprovals } from "./components/IncomeApprovals/IncomeApprovals";
 import { UpcomingBills } from "./components/UpcomingBills/UpcomingBills";
 import { BankBalance } from "./components/BankBalance/BankBalance";
 import { PlaidConnect } from "./components/PlaidConnect/PlaidConnect";
 import { Transactions } from "./components/Transactions/Transactions";
 import { PaydayStrip } from "./components/PaydayStrip/PaydayStrip";
 import { useAppContext } from "../../context/appContextProvider";
-import { daysUntilPayday, nextPaydayDate, useGet } from "@utils";
+import { useGet } from "@utils";
 import { API_GET_PLAID_STATUS } from "@constants";
 import { Pencil, Check, X } from "lucide"; // data, not components
 import { MorphIcon } from "morphicons/react";
@@ -58,8 +59,6 @@ export const Layout = () => {
   }, []);
 
   const userId = state.user?.id;
-  const daysLeft = daysUntilPayday();
-  const nextPayday = nextPaydayDate();
 
   // Load this user's balance once their identity is known
   useEffect(() => {
@@ -174,30 +173,12 @@ export const Layout = () => {
         </section>
         )}
 
-        {/* Payday countdown */}
-        <section className='finances-layout-4f8d__card countdown'>
-          <p className='finances-layout-4f8d__label'>Next payday</p>
-          <p className='finances-layout-4f8d__days'>
-            {daysLeft === 0 ? (
-              "Payday is today! 🎉"
-            ) : (
-              <>
-                <strong>{daysLeft}</strong>{" "}
-                {daysLeft === 1 ? "day" : "days"} left
-              </>
-            )}
-          </p>
-          <p className='finances-layout-4f8d__hint'>
-            {nextPayday.toLocaleDateString("en-US", {
-              weekday: "long",
-              month: "long",
-              day: "numeric",
-            })}
-          </p>
-        </section>
       </div>
 
-      <UpcomingBills />
+      {/* incomes awaiting the user's approval before they count toward the plan */}
+      <IncomeApprovals onDecided={() => setRefreshKey((key) => key + 1)} />
+
+      <UpcomingBills refreshKey={refreshKey} />
 
       <PaydayStrip />
 

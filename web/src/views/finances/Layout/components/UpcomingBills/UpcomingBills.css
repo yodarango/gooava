@@ -41,12 +41,61 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--dr-spacing-4);
+    gap: var(--dr-spacing-3);
     padding: var(--dr-spacing-2) 0;
 
     & + .upcoming-bills-5xk3__row {
       border-top: 1px solid rgba(var(--dr-eta-rgb), 0.1);
     }
+
+    /* crossed off once paid — stays visible but clearly done */
+    &.paid {
+      .upcoming-bills-5xk3__name,
+      .upcoming-bills-5xk3__amount {
+        text-decoration: line-through;
+        opacity: 0.55;
+      }
+    }
+  }
+
+  /* round paid toggle to the left of each bill */
+  .upcoming-bills-5xk3__check {
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 50%;
+    border: 1.5px solid rgba(var(--dr-beta-rgb), 0.3);
+    background: none;
+    margin: 0;
+    color: var(--dr-zeta);
+    cursor: pointer;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease;
+
+    &:hover:not(:disabled) {
+      border-color: var(--dr-success);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    &.paid {
+      background-color: var(--dr-success);
+      border-color: var(--dr-success);
+    }
+  }
+
+  /* the "· $X paid ✓" note next to a window's due total */
+  .upcoming-bills-5xk3__paid-off {
+    color: var(--dr-success);
+    font-weight: var(--dr-font-weight-6);
   }
 
   .upcoming-bills-5xk3__details {
@@ -75,5 +124,226 @@
     color: var(--dr-beta);
     font-size: var(--dr-font-size-4);
     font-weight: var(--dr-font-weight-7);
+  }
+
+  /* label + paycheck editor row */
+  .upcoming-bills-5xk3__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dr-spacing-2);
+    margin-bottom: var(--dr-spacing-2);
+
+    .upcoming-bills-5xk3__label {
+      margin-bottom: 0;
+    }
+  }
+
+  .upcoming-bills-5xk3__paycheck {
+    display: flex;
+    align-items: center;
+    gap: var(--dr-spacing-1);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: rgba(var(--dr-beta-rgb), 0.5);
+    font-size: var(--dr-font-size-5);
+    font-weight: var(--dr-font-weight-6);
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 0.75;
+    }
+  }
+
+  .upcoming-bills-5xk3__paycheck-edit {
+    display: flex;
+    align-items: center;
+    gap: var(--dr-spacing-1);
+  }
+
+  .upcoming-bills-5xk3__paycheck-input {
+    background: var(--dr-epsilon);
+    color: rgba(var(--dr-beta-rgb), 0.8);
+    border: none;
+    border-radius: 1rem;
+    outline: none;
+    padding: var(--dr-spacing-1) var(--dr-spacing-2);
+    font-size: var(--dr-font-size-5);
+    font-weight: var(--dr-font-weight-7);
+    width: 8rem;
+  }
+
+  .upcoming-bills-5xk3__icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 50%;
+    border: none;
+    margin: 0;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 0.85;
+    }
+
+    &.save {
+      background-color: var(--dr-delta);
+      color: var(--dr-zeta);
+    }
+
+    &.cancel {
+      background-color: var(--dr-epsilon);
+      color: var(--dr-beta);
+    }
+  }
+
+  /* gold headline + left accent when a reserve is needed */
+  .upcoming-bills-5xk3__total.short {
+    color: var(--dr-warning);
+  }
+
+  &.attention {
+    box-shadow:
+      inset 0.3rem 0 0 var(--dr-warning),
+      0 0.2rem 0.4rem rgba(var(--dr-beta-rgb), 0.2);
+  }
+
+  /* one collapsible card per pay period */
+  .upcoming-bills-5xk3__window {
+    margin-top: var(--dr-spacing-3);
+    background-color: var(--dr-epsilon);
+    border-radius: 1.2rem;
+    overflow: hidden;
+  }
+
+  /* the always-visible header button that opens/closes the card */
+  .upcoming-bills-5xk3__window-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dr-spacing-3);
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: var(--dr-spacing-3) var(--dr-spacing-4);
+    text-align: left;
+    transition: background-color 0.15s ease;
+
+    &:hover {
+      background-color: rgba(var(--dr-beta-rgb), 0.03);
+    }
+  }
+
+  .upcoming-bills-5xk3__window-title {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+
+  .upcoming-bills-5xk3__window-range {
+    color: var(--dr-beta);
+    font-size: var(--dr-font-size-4);
+    font-weight: var(--dr-font-weight-7);
+  }
+
+  .upcoming-bills-5xk3__window-source {
+    color: rgba(var(--dr-beta-rgb), 0.4);
+    font-size: var(--dr-font-size-6);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* verdict + bills total/count + chevron on the right of the header */
+  .upcoming-bills-5xk3__window-summary {
+    display: flex;
+    align-items: center;
+    gap: var(--dr-spacing-2);
+    flex-shrink: 0;
+  }
+
+  .upcoming-bills-5xk3__window-due {
+    color: rgba(var(--dr-beta-rgb), 0.7);
+    font-size: var(--dr-font-size-5);
+    font-weight: var(--dr-font-weight-6);
+    white-space: nowrap;
+  }
+
+  .upcoming-bills-5xk3__chevron {
+    display: flex;
+    align-items: center;
+    color: rgba(var(--dr-beta-rgb), 0.5);
+    transition: transform 0.2s ease;
+
+    &.open {
+      transform: rotate(180deg);
+    }
+  }
+
+  /* the bill list — only rendered when the card is open */
+  .upcoming-bills-5xk3__window-body {
+    padding: 0 var(--dr-spacing-4) var(--dr-spacing-3);
+  }
+
+  .upcoming-bills-5xk3__window-totals {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dr-spacing-2);
+    margin-top: var(--dr-spacing-1);
+    color: rgba(var(--dr-beta-rgb), 0.7);
+    font-size: var(--dr-font-size-4);
+    font-weight: var(--dr-font-weight-6);
+  }
+
+  .upcoming-bills-5xk3__verdict {
+    flex-shrink: 0;
+    border-radius: 1rem;
+    font-size: var(--dr-font-size-6);
+    font-weight: var(--dr-font-weight-7);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0 var(--dr-spacing-2);
+
+    &.left {
+      background-color: rgba(var(--dr-success-rgb), 0.15);
+      color: var(--dr-success);
+    }
+
+    &.short {
+      background-color: rgba(var(--dr-danger-rgb), 0.12);
+      color: var(--dr-danger);
+    }
+
+    &.unknown {
+      background-color: rgba(var(--dr-beta-rgb), 0.08);
+      color: rgba(var(--dr-beta-rgb), 0.5);
+    }
+  }
+
+  .upcoming-bills-5xk3__none {
+    color: rgba(var(--dr-beta-rgb), 0.4);
+    font-size: var(--dr-font-size-5);
+    margin: var(--dr-spacing-2) 0 0;
+  }
+
+  .upcoming-bills-5xk3__window .upcoming-bills-5xk3__list {
+    margin-top: var(--dr-spacing-2);
+    padding-top: 0;
+    border-top: none;
+  }
+
+  .upcoming-bills-5xk3__warning {
+    color: var(--dr-danger);
+    font-size: var(--dr-font-size-5);
+    font-weight: var(--dr-font-weight-6);
+    margin: var(--dr-spacing-3) 0 0;
   }
 }

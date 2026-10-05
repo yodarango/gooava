@@ -1,6 +1,10 @@
 /*********************************************************************************************************
  * Payday helpers. Paydays land every other Friday; the anchor is the last known payday (Oct 2, 2026),
  * so every payday is anchor + 14k days. All math is done on local dates (time stripped).
+ *
+ * This is the FALLBACK schedule used until the user has approved income — once they do, the
+ * paycheck plan derives its paydays from the income records (see utils/income.js). The calendar
+ * and strip still use this anchor purely as a visual reference.
  * ******************************************************************************************************
  */
 

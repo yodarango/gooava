@@ -1,10 +1,10 @@
-.expenses-pane-4rt8 {
+.income-pane-6yt3 {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
 
-  .expenses-pane-4rt8__header {
+  .income-pane-6yt3__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -14,14 +14,15 @@
     flex-shrink: 0;
   }
 
-  .expenses-pane-4rt8__title {
+  .income-pane-6yt3__title {
     color: var(--dr-beta);
     font-size: var(--dr-font-size-2);
     font-weight: var(--dr-font-weight-8);
     margin: 0;
   }
 
-  .expenses-pane-4rt8__add {
+  .income-pane-6yt3__add {
+    padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -47,13 +48,13 @@
     }
   }
 
-  .expenses-pane-4rt8__form {
+  .income-pane-6yt3__form {
     flex-shrink: 0;
     padding: 0 var(--dr-spacing-4);
     margin-bottom: var(--dr-spacing-3);
   }
 
-  .expenses-pane-4rt8__list {
+  .income-pane-6yt3__list {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
@@ -68,13 +69,13 @@
     }
   }
 
-  .expenses-pane-4rt8__empty {
+  .income-pane-6yt3__empty {
     color: rgba(var(--dr-beta-rgb), 0.5);
     font-size: var(--dr-font-size-4);
     margin: var(--dr-spacing-2) 0 0;
   }
 
-  .expenses-pane-4rt8__row {
+  .income-pane-6yt3__row {
     display: flex;
     align-items: center;
     gap: var(--dr-spacing-3);
@@ -84,12 +85,12 @@
     box-shadow: 0 0.2rem 0.4rem rgba(var(--dr-beta-rgb), 0.2);
     padding: var(--dr-spacing-3) var(--dr-spacing-4);
 
-    & + .expenses-pane-4rt8__row {
+    & + .income-pane-6yt3__row {
       margin-top: var(--dr-spacing-2);
     }
   }
 
-  .expenses-pane-4rt8__details {
+  .income-pane-6yt3__details {
     display: flex;
     flex-direction: column;
     gap: var(--dr-spacing-1);
@@ -97,51 +98,35 @@
     min-width: 0;
   }
 
-  .expenses-pane-4rt8__label {
-    display: flex;
-    align-items: center;
-    gap: var(--dr-spacing-2);
-    min-width: 0;
+  .income-pane-6yt3__label {
     color: var(--dr-beta);
     font-size: var(--dr-font-size-4);
     font-weight: var(--dr-font-weight-6);
-  }
-
-  .expenses-pane-4rt8__label-text {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  /* 16px category color dot to the left of the expense title */
-  .expenses-pane-4rt8__dot {
-    flex-shrink: 0;
-    width: 1.6rem;
-    height: 1.6rem;
-    border-radius: 50%;
-    box-shadow: inset 0 0 0 1px rgba(var(--dr-beta-rgb), 0.1);
-  }
-
-  .expenses-pane-4rt8__meta {
+  .income-pane-6yt3__meta {
     color: rgba(var(--dr-beta-rgb), 0.5);
     font-size: var(--dr-font-size-5);
   }
 
-  .expenses-pane-4rt8__amount {
+  .income-pane-6yt3__amount {
     flex-shrink: 0;
-    color: var(--dr-beta);
+    color: var(--dr-success);
     font-size: var(--dr-font-size-4);
     font-weight: var(--dr-font-weight-7);
   }
 
-  .expenses-pane-4rt8__actions {
+  .income-pane-6yt3__actions {
     display: flex;
     align-items: center;
     gap: var(--dr-spacing-1);
     flex-shrink: 0;
   }
 
-  .expenses-pane-4rt8__action {
+  .income-pane-6yt3__action {
     padding: 0;
     display: flex;
     align-items: center;
