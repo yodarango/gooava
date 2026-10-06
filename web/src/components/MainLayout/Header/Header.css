@@ -1,5 +1,4 @@
 .app-header-56yl {
-  background-color: rgba(var(--dr-zeta-rgb), 0.95);
   box-shadow: 0 0.2rem 0.4rem rgba(var(--dr-beta-rgb), 0.1);
   position: sticky;
   top: 0;
@@ -42,7 +41,6 @@
   justify-content: center;
   width: 3.5rem;
   height: 3.5rem;
-  background: linear-gradient(135deg, var(--dr-primary), var(--dr-secondary));
   border-radius: 0.5rem;
   color: white;
   font-size: 1.25rem;

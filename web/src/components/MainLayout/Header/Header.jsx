@@ -13,13 +13,8 @@ export const Header = () => {
         <div className='app-header-56yl__container'>
           <Link to={ROUTE_HOME} className='app-header-56yl__brand'>
             <div className='app-header-56yl__logo'>
-              <img
-                src={gooavaLogo}
-                alt='Gooava Logo'
-                className='logo'
-              />
+              <img src={gooavaLogo} alt='Gooava Logo' className='logo' />
             </div>
-            <span className='app-header-56yl__title'>Gooava</span>
           </Link>
         </div>
       </header>
