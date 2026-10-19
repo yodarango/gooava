@@ -69,6 +69,8 @@ export const AppContextProvider = (props) => {
         status: payload.status,
         email: payload.email,
         id: payload.id,
+        // tokens minted before 2FA existed don't carry this claim
+        two_fa_enabled: !!payload.two_fa_enabled,
       };
     } catch (error) {
       console.error("Error decoding token:", error);

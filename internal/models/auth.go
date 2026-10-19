@@ -19,6 +19,7 @@ type AuthUser struct {
 	Email          string `json:"email"`
 	Avatar         string `json:"avatar"`
 	Status         Status `json:"status"`
+	TwoFAEnabled   bool   `json:"two_fa_enabled"`
 	Id            uint   `json:"ID"`
 }
 
@@ -41,6 +42,7 @@ func (user *AuthUser) GenerateJWT() (string, error) {
 			"username":       user.Username,
 			"id":             user.Id,
 			"status":         user.Status,
+			"two_fa_enabled": user.TwoFAEnabled,
 		})
 
 	tokenString, err := token.SignedString(secret)
@@ -87,6 +89,12 @@ func VerifyToken(tokenString string) (*AuthUser, error) {
 			Username:       claims["username"].(string),
 			Id:             uint(claims["id"].(float64)),
 		}
+
+		// tokens minted before 2FA existed don't carry this claim — default to off
+		if twoFA, claimExists := claims["two_fa_enabled"].(bool); claimExists {
+			authUser.TwoFAEnabled = twoFA
+		}
+
 		return authUser, nil
 	} else {
 		return nil, errors.New("failed to parse claims")

@@ -30,8 +30,12 @@ func Router () http.Handler {
 	mux.HandleFunc(constants.ROUTE_POST_UPDATE_PROFILE, models.Authenticate(UpdateProfile))
 	mux.HandleFunc(constants.ROUTE_POST_FORGOT_PASSWORD, forgotLimiter.wrap(ForgotPassword))
 	mux.HandleFunc(constants.ROUTE_POST_VERIFY_EMAIL, verifyLimiter.wrap(VerifyEmail))
+	mux.HandleFunc(constants.ROUTE_POST_VERIFY_TWO_FA, verifyLimiter.wrap(VerifyTwoFA))
 	mux.HandleFunc(constants.ROUTE_POST_SIGNUP, signupLimiter.wrap(Signup))
 	mux.HandleFunc(constants.ROUTE_POST_LOGIN, loginLimiter.wrap(Login))
+
+	// 2FA settings (authentication required)
+	mux.HandleFunc(constants.ROUTE_POST_TWO_FA, models.Authenticate(ToggleTwoFA))
 
 	// plaid routes (authentication required)
 	mux.HandleFunc(constants.ROUTE_POST_PLAID_LINK_TOKEN, models.Authenticate(PlaidCreateLinkToken))
@@ -67,7 +71,7 @@ func Router () http.Handler {
 	// Serve static files from the frontend build
 	staticPath := os.Getenv("STATIC_PATH")
 	if staticPath == "" {
-		staticPath = "frontend/dist" 
+		staticPath = "frontend/dist"
 	}
 	spa := spaHandler{staticPath: staticPath, indexPath: "index.html"}
 	mux.Handle("/", spa)
@@ -125,7 +129,7 @@ func SampleAuth(w http.ResponseWriter, r *http.Request) {
 func SamplePub(w http.ResponseWriter, r *http.Request) {
 	var httpResponse models.HttpResponse
 
-	
+
 	httpResponse.Data = "Hello"
 	httpResponse.Success = true
 	httpResponse.Error = nil
@@ -151,12 +155,23 @@ func Login(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	token, err := user.Login()
+	token, twoFARequired, err := user.Login()
 
 	if err != nil {
 		httpResponse.Error = fmt.Sprintf("%v", err)
 		httpResponse.Success = false
 		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	// 2FA accounts get no token yet — the emailed code must be confirmed first
+	if twoFARequired {
+		httpResponse.Data = map[string]interface{}{
+			"TwoFARequired": true,
+		}
+		httpResponse.Success = true
+		httpResponse.Error = nil
 		httpResponse.Send(w)
 		return
 	}
@@ -215,7 +230,7 @@ func Signup(w http.ResponseWriter, r *http.Request){
 
 /************************************************************************
 * Handles email verification
-* 
+*
 * status: ✅
 ************************************************************************/
 func VerifyEmail(w http.ResponseWriter, r *http.Request){
@@ -267,7 +282,7 @@ func VerifyEmail(w http.ResponseWriter, r *http.Request){
 
 /************************************************************************
 * Handles forgot password functionality by sending a temporary password
-* to the user's email address. The user can then use this temporary 
+* to the user's email address. The user can then use this temporary
 * password to log in and change their password.
 *
 * status: ✅
@@ -395,6 +410,131 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request){
 		"message":   "Profile updated successfully",
 		"AuthToken": token,
 	}
+	httpResponse.Success = true
+	httpResponse.Error = nil
+	httpResponse.Send(w)
+}
+
+
+/************************************************************************
+* Toggles two-factor authentication for the authenticated user. Returns a
+* fresh token so the session carries the updated two_fa_enabled claim.
+*
+* status: ✅
+************************************************************************/
+func ToggleTwoFA(w http.ResponseWriter, r *http.Request){
+	var httpResponse models.HttpResponse
+	var user models.User
+
+	// Get authenticated user from context
+	authUser, ok := r.Context().Value(constants.USER_CONTEXT_AUTH_KEY).(*models.AuthUser)
+	if !ok {
+		httpResponse.Error = "Authentication required"
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	var requestBody struct {
+		Enabled bool `json:"enabled"`
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&requestBody)
+	if err != nil {
+		httpResponse.Error = "Invalid request format"
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	err = user.SetTwoFA(authUser.Id, requestBody.Enabled)
+	if err != nil {
+		httpResponse.Error = fmt.Sprintf("%v", err)
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	// mint a fresh token so the session reflects the new 2FA setting
+	updatedAuthUser := models.AuthUser{
+		FirstName:    authUser.FirstName,
+		LastName:     authUser.LastName,
+		Username:     authUser.Username,
+		Email:        authUser.Email,
+		Avatar:       authUser.Avatar,
+		Status:       authUser.Status,
+		TwoFAEnabled: requestBody.Enabled,
+		Id:           authUser.Id,
+	}
+
+	token, err := updatedAuthUser.GenerateJWT()
+	if err != nil {
+		httpResponse.Error = fmt.Sprintf("could not refresh session token: %v", err)
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	httpResponse.Data = map[string]string{
+		"message":   "Two-factor authentication updated",
+		"AuthToken": token,
+	}
+	httpResponse.Success = true
+	httpResponse.Error = nil
+	httpResponse.Send(w)
+}
+
+/************************************************************************
+* Confirms the emailed 6-digit 2FA code and completes the login.
+*
+* status: ✅
+************************************************************************/
+func VerifyTwoFA(w http.ResponseWriter, r *http.Request){
+	var httpResponse models.HttpResponse
+	var user models.User
+
+	var requestBody struct {
+		Username string `json:"username"`
+		Code     string `json:"code"`
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&requestBody)
+	if err != nil {
+		httpResponse.Error = "Invalid request format"
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	if len(requestBody.Username) == 0 || len(requestBody.Code) == 0 {
+		httpResponse.Error = "username and code are required"
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	token, err := user.VerifyTwoFA(requestBody.Username, requestBody.Code)
+
+	if err != nil {
+		httpResponse.Error = fmt.Sprintf("%v", err)
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	data := map[string]interface{}{
+		"AuthToken": token,
+		"User": user,
+	}
+
+	httpResponse.Data = data
 	httpResponse.Success = true
 	httpResponse.Error = nil
 	httpResponse.Send(w)

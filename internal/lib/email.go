@@ -34,7 +34,7 @@ type PasswordResetEmailData struct {
 
 /**************************************************************************************
 * Creates a new email service with SMTP configuration from the environment variables.
-* 
+*
 * Status: ✅
 **************************************************************************************/
 
@@ -50,7 +50,7 @@ func NewEmailService() *EmailService {
 
 /**************************************************************************************
 * SendVerificationEmail sends a verification email with the verification code.
-* 
+*
 * Status: ✅
 **************************************************************************************/
 
@@ -62,7 +62,7 @@ func (es *EmailService) SendVerificationEmail(toEmail, firstName, verificationCo
 
 	// Parse template
 	tmpl, err := template.ParseFiles("templates/verification_email.html")
-    
+
 	if err != nil {
 		return fmt.Errorf("failed to parse verification email template: %w", err)
 	}
@@ -74,7 +74,7 @@ func (es *EmailService) SendVerificationEmail(toEmail, firstName, verificationCo
 		VerificationCode: verificationCode,
 		BaseURL:          os.Getenv("BASE_URL") + "/auth/verify",
 	}
-	
+
 	err = tmpl.Execute(&body, data)
 	if err != nil {
 		return fmt.Errorf("failed to execute verification email template: %w", err)
@@ -103,7 +103,7 @@ func (es *EmailService) SendVerificationEmail(toEmail, firstName, verificationCo
 
 /**************************************************************************************
 * SendWelcomeEmail sends a welcome email after successful verification.
-* 
+*
 * Status: ✅
 **************************************************************************************/
 func (es *EmailService) SendWelcomeEmail(toEmail, firstName string) error {
@@ -119,7 +119,7 @@ func (es *EmailService) SendWelcomeEmail(toEmail, firstName string) error {
 		FirstName: firstName,
 		BaseURL:   os.Getenv("BASE_URL"),
 	}
-	
+
 	err = tmpl.Execute(&body, data)
 	if err != nil {
 		return fmt.Errorf("failed to execute welcome email template: %w", err)
@@ -135,7 +135,7 @@ func (es *EmailService) SendWelcomeEmail(toEmail, firstName string) error {
 
 	auth := smtp.PlainAuth("", es.SMTPUsername, es.SMTPPassword, es.SMTPHost)
 	addr := fmt.Sprintf("%s:%s", es.SMTPHost, es.SMTPPort)
-	
+
 	return smtp.SendMail(addr, auth, es.FromEmail, []string{toEmail}, []byte(message))
 }
 
@@ -152,7 +152,7 @@ func (es *EmailService) SendPasswordResetEmail(toEmail, firstName, temporaryPass
 		FirstName:         firstName,
 		TemporaryPassword: temporaryPassword,
 	}
-	
+
 	err = tmpl.Execute(&body, data)
 	if err != nil {
 		return fmt.Errorf("failed to execute password reset email template: %w", err)
@@ -168,6 +168,52 @@ func (es *EmailService) SendPasswordResetEmail(toEmail, firstName, temporaryPass
 
 	auth := smtp.PlainAuth("", es.SMTPUsername, es.SMTPPassword, es.SMTPHost)
 	addr := fmt.Sprintf("%s:%s", es.SMTPHost, es.SMTPPort)
-	
+
+	return smtp.SendMail(addr, auth, es.FromEmail, []string{toEmail}, []byte(message))
+}
+
+
+/**************************************************************************************
+* SendTwoFACodeEmail emails the 6-digit sign-in code when the user has two-factor
+* authentication enabled. Same code style as the signup verification email.
+*
+* Status: ✅
+**************************************************************************************/
+func (es *EmailService) SendTwoFACodeEmail(toEmail, firstName, code string) error {
+	// Validate SMTP configuration
+	if es.SMTPHost == "" || es.SMTPPort == "" || es.SMTPUsername == "" || es.SMTPPassword == "" {
+		return fmt.Errorf("SMTP configuration is incomplete. Please check your environment variables")
+	}
+
+	// Parse template
+	tmpl, err := template.ParseFiles("templates/two_fa_email.html")
+	if err != nil {
+		return fmt.Errorf("failed to parse two-factor email template: %w", err)
+	}
+
+	// Execute template
+	var body bytes.Buffer
+	data := VerificationEmailData{
+		FirstName:        firstName,
+		VerificationCode: code,
+		BaseURL:          os.Getenv("BASE_URL"),
+	}
+
+	err = tmpl.Execute(&body, data)
+	if err != nil {
+		return fmt.Errorf("failed to execute two-factor email template: %w", err)
+	}
+
+	subject := "Your gooava sign-in code"
+	message := fmt.Sprintf("To: %s\r\n"+
+		"Subject: %s\r\n"+
+		"MIME-Version: 1.0\r\n"+
+		"Content-Type: text/html; charset=UTF-8\r\n"+
+		"\r\n"+
+		"%s", toEmail, subject, body.String())
+
+	auth := smtp.PlainAuth("", es.SMTPUsername, es.SMTPPassword, es.SMTPHost)
+	addr := fmt.Sprintf("%s:%s", es.SMTPHost, es.SMTPPort)
+
 	return smtp.SendMail(addr, auth, es.FromEmail, []string{toEmail}, []byte(message))
 }

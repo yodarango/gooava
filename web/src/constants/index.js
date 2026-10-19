@@ -15,6 +15,8 @@ export const API_GET_VERIFY_EMAIL = API_BASE + "/verify-email";
 export const API_POST_FORGOT_PASSWORD = API_BASE + "/forgot-password";
 export const API_POST_CHANGE_PASSWORD = API_BASE + "/change-password";
 export const API_POST_UPDATE_PROFILE = API_BASE + "/update-profile";
+export const API_POST_TWO_FA = API_BASE + "/2fa";
+export const API_POST_VERIFY_TWO_FA = API_BASE + "/verify-2fa";
 
 // api expense routes
 export const API_POST_EXPENSES = API_BASE + "/expenses";

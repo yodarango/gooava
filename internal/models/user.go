@@ -20,6 +20,7 @@ type User struct {
 	Created string `json:"created"`
 	Updated string `json:"updated"`
 	Status Status `json:"status"`
+	TwoFAEnabled bool `json:"two_fa_enabled"`
 	Avatar string `json:"avatar"`
 	Email string `json:"email"`
 	Id int `json:"id"`
@@ -315,33 +316,52 @@ func (u *User) Signup() (*string, error){
 * 
 * status: ✅
 ****************************************************************************************/
-func (u *User) Login() (*string, error){
+func (u *User) Login() (*string, bool, error){
 
 	var authUser AuthUser
 	var storedPassword string
 
 	query := `
-		SELECT id, first_name, last_name, username, email, avatar, password, status, verification_code
+		SELECT id, first_name, last_name, username, email, avatar, password, status, verification_code, two_fa_enabled
 		FROM users
 		WHERE username = ?
 	`
 
 	row := ModelsRepo.DB.Conn.QueryRow(query, u.Username)
 
-	err := row.Scan(&u.Id, &u.FirstName, &u.LastName, &u.Username, &u.Email, &u.Avatar, &storedPassword, &u.Status, &u.VerificationCode)
+	err := row.Scan(&u.Id, &u.FirstName, &u.LastName, &u.Username, &u.Email, &u.Avatar, &storedPassword, &u.Status, &u.VerificationCode, &u.TwoFAEnabled)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("no user found with these credentials, please check your email/username and try again")
+			return nil, false, fmt.Errorf("no user found with these credentials, please check your email/username and try again")
 		}
-		return nil, fmt.Errorf("error querying for user with these credentials \n %w", err)
+		return nil, false, fmt.Errorf("error querying for user with these credentials \n %w", err)
 	}
 
 	// verify the password
 	err = bcrypt.CompareHashAndPassword([]byte(storedPassword), []byte(u.Password))
 
 	if err != nil {
-		return nil, fmt.Errorf("invalid password, please try again")
+		return nil, false, fmt.Errorf("invalid password, please try again")
+	}
+
+	// 2FA: the password alone is not enough — email a 6-digit code (stored in
+	// the same verification_code column as the signup verification) and hold
+	// the token until the code is confirmed via the verify-2fa endpoint
+	if u.TwoFAEnabled {
+		code := utils.GenerateRandomString(6)
+
+		_, err := ModelsRepo.DB.Conn.Exec("UPDATE users SET verification_code = ? WHERE id = ?", code, u.Id)
+		if err != nil {
+			return nil, false, fmt.Errorf("could not save your sign-in code \n %w", err)
+		}
+
+		emailService := lib.NewEmailService()
+		if err := emailService.SendTwoFACodeEmail(u.Email, u.FirstName, code); err != nil {
+			return nil, false, fmt.Errorf("could not email your sign-in code: %w", err)
+		}
+
+		return nil, true, nil
 	}
 
 	// create auth user for JWT generation
@@ -351,10 +371,94 @@ func (u *User) Login() (*string, error){
 	authUser.Status = u.Status
 	authUser.Avatar = u.Avatar
 	authUser.Email = u.Email
+	authUser.TwoFAEnabled = u.TwoFAEnabled
 	authUser.Id = uint(u.Id)
 
 	token, err := authUser.GenerateJWT()
 
+	if err != nil {
+		return nil, false, fmt.Errorf("could not generate authentication token \n %w", err)
+	}
+
+	return &token, false, nil
+}
+
+/**************************************************************************************
+* Enables or disables two-factor authentication for the user.
+*
+* status: ✅
+****************************************************************************************/
+func (u *User) SetTwoFA(userId uint, enabled bool) error {
+	query := `
+		UPDATE users
+		SET two_fa_enabled = ?, updated_at = CURRENT_TIMESTAMP
+		WHERE id = ?
+	`
+
+	result, err := ModelsRepo.DB.Conn.Exec(query, enabled, userId)
+	if err != nil {
+		return fmt.Errorf("could not update the two-factor setting \n %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("could not verify the two-factor update: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("no user found to update")
+	}
+
+	return nil
+}
+
+/**************************************************************************************
+* Confirms the emailed 6-digit 2FA code for a login attempt. The code lives in the
+* same verification_code column used by signup verification, scoped here by username
+* so a code alone can never be guessed against every account. Codes are single-use:
+* cleared on success and overwritten on every new login attempt.
+*
+* status: ✅
+****************************************************************************************/
+func (u *User) VerifyTwoFA(username, code string) (*string, error) {
+	query := `
+		SELECT id, first_name, last_name, username, email, avatar, status, two_fa_enabled
+		FROM users
+		WHERE username = ? AND verification_code = ? AND verification_code != ""
+	`
+
+	row := ModelsRepo.DB.Conn.QueryRow(query, username, code)
+
+	err := row.Scan(&u.Id, &u.FirstName, &u.LastName, &u.Username, &u.Email, &u.Avatar, &u.Status, &u.TwoFAEnabled)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("invalid or expired code, please try again")
+		}
+		return nil, fmt.Errorf("error verifying code: %w", err)
+	}
+
+	if !u.TwoFAEnabled {
+		return nil, fmt.Errorf("two-factor authentication is not enabled for this account")
+	}
+
+	// burn the code — each one is single-use
+	_, err = ModelsRepo.DB.Conn.Exec(`UPDATE users SET verification_code = "" WHERE id = ?`, u.Id)
+	if err != nil {
+		return nil, fmt.Errorf("could not clear the used code: %w", err)
+	}
+
+	authUser := AuthUser{
+		FirstName:    u.FirstName,
+		LastName:     u.LastName,
+		Username:     u.Username,
+		Email:        u.Email,
+		Avatar:       u.Avatar,
+		Status:       u.Status,
+		TwoFAEnabled: u.TwoFAEnabled,
+		Id:           uint(u.Id),
+	}
+
+	token, err := authUser.GenerateJWT()
 	if err != nil {
 		return nil, fmt.Errorf("could not generate authentication token \n %w", err)
 	}

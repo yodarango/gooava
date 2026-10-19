@@ -1,5 +1,5 @@
-import { API_POST_CHANGE_PASSWORD, API_POST_UPDATE_PROFILE } from "@constants";
-import { Input, Button, Modal, Thumbnail, AvatarPicker, IfElse } from "@ds";
+import { API_POST_CHANGE_PASSWORD, API_POST_UPDATE_PROFILE, API_POST_TWO_FA } from "@constants";
+import { Input, Button, Modal, Thumbnail, AvatarPicker, IfElse, Switch } from "@ds";
 import { useAppContext } from "../../context/appContextProvider";
 import { useState, useEffect } from "react";
 import { usePost } from "@utils";
@@ -66,6 +66,38 @@ export const Layout = () => {
     },
   });
 
+  // 2FA — the switch mirrors the session claim; toggling persists via the API,
+  // which answers with a fresh token carrying the updated two_fa_enabled claim
+  const [twoFAEnabled, setTwoFAEnabled] = useState(!!user.two_fa_enabled);
+
+  const {
+    post: postTwoFA,
+    loading: togglingTwoFA,
+    error: twoFAError,
+  } = usePost({
+    url: API_POST_TWO_FA,
+    callback: (data) => {
+      if (!data) return;
+
+      if (data.AuthToken) {
+        localStorage.setItem("auth", data.AuthToken.replace("Bearer ", ""));
+        setupAuth();
+      }
+
+      showToast({
+        message: twoFAEnabled
+          ? "Two-factor authentication enabled — we'll email you a code at sign in"
+          : "Two-factor authentication disabled",
+        type: "success",
+      });
+    },
+  });
+
+  const handleTwoFAToggle = (enabled) => {
+    setTwoFAEnabled(enabled); // optimistic — the switch responds instantly
+    postTwoFA({ enabled });
+  };
+
   // surface API errors as toasts
   useEffect(() => {
     if (profileError) showToast({ type: "danger", message: profileError });
@@ -74,6 +106,14 @@ export const Layout = () => {
   useEffect(() => {
     if (passwordError) showToast({ type: "danger", message: passwordError });
   }, [passwordError]);
+
+  useEffect(() => {
+    if (twoFAError) {
+      // revert the optimistic toggle when the API call fails
+      setTwoFAEnabled(!!user.two_fa_enabled);
+      showToast({ type: "danger", message: twoFAError });
+    }
+  }, [twoFAError]);
 
   const handleInputChange = (field) => (e) =>
     setFormData((prev) => ({ ...prev, [field]: e.target.value }));
@@ -280,6 +320,26 @@ export const Layout = () => {
           Change password
         </Button>
       </form>
+
+      {/* 2FA card */}
+      <section className='bg-gamma rounded-3 p-4 mb-4'>
+        <div className='d-flex align-items-center justify-content-between gap-3'>
+          <div>
+            <h4 className='me-layout-9f3k__section-title m-0'>
+              Two-factor authentication
+            </h4>
+            <p className='opacity-60 mb-0 mt-2'>
+              When on, we email you a 6-digit code each time you sign in.
+            </p>
+          </div>
+          <Switch
+            checked={twoFAEnabled}
+            onChange={handleTwoFAToggle}
+            disabled={togglingTwoFA}
+            success
+          />
+        </div>
+      </section>
 
       {/* logout — ProtectedRoute redirects to /auth once logged out */}
       <Button danger className='w-100' onClick={logout} type='button'>
