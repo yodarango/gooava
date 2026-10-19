@@ -5,7 +5,9 @@ services:
       dockerfile: Dockerfile
     container_name: ${COMPOSE_PROJECT_NAME}
     ports:
-      - "8016:8016"
+      # bound to localhost only — nginx (same host) proxies to the app, so
+      # plain-HTTP :8016 stays unreachable from the internet
+      - "127.0.0.1:8016:8016"
     environment:
       - DB_HOST=gooava_mysql
       - DB_PORT=3306
@@ -13,13 +15,23 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME:-gooava}
       - STATIC_PATH=web/dist
+      - ENV=${ENV:-PROD}
+      - JWT_SECRET=${JWT_SECRET}
+      - CORS_ORIGIN=${CORS_ORIGIN}
+      - BASE_URL=${BASE_URL}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - FROM_EMAIL=${FROM_EMAIL}
       - PLAID_CLIENT_ID=${PLAID_CLIENT_ID}
       - PLAID_SECRET=${PLAID_SECRET}
       - PLAID_ENV=${PLAID_ENV:-sandbox}
     networks:
       - app-network
     volumes:
-      - .:/app
+      # do NOT mount the repo (".:/app") — it would expose the host's .env
+      # inside the container; the image already ships binary, templates, dist
       - ${HOST_DATA_PATH:-./data}:/app/data
     depends_on:
       gooava_mysql:
@@ -29,7 +41,10 @@ services:
     image: mysql:8.4
     restart: unless-stopped
     ports:
-      - "3309:3306"
+      # bound to localhost only — the app reaches MySQL over the internal
+      # app-network; this port stays available for SSH tunnels / local clients
+      # but is never exposed to the internet
+      - "127.0.0.1:3309:3306"
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${DB_NAME:-gooava}

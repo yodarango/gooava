@@ -8,6 +8,7 @@ import (
 	"gooava/internal/utils"
 	"net/http"
 	"os"
+	"time"
 )
 
 func Router () http.Handler {
@@ -17,13 +18,20 @@ func Router () http.Handler {
 	mux.HandleFunc(constants.ROUTE_GET_AUTH_SAMPLE, models.Authenticate(SampleAuth))
 	mux.HandleFunc(constants.ROUTE_GET_PUBLIC_SAMPLE, SamplePub)
 
-	// auth routes (no authentication required)
+	// auth routes (no authentication required) — rate limited per client IP.
+	// These endpoints guard every account: passwords and 6-digit verification
+	// codes must be too slow to brute force.
+	loginLimiter := newRateLimiter(10, time.Minute)
+	signupLimiter := newRateLimiter(5, 15*time.Minute)
+	forgotLimiter := newRateLimiter(5, 15*time.Minute)
+	verifyLimiter := newRateLimiter(10, 15*time.Minute)
+
 	mux.HandleFunc(constants.ROUTE_POST_CHANGE_PASSWORD, models.Authenticate(ChangePassword))
 	mux.HandleFunc(constants.ROUTE_POST_UPDATE_PROFILE, models.Authenticate(UpdateProfile))
-	mux.HandleFunc(constants.ROUTE_POST_FORGOT_PASSWORD, ForgotPassword)
-	mux.HandleFunc(constants.ROUTE_POST_VERIFY_EMAIL, VerifyEmail)
-	mux.HandleFunc(constants.ROUTE_POST_SIGNUP, Signup)
-	mux.HandleFunc(constants.ROUTE_POST_LOGIN, Login)
+	mux.HandleFunc(constants.ROUTE_POST_FORGOT_PASSWORD, forgotLimiter.wrap(ForgotPassword))
+	mux.HandleFunc(constants.ROUTE_POST_VERIFY_EMAIL, verifyLimiter.wrap(VerifyEmail))
+	mux.HandleFunc(constants.ROUTE_POST_SIGNUP, signupLimiter.wrap(Signup))
+	mux.HandleFunc(constants.ROUTE_POST_LOGIN, loginLimiter.wrap(Login))
 
 	// plaid routes (authentication required)
 	mux.HandleFunc(constants.ROUTE_POST_PLAID_LINK_TOKEN, models.Authenticate(PlaidCreateLinkToken))

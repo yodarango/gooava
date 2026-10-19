@@ -2,22 +2,16 @@ package utils
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
-
-	"github.com/joho/godotenv"
 )
 
 
 func EnableCORS(next http.Handler) http.Handler{
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		err := godotenv.Load(".env")
-
-		if err != nil {
-			log.Fatalf("Error loading .env file")
-		}
-
+		// CORS_ORIGIN comes from the process env (main.go loads .env once at
+		// startup locally; Docker injects it directly) — no per-request file
+		// reads, and a missing file must never crash the server
 		corsOrigin := os.Getenv("CORS_ORIGIN")
 
 		// Set CORS headers for the preflight request and Auth

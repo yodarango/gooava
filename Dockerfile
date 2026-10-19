@@ -24,7 +24,9 @@ COPY config/ ./config/
 COPY constants/ ./constants/
 COPY repo/ ./repo/
 COPY templates/ ./templates/
-COPY .env .
+
+# NOTE: .env is intentionally NOT copied into the image — secrets are injected
+# as environment variables by docker-compose at runtime
 
 RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build \
     CGO_ENABLED=0 GOOS=linux go build -v -p 4 -ldflags="-s -w" -o server ./cmd/main
@@ -37,7 +39,6 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 
 COPY --from=backend-build /app/server .
-COPY --from=backend-build /app/.env .
 COPY --from=backend-build /app/templates ./templates
 COPY --from=frontend-build /app/web/dist ./web/dist
 
