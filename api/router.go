@@ -370,8 +370,30 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
+	// Profile data lives in the JWT claims, so mint a fresh token — otherwise
+	// the session would keep showing the old profile until the next login
+	updatedAuthUser := models.AuthUser{
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Username:  user.Username,
+		Email:     user.Email,
+		Avatar:    user.Avatar,
+		Status:    authUser.Status,
+		Id:        authUser.Id,
+	}
+
+	token, err := updatedAuthUser.GenerateJWT()
+	if err != nil {
+		httpResponse.Error = fmt.Sprintf("could not refresh session token: %v", err)
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
 	httpResponse.Data = map[string]string{
-		"message": "Profile updated successfully",
+		"message":   "Profile updated successfully",
+		"AuthToken": token,
 	}
 	httpResponse.Success = true
 	httpResponse.Error = nil

@@ -7,6 +7,7 @@ import (
 	"gooava/internal/lib"
 	"gooava/internal/utils"
 	"io"
+	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -93,64 +94,73 @@ func (u *User) Create() (error){
 
 
 /**************************************************************************************
-* A function that at the moment will update only the first and last name of the user. 
-* Perhaps in the future I will allow to update other fields.
-* 
+* Updates the user's profile: first name, last name, username, email and avatar.
+* Username and email must remain unique across OTHER accounts.
+*
 * status: ✅
 ****************************************************************************************/
 func (u *User) Update(userId uint) (error){
+	// basic validation — the table has no CHECK constraints for these
+	if strings.TrimSpace(u.FirstName) == "" || strings.TrimSpace(u.LastName) == "" {
+		return fmt.Errorf("first name and last name are required")
+	}
+
+	if strings.TrimSpace(u.Username) == "" {
+		return fmt.Errorf("username is required")
+	}
+
+	if strings.TrimSpace(u.Email) == "" || !strings.Contains(u.Email, "@") {
+		return fmt.Errorf("a valid email address is required")
+	}
+
+	// username and email must be unique among other users
+	queryConflict := `
+		SELECT id
+		FROM users
+		WHERE (username = ? OR email = ?) AND id != ?
+	`
+
+	rows, err := ModelsRepo.DB.Conn.Query(queryConflict, u.Username, u.Email, userId)
+
+	if err != nil && err != sql.ErrNoRows {
+		return fmt.Errorf("could not check for conflicting accounts \n %w", err)
+	}
+
+	conflictingIds := make([]int, 0)
+
+	for rows.Next(){
+		var id int
+
+		if err := rows.Scan(&id); err != nil {
+			rows.Close()
+			return fmt.Errorf("error scanning conflict rows \n %w", err)
+		}
+
+		conflictingIds = append(conflictingIds, id)
+	}
+	rows.Close()
+
+	if len(conflictingIds) > 0 {
+		return fmt.Errorf("this username or email is already linked to another account")
+	}
+
 	query := `
-		UPDATE users SET 
+		UPDATE users SET
 		first_name = ?,
-		last_name =? ,
+		last_name = ?,
+		username = ?,
+		email = ?,
+		avatar = ?,
+		updated_at = CURRENT_TIMESTAMP
 		WHERE id = ?
 	`
 
-	queryUsername := `
-		SELECT id, username, email 
-		FROM users 
-		WHERE username = ? OR email = ?
-	`
-
-	userIdsByUsername := make([]int, 0)
-	userIdsByEmail := make([]int, 0)
-
-	rows, err := ModelsRepo.DB.Conn.Query(queryUsername, u.Username)
-
-	if err != nil {
-		return fmt.Errorf("Erro getting users by username \n %w", err)
-	}
-
-	defer rows.Close()
-
-	// first of ll check if this email or username exist
-	for rows.Next(){
-		var user User
-
-		err := rows.Scan(&user)
-
-		if err != nil {
-			return fmt.Errorf("Erro sacning rows \n %w", err)
-		}
-
-		// only check the users that are not this user 
-		if userId != uint(user.Id) {
-			userIdsByUsername = append(userIdsByUsername, user.Id)
-			userIdsByEmail = append(userIdsByEmail, user.Id)
-		}
-	}
-
-	if len(userIdsByUsername) > 0 {
-		return fmt.Errorf("this username is already taken, please try another one")
-	}
-
-	if len(userIdsByUsername) > 0 {
-		return fmt.Errorf("this email is already linked to another account, are you sure you don't have an account yet")
-	}
-
-	result, err := ModelsRepo.DB.Conn.Exec(query, 
+	result, err := ModelsRepo.DB.Conn.Exec(query,
 		u.FirstName,
 		u.LastName,
+		u.Username,
+		u.Email,
+		u.Avatar,
 		userId,
 	)
 

@@ -4,6 +4,7 @@ import {
   AuthVerifyView,
   FinancesView,
   CalendarView,
+  MeView,
 } from "@views";
 import { MainLayout, ProtectedRoute, AuthRoute } from "@components";
 import {
@@ -19,6 +20,7 @@ import {
   ROUTE_CALENDAR,
   ROUTE_HOME,
   ROUTE_AUTH,
+  ROUTE_ME,
 } from "@constants";
 
 // global styles
@@ -34,6 +36,7 @@ const router = createBrowserRouter(
           <Route path={ROUTE_HOME} element={<IndexView />} />
           <Route path={ROUTE_FINANCES} element={<FinancesView />} />
           <Route path={ROUTE_CALENDAR} element={<CalendarView />} />
+          <Route path={ROUTE_ME} element={<MeView />} />
         </Route>
       </Route>
 

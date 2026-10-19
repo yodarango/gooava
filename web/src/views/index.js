@@ -3,3 +3,4 @@ export { FinancesView } from "./finances/View";
 export { CalendarView } from "./calendar/View";
 export { IndexView } from "./index/View";
 export { AuthView } from "./auth/View";
+export { MeView } from "./me/View";
