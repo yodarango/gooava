@@ -10,6 +10,7 @@ import (
 	"gooava/internal/models"
 	plaidinternal "gooava/internal/plaid"
 	"net/http"
+	"os"
 	"strconv"
 
 	plaid "github.com/plaid/plaid-go/v44/plaid"
@@ -59,6 +60,14 @@ func PlaidCreateLinkToken(w http.ResponseWriter, r *http.Request) {
 	)
 	request.SetUser(user)
 	request.SetProducts([]plaid.Products{plaid.PRODUCTS_TRANSACTIONS})
+
+	// OAuth banks (Chase, BofA, ...) authenticate on the bank's own site, then
+	// redirect the browser back to this URI. Required in production: must be
+	// https and registered under API → Allowed redirect URIs in the Plaid
+	// dashboard. Without it the OAuth flow dead-ends off-app.
+	if baseURL := os.Getenv("BASE_URL"); baseURL != "" {
+		request.SetRedirectUri(baseURL + "/finances")
+	}
 
 	resp, _, err := plaidinternal.Client().PlaidApi.LinkTokenCreate(r.Context()).LinkTokenCreateRequest(*request).Execute()
 	if err != nil {

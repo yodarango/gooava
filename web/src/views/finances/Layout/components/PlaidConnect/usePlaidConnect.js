@@ -25,15 +25,23 @@ const loadPlaidScript = () => {
   return plaidScriptPromise;
 };
 
+// In-flight link token, stashed so the bank's OAuth redirect back to /finances
+// can resume the exact same Link session (the page reloads fresh, the original
+// handler is gone).
+const PLAID_LINK_TOKEN_KEY = "gooava:plaid_link_token";
+
+// The finances page mounts the flow twice (connect card + settings drawer) —
+// the OAuth resume below must run exactly once per page load.
+let plaidOAuthResumeHandled = false;
+
 /*********************************************************************************************************
- * Shared "connect a bank" flow: fetch a link token, open Plaid Link, exchange the public token
- * server-side (which also runs the initial transactions sync). Used by the PlaidConnect card and
- * the Finances settings drawer ("Add bank").
+ * Shared pieces of the Link flow used by both hooks: exchange a public token server-side (which also
+ * runs the initial transactions sync), create + open the Link handler, toast on errors.
  *
  * onConnected is called after a successful exchange.
  * ******************************************************************************************************
  */
-export const usePlaidConnect = (onConnected) => {
+const usePlaidLinkFlow = (onConnected) => {
   const { showToast } = useAppContext();
 
   const exchange = usePost({
@@ -47,40 +55,62 @@ export const usePlaidConnect = (onConnected) => {
     },
   });
 
+  const openLink = async (token) => {
+    try {
+      await loadPlaidScript();
+    } catch (error) {
+      showToast({ message: error.message, type: "danger" });
+      return;
+    }
+
+    const handler = window.Plaid.create({
+      token,
+      onSuccess: (publicToken, metadata) => {
+        sessionStorage.removeItem(PLAID_LINK_TOKEN_KEY);
+        exchange.post({
+          public_token: publicToken,
+          institution_name: metadata?.institution?.name || "",
+        });
+      },
+      onExit: (error) => {
+        if (error) {
+          sessionStorage.removeItem(PLAID_LINK_TOKEN_KEY);
+          showToast({
+            message:
+              error.display_message ||
+              error.error_message ||
+              "Bank connection could not be completed",
+            type: "danger",
+          });
+        }
+      },
+    });
+
+    handler.open();
+  };
+
+  return { openLink, exchange };
+};
+
+/*********************************************************************************************************
+ * "Connect a bank" flow: fetch a link token, stash it (OAuth redirect insurance), open Plaid Link.
+ * Used by the PlaidConnect card and the Finances settings drawer ("Add bank").
+ * ******************************************************************************************************
+ */
+export const usePlaidConnect = (onConnected) => {
+  const { showToast } = useAppContext();
+  const { openLink, exchange } = usePlaidLinkFlow(onConnected);
+
   const linkToken = usePost({
     url: API_POST_PLAID_LINK_TOKEN,
-    callback: async (data) => {
+    callback: (data) => {
       if (!data?.link_token) return;
 
-      try {
-        await loadPlaidScript();
-      } catch (error) {
-        showToast({ message: error.message, type: "danger" });
-        return;
-      }
+      // stash the token so an OAuth bank's redirect back to /finances can
+      // resume this exact Link session (see usePlaidOAuthResume)
+      sessionStorage.setItem(PLAID_LINK_TOKEN_KEY, data.link_token);
 
-      const handler = window.Plaid.create({
-        token: data.link_token,
-        onSuccess: (publicToken, metadata) => {
-          exchange.post({
-            public_token: publicToken,
-            institution_name: metadata?.institution?.name || "",
-          });
-        },
-        onExit: (error) => {
-          if (error) {
-            showToast({
-              message:
-                error.display_message ||
-                error.error_message ||
-                "Bank connection could not be completed",
-              type: "danger",
-            });
-          }
-        },
-      });
-
-      handler.open();
+      openLink(data.link_token);
     },
   });
 
@@ -94,4 +124,38 @@ export const usePlaidConnect = (onConnected) => {
     connect: () => linkToken.post({}),
     isLoading: linkToken.loading || exchange.loading,
   };
+};
+
+/*********************************************************************************************************
+ * Resumes an interrupted OAuth bank flow. OAuth banks send the user to the bank's own site; the bank
+ * then redirects back to /finances?oauth_state_id=... Re-creating Link with the SAME stashed link
+ * token lets the SDK detect that state and finish the flow (onSuccess then exchanges as usual).
+ *
+ * Mounted once by the finances Layout.
+ * ******************************************************************************************************
+ */
+export const usePlaidOAuthResume = (onConnected) => {
+  const { showToast } = useAppContext();
+  const { openLink, exchange } = usePlaidLinkFlow(onConnected);
+
+  useEffect(() => {
+    if (plaidOAuthResumeHandled) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const oauthStateId = params.get("oauth_state_id");
+    const storedToken = sessionStorage.getItem(PLAID_LINK_TOKEN_KEY);
+
+    if (!oauthStateId || !storedToken) return;
+    plaidOAuthResumeHandled = true;
+
+    // strip the oauth params from the address bar
+    window.history.replaceState({}, "", window.location.pathname);
+
+    openLink(storedToken);
+  }, []);
+
+  // surface exchange errors as toasts
+  useEffect(() => {
+    if (exchange.error) showToast({ message: String(exchange.error), type: "danger" });
+  }, [exchange.error]);
 };

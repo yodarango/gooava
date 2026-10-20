@@ -1,3 +1,4 @@
+import { usePlaidOAuthResume } from "./components/PlaidConnect/usePlaidConnect";
 import { FinancesSettings } from "./components/FinancesSettings/FinancesSettings";
 import { IncomeApprovals } from "./components/IncomeApprovals/IncomeApprovals";
 import { UpcomingBills } from "./components/UpcomingBills/UpcomingBills";
@@ -51,6 +52,9 @@ export const Layout = () => {
     dependencies: [refreshKey],
   });
   const bankConnected = !!status.data?.connected;
+
+  // resume the bank-link flow when an OAuth bank redirects back to /finances
+  usePlaidOAuthResume(() => setRefreshKey((key) => key + 1));
 
   // Live clock so the header date/time stays current
   useEffect(() => {
