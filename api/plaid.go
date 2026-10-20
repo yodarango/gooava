@@ -225,7 +225,18 @@ func PlaidSyncTransactions(w http.ResponseWriter, r *http.Request) {
 	added, modified, removed, failed := 0, 0, 0, 0
 	var firstErr error
 	for i := range items {
-		a, m, r, syncErr := runTransactionsSync(r.Context(), &items[i])
+		// ListPlaidItems never loads the access token — fetch the full item
+		// (token included, decrypted) before talking to Plaid
+		item, itemErr := models.GetPlaidItemById(authUser.Id, items[i].Id)
+		if itemErr != nil {
+			failed++
+			if firstErr == nil {
+				firstErr = itemErr
+			}
+			continue
+		}
+
+		a, m, r, syncErr := runTransactionsSync(r.Context(), item)
 		if syncErr != nil {
 			failed++
 			if firstErr == nil {
