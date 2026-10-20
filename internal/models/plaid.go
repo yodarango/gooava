@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"gooava/internal/utils"
 	"strings"
 )
 
@@ -47,19 +48,56 @@ type PlaidTransactionWithAccount struct {
 }
 
 /**************************************************************************************
+* Access tokens are stored AES-256-GCM-encrypted (see internal/utils/crypto.go).
+* Legacy rows hold plaintext tokens, which always start with "access-" — on first
+* read they are returned as-is and transparently re-encrypted in the database.
+**************************************************************************************/
+func storeAccessToken(plaintext string) (string, error) {
+	encrypted, err := utils.EncryptString(plaintext)
+	if err != nil {
+		return "", fmt.Errorf("could not encrypt access token: %w", err)
+	}
+	return encrypted, nil
+}
+
+func loadAccessToken(itemDBID int64, stored string) (string, error) {
+	if strings.HasPrefix(stored, "access-") {
+		// legacy plaintext row — re-encrypt it now so the plaintext does not linger
+		if encrypted, err := utils.EncryptString(stored); err == nil {
+			if _, err := ModelsRepo.DB.Conn.Exec("UPDATE plaid_items SET access_token = ? WHERE id = ?", encrypted, itemDBID); err != nil {
+				fmt.Printf("warning: could not re-encrypt legacy plaid token: %v\n", err)
+			}
+		}
+		return stored, nil
+	}
+
+	token, err := utils.DecryptString(stored)
+	if err != nil {
+		return "", fmt.Errorf("could not decrypt access token: %w", err)
+	}
+	return token, nil
+}
+
+/**************************************************************************************
 * SavePlaidItem inserts (or updates on duplicate item_id) a Plaid item for a user and
-* returns the database row id.
+* returns the database row id. The access token is encrypted before it is stored.
 *
 * status: ✅
 **************************************************************************************/
 func SavePlaidItem(userID uint, itemID, accessToken, institutionName string) (int64, error) {
+	// never write the raw token — it is a live credential for the user's bank
+	encryptedToken, err := storeAccessToken(accessToken)
+	if err != nil {
+		return 0, err
+	}
+
 	query := `
 		INSERT INTO plaid_items(user_id, item_id, access_token, institution_name)
 		VALUES(?,?,?,?)
 		ON DUPLICATE KEY UPDATE access_token = VALUES(access_token), institution_name = VALUES(institution_name)
 	`
 
-	_, err := ModelsRepo.DB.Conn.Exec(query, userID, itemID, accessToken, institutionName)
+	_, err = ModelsRepo.DB.Conn.Exec(query, userID, itemID, encryptedToken, institutionName)
 	if err != nil {
 		return 0, fmt.Errorf("could not save plaid item: %w", err)
 	}
@@ -89,6 +127,13 @@ func GetPlaidItemByUser(userID uint) (*PlaidItem, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// decrypt the stored token (legacy plaintext rows get re-encrypted on the fly)
+	plaintextToken, err := loadAccessToken(item.Id, item.AccessToken)
+	if err != nil {
+		return nil, err
+	}
+	item.AccessToken = plaintextToken
 
 	return &item, nil
 }
@@ -159,6 +204,13 @@ func GetPlaidItemById(userID uint, itemDBID int64) (*PlaidItem, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// decrypt the stored token (legacy plaintext rows get re-encrypted on the fly)
+	plaintextToken, err := loadAccessToken(item.Id, item.AccessToken)
+	if err != nil {
+		return nil, err
+	}
+	item.AccessToken = plaintextToken
 
 	return &item, nil
 }
