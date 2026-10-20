@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"gooava/constants"
 	"gooava/internal/models"
@@ -13,6 +14,21 @@ import (
 
 	plaid "github.com/plaid/plaid-go/v44/plaid"
 )
+
+/************************************************************************
+* plaidErrorDetail extracts Plaid's structured error body (error_code,
+* error_message, ...) from an API error. Without it, failures surface as a
+* bare "400 Bad Request" with no hint at the actual cause.
+************************************************************************/
+func plaidErrorDetail(err error) string {
+	var openAPIErr plaid.GenericOpenAPIError
+	if errors.As(err, &openAPIErr) {
+		if body := openAPIErr.Body(); len(body) > 0 {
+			return string(body)
+		}
+	}
+	return err.Error()
+}
 
 /************************************************************************
 * Creates a Plaid Link token for the authenticated user. The browser uses
@@ -46,7 +62,7 @@ func PlaidCreateLinkToken(w http.ResponseWriter, r *http.Request) {
 
 	resp, _, err := plaidinternal.Client().PlaidApi.LinkTokenCreate(r.Context()).LinkTokenCreateRequest(*request).Execute()
 	if err != nil {
-		httpResponse.Error = fmt.Sprintf("could not create link token: %v", err)
+		httpResponse.Error = fmt.Sprintf("could not create link token: %s", plaidErrorDetail(err))
 		httpResponse.Success = false
 		httpResponse.Data = nil
 		httpResponse.Send(w)
@@ -95,7 +111,7 @@ func PlaidExchangePublicToken(w http.ResponseWriter, r *http.Request) {
 	exchangeRequest := plaid.NewItemPublicTokenExchangeRequest(requestBody.PublicToken)
 	exchangeResp, _, err := plaidinternal.Client().PlaidApi.ItemPublicTokenExchange(r.Context()).ItemPublicTokenExchangeRequest(*exchangeRequest).Execute()
 	if err != nil {
-		httpResponse.Error = fmt.Sprintf("could not exchange public token: %v", err)
+		httpResponse.Error = fmt.Sprintf("could not exchange public token: %s", plaidErrorDetail(err))
 		httpResponse.Success = false
 		httpResponse.Data = nil
 		httpResponse.Send(w)
@@ -114,7 +130,7 @@ func PlaidExchangePublicToken(w http.ResponseWriter, r *http.Request) {
 	accountsRequest := plaid.NewAccountsGetRequest(exchangeResp.GetAccessToken())
 	accountsResp, _, err := plaidinternal.Client().PlaidApi.AccountsGet(r.Context()).AccountsGetRequest(*accountsRequest).Execute()
 	if err != nil {
-		httpResponse.Error = fmt.Sprintf("could not fetch accounts: %v", err)
+		httpResponse.Error = fmt.Sprintf("could not fetch accounts: %s", plaidErrorDetail(err))
 		httpResponse.Success = false
 		httpResponse.Data = nil
 		httpResponse.Send(w)
@@ -404,7 +420,7 @@ func runTransactionsSync(ctx context.Context, item *models.PlaidItem) (addedN, m
 
 		resp, _, apiErr := plaidinternal.Client().PlaidApi.TransactionsSync(ctx).TransactionsSyncRequest(*request).Execute()
 		if apiErr != nil {
-			return 0, 0, 0, fmt.Errorf("plaid sync failed: %v", apiErr)
+			return 0, 0, 0, fmt.Errorf("plaid sync failed: %s", plaidErrorDetail(apiErr))
 		}
 
 		for _, txn := range resp.GetAdded() {
