@@ -184,6 +184,7 @@
     height: 2.4rem;
     border-radius: 50%;
     border: none;
+    padding: 0;
     margin: 0;
     cursor: pointer;
     transition: opacity 0.2s ease;
@@ -220,6 +221,8 @@
     background-color: var(--dr-epsilon);
     border-radius: 1.2rem;
     overflow: hidden;
+    /* containment context for the stacking header query at the bottom of this file */
+    container-type: inline-size;
   }
 
   /* the always-visible header button that opens/closes the card */
@@ -312,14 +315,15 @@
     letter-spacing: 0.05em;
     padding: 0 var(--dr-spacing-2);
 
+    /* solid chips — the tinted backgrounds with matching bright text were unreadable */
     &.left {
-      background-color: rgba(var(--dr-success-rgb), 0.15);
-      color: var(--dr-success);
+      background-color: var(--dr-success);
+      color: var(--dr-beta); /* dark on bright green (~8:1); white would be ~2:1 */
     }
 
     &.short {
-      background-color: rgba(var(--dr-danger-rgb), 0.12);
-      color: var(--dr-danger);
+      background-color: var(--dr-danger);
+      color: var(--dr-zeta); /* white on crimson — same pairing as the add/payday chips */
     }
 
     &.unknown {
@@ -347,3 +351,23 @@
     margin: var(--dr-spacing-3) 0 0;
   }
 }
+
+/* Narrow window card: stack the header — the date range (left side) wraps onto its own
+   line on top, the verdict + due total + chevron (right side) drop to a full-width row
+   below, with the chevron pinned to the right edge where it sat before. */
+@container (max-width: 40rem) {
+  .upcoming-bills-5xk3__window-toggle {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--dr-spacing-2);
+  }
+
+  .upcoming-bills-5xk3__window-summary {
+    width: 100%;
+  }
+
+  .upcoming-bills-5xk3__chevron {
+    margin-left: auto;
+  }
+}
+

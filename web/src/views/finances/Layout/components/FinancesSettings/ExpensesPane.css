@@ -30,6 +30,7 @@
     height: 3.6rem;
     border-radius: 50%;
     border: none;
+    padding: 0;
     margin: 0;
     background-color: var(--dr-delta);
     color: var(--dr-zeta);

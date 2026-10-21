@@ -6,6 +6,15 @@ body {
   width: 100%;
 }
 
+/* The CDN's fullds.min.css pads every bare button (1rem 1.6rem — 16px each side), which
+   squeezes the icon out of the small round icon buttons. No button in the app relies on
+   that global padding (the ds Button sets its own via its .button class, and `.btn` keeps
+   the CDN rule since a class outranks this element selector), so neutralize it here.
+   This file is injected after the CDN stylesheet, so the equal-specificity rule wins. */
+button {
+  padding: 0;
+}
+
 body * {
   color: var(--dr-beta);
 }
