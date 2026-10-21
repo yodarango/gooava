@@ -129,7 +129,7 @@ const SettingsDrawer = (props) => {
             </TabContent>
 
             <TabContent>
-              <ExpensesPane />
+              <ExpensesPane onChanged={onChanged} />
             </TabContent>
 
             <TabContent>

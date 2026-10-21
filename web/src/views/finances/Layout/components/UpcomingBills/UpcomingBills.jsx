@@ -50,7 +50,7 @@ export const UpcomingBills = (props) => {
   const { state, showToast } = useAppContext();
   const userId = state.user?.id;
 
-  const expenses = useGet({ url: API_GET_EXPENSES });
+  const expenses = useGet({ url: API_GET_EXPENSES, dependencies: [refreshKey] });
   const accounts = useGet({ url: API_GET_PLAID_ACCOUNTS });
   const incomes = useGet({ url: API_GET_INCOMES, dependencies: [refreshKey] });
   const entries = useGet({ url: API_GET_INCOME_ENTRIES, dependencies: [refreshKey] });
@@ -148,13 +148,14 @@ export const UpcomingBills = (props) => {
   const occurrenceSignature = JSON.stringify([
     formatDateKey(rangeStart),
     formatDateKey(rangeEnd),
-    expenseList.map((e) => e.id),
+    expenseList.map((e) => `${e.id}:${e.linked_label || ""}`),
     occurrenceRefresh,
+    refreshKey,
   ]);
 
-  // Lazily create the occurrence entries for the rendered window, auto-pay any that match a
-  // synced transaction by label, then load the resulting paid state. Re-runs when the range,
-  // the expense set, or the manual-refresh token changes.
+  // Lazily create the occurrence entries for the rendered window, auto-pay the ones whose
+  // expense the user explicitly linked to a transaction, then load the resulting paid
+  // state. Re-runs when the range, the expense set, or the manual-refresh token changes.
   useEffect(() => {
     if (!userId) return;
     if (windowEnds.length === 0) return;

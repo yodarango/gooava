@@ -27,6 +27,9 @@ export const API_GET_EXPENSE_CATEGORIES = API_BASE + "/expenses/categories";
 export const API_POST_EXPENSE_CATEGORIES = API_BASE + "/expenses/categories";
 export const API_POST_EXPENSE_OCCURRENCES_ENSURE = API_BASE + "/expenses/occurrences/ensure";
 export const API_POST_EXPENSE_OCCURRENCES_PAID = API_BASE + "/expenses/occurrences/paid";
+export const API_POST_EXPENSE_OCCURRENCES_REVIEW = API_BASE + "/expenses/occurrences/review";
+export const API_POST_EXPENSE_OCCURRENCES_CONFIRM = API_BASE + "/expenses/occurrences/confirm";
+export const API_POST_EXPENSES_LINK = API_BASE + "/expenses/link";
 
 // api income routes
 export const API_POST_INCOMES = API_BASE + "/incomes";

@@ -56,6 +56,9 @@ func Router () http.Handler {
 	mux.HandleFunc("POST "+constants.ROUTE_POST_EXPENSE_CATEGORIES, models.Authenticate(CreateExpenseCategory))
 	mux.HandleFunc(constants.ROUTE_POST_EXPENSE_OCCURRENCES_ENSURE, models.Authenticate(EnsureExpenseOccurrences))
 	mux.HandleFunc(constants.ROUTE_POST_EXPENSE_OCCURRENCES_PAID, models.Authenticate(SetExpenseOccurrencePaid))
+	mux.HandleFunc(constants.ROUTE_POST_EXPENSE_OCCURRENCES_REVIEW, models.Authenticate(ReviewPastDueOccurrences))
+	mux.HandleFunc(constants.ROUTE_POST_EXPENSE_OCCURRENCES_CONFIRM, models.Authenticate(ConfirmExpenseOccurrences))
+	mux.HandleFunc(constants.ROUTE_POST_EXPENSES_LINK, models.Authenticate(LinkExpenseTransaction))
 
 	// income routes (authentication required)
 	// GET and POST share some paths, so those are method-qualified patterns (Go 1.22+ mux)

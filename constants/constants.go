@@ -24,6 +24,9 @@ const ROUTE_GET_EXPENSE_CATEGORIES = ROUTE_API_BASE + "/expenses/categories"
 const ROUTE_POST_EXPENSE_CATEGORIES = ROUTE_API_BASE + "/expenses/categories"
 const ROUTE_POST_EXPENSE_OCCURRENCES_ENSURE = ROUTE_API_BASE + "/expenses/occurrences/ensure"
 const ROUTE_POST_EXPENSE_OCCURRENCES_PAID = ROUTE_API_BASE + "/expenses/occurrences/paid"
+const ROUTE_POST_EXPENSE_OCCURRENCES_REVIEW = ROUTE_API_BASE + "/expenses/occurrences/review"
+const ROUTE_POST_EXPENSE_OCCURRENCES_CONFIRM = ROUTE_API_BASE + "/expenses/occurrences/confirm"
+const ROUTE_POST_EXPENSES_LINK = ROUTE_API_BASE + "/expenses/link"
 
 // incomes
 const ROUTE_GET_INCOMES = ROUTE_API_BASE + "/incomes"

@@ -1,0 +1,101 @@
+.transaction-picker-9qw1 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dr-spacing-3);
+
+  .transaction-picker-9qw1__search {
+    width: 100%;
+  }
+
+  .transaction-picker-9qw1__empty {
+    color: rgba(var(--dr-beta-rgb), 0.5);
+    font-size: var(--dr-font-size-4);
+    margin: var(--dr-spacing-2) 0;
+    text-align: center;
+  }
+
+  .transaction-picker-9qw1__list {
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 40vh;
+    overflow-y: auto;
+  }
+
+  .transaction-picker-9qw1__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dr-spacing-3);
+    width: 100%;
+    background: none;
+    border: none;
+    margin: 0;
+    padding: var(--dr-spacing-2);
+    border-radius: 1rem;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: rgba(var(--dr-delta-rgb), 0.08);
+    }
+  }
+
+  li + li .transaction-picker-9qw1__row {
+    border-top: 1px solid rgba(var(--dr-eta-rgb), 0.1);
+    border-radius: 0;
+  }
+
+  .transaction-picker-9qw1__details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+
+  .transaction-picker-9qw1__name {
+    display: flex;
+    align-items: center;
+    gap: var(--dr-spacing-2);
+    color: var(--dr-beta);
+    font-size: var(--dr-font-size-4);
+    font-weight: var(--dr-font-weight-6);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .transaction-picker-9qw1__pending {
+    flex-shrink: 0;
+    color: rgba(var(--dr-beta-rgb), 0.5);
+    border: 1px solid rgba(var(--dr-eta-rgb), 0.3);
+    border-radius: 1rem;
+    font-size: var(--dr-font-size-6);
+    font-weight: var(--dr-font-weight-6);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0 var(--dr-spacing-2);
+  }
+
+  .transaction-picker-9qw1__meta {
+    color: rgba(var(--dr-beta-rgb), 0.5);
+    font-size: var(--dr-font-size-6);
+  }
+
+  .transaction-picker-9qw1__amount {
+    flex-shrink: 0;
+    font-size: var(--dr-font-size-4);
+    font-weight: var(--dr-font-weight-7);
+
+    &.expense {
+      color: var(--dr-beta);
+    }
+
+    &.income {
+      color: var(--dr-delta);
+    }
+  }
+}

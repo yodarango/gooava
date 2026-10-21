@@ -1,13 +1,15 @@
 import { useAppContext } from "../../../../context/appContextProvider";
+import { TransactionPicker } from "../TransactionPicker/TransactionPicker";
 import { ExpensesForm } from "./ExpensesForm";
 import {
   API_GET_EXPENSE_CATEGORIES,
   API_POST_EXPENSES_DELETE,
+  API_POST_EXPENSES_LINK,
   DAYS_OF_WEEK,
   API_GET_EXPENSES,
   MONTH_NAMES,
 } from "@constants";
-import { Pencil, Plus, Trash2, X } from "lucide"; // data, not components
+import { Link2, Pencil, Plus, Trash2, X } from "lucide"; // data, not components
 import { MorphIcon } from "morphicons/react";
 import { useEffect, useMemo, useState } from "react";
 import { useGet, usePost } from "@utils";
@@ -47,14 +49,18 @@ const recurringSummary = (expense) => {
 
 /*********************************************************************************************************
  * The Expenses tab: a title row ("Expenses" + plus icon that opens the add form) above the list of
- * saved expenses. Each row has edit (opens the form prefilled) and delete (with confirm) actions.
+ * saved expenses. Each row has link (attach the transaction that pays it — future matching bills
+ * then auto-mark paid), edit (opens the form prefilled, inline in the expense's card) and delete
+ * (with confirm) actions.
  * ******************************************************************************************************
  */
-export const ExpensesPane = () => {
+export const ExpensesPane = (props) => {
+  const { onChanged } = props;
   const { showToast } = useAppContext();
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null); // expense being edited, null = add mode
+  const [linkingFor, setLinkingFor] = useState(null); // expense being linked to a transaction
   const [refreshKey, setRefreshKey] = useState(0);
 
   const expenses = useGet({ url: API_GET_EXPENSES, dependencies: [refreshKey] });
@@ -87,6 +93,29 @@ export const ExpensesPane = () => {
       showToast({ message: String(deleteExpense.error), type: "danger" });
     }
   }, [deleteExpense.error]);
+
+  const linkExpense = usePost({
+    url: API_POST_EXPENSES_LINK,
+    callback: (data) => {
+      if (!data) return;
+      showToast({
+        message: data.linked_label
+          ? `Linked to "${data.linked_label}" — future matching bills will be marked paid automatically`
+          : "Link removed",
+        type: "success",
+      });
+      setLinkingFor(null);
+      setRefreshKey((key) => key + 1);
+      if (onChanged) onChanged();
+    },
+  });
+
+  // surface link errors as toasts
+  useEffect(() => {
+    if (linkExpense.error) {
+      showToast({ message: String(linkExpense.error), type: "danger" });
+    }
+  }, [linkExpense.error]);
 
   // plus opens the add form (or closes it if already open in add mode)
   const handlePlus = () => {
@@ -134,13 +163,14 @@ export const ExpensesPane = () => {
         </button>
       </div>
 
-      {formOpen && (
+      {/* add form stays at the top; the edit form opens inside the edited expense's card */}
+      {formOpen && !editing && (
         <div className='expenses-pane-4rt8__form'>
           <ExpensesForm
             onCancel={handleFormDone}
             onDone={handleFormDone}
-            expense={editing}
-            key={editing ? editing.id : "new"}
+            expense={null}
+            key='new'
           />
         </div>
       )}
@@ -152,55 +182,103 @@ export const ExpensesPane = () => {
           <p className='expenses-pane-4rt8__empty'>No expenses yet — tap + to add one.</p>
         ) : (
           <ul>
-            {expenseList.map((expense) => (
-              <li key={expense.id} className='expenses-pane-4rt8__row'>
-                <div className='expenses-pane-4rt8__details'>
-                  <span className='expenses-pane-4rt8__label'>
-                    <span
-                      className='expenses-pane-4rt8__dot'
-                      style={{
-                        backgroundColor:
-                          colorByLabel[expense.category] ||
-                          "rgba(var(--dr-beta-rgb), 0.35)",
-                      }}
+            {expenseList.map((expense) => {
+              const isEditing = formOpen && editing?.id === expense.id;
+
+              return (
+                <li
+                  key={expense.id}
+                  className={`expenses-pane-4rt8__row ${isEditing ? "editing" : ""}`}
+                >
+                  {isEditing ? (
+                    <ExpensesForm
+                      onCancel={handleFormDone}
+                      onDone={handleFormDone}
+                      expense={editing}
+                      key={editing.id}
                     />
-                    <span className='expenses-pane-4rt8__label-text'>
-                      {expense.label}
-                    </span>
-                  </span>
-                  <span className='expenses-pane-4rt8__meta'>
-                    {expense.category} · {recurringSummary(expense)}
-                    {expense.notes ? ` · ${expense.notes}` : ""}
-                  </span>
-                </div>
+                  ) : (
+                    <>
+                      <div className='expenses-pane-4rt8__details'>
+                        <span className='expenses-pane-4rt8__label'>
+                          <span
+                            className='expenses-pane-4rt8__dot'
+                            style={{
+                              backgroundColor:
+                                colorByLabel[expense.category] ||
+                                "rgba(var(--dr-beta-rgb), 0.35)",
+                            }}
+                          />
+                          <span className='expenses-pane-4rt8__label-text'>
+                            {expense.label}
+                          </span>
+                        </span>
+                        <span className='expenses-pane-4rt8__meta'>
+                          {expense.category} · {recurringSummary(expense)}
+                          {expense.linked_label ? ` · auto-pay: ${expense.linked_label}` : ""}
+                          {expense.notes ? ` · ${expense.notes}` : ""}
+                        </span>
+                      </div>
 
-                <span className='expenses-pane-4rt8__amount'>
-                  -{formatUSD(expense.amount)}
-                </span>
+                      <span className='expenses-pane-4rt8__amount'>
+                        -{formatUSD(expense.amount)}
+                      </span>
 
-                <div className='expenses-pane-4rt8__actions'>
-                  <button
-                    className='expenses-pane-4rt8__action edit'
-                    onClick={() => handleEdit(expense)}
-                    aria-label={`Edit ${expense.label}`}
-                    type='button'
-                  >
-                    <MorphIcon icon={Pencil} label='Edit' size={16} />
-                  </button>
-                  <button
-                    className='expenses-pane-4rt8__action delete'
-                    onClick={() => handleDelete(expense)}
-                    aria-label={`Delete ${expense.label}`}
-                    type='button'
-                  >
-                    <MorphIcon icon={Trash2} label='Delete' size={16} />
-                  </button>
-                </div>
-              </li>
-            ))}
+                      <div className='expenses-pane-4rt8__actions'>
+                        <button
+                          className={`expenses-pane-4rt8__action link ${expense.linked_label ? "linked" : ""}`}
+                          onClick={() => setLinkingFor(expense)}
+                          aria-label={`Link ${expense.label} to a transaction`}
+                          title={
+                            expense.linked_label
+                              ? `Linked to ${expense.linked_label} — future matching bills are marked paid automatically`
+                              : "Link to a transaction"
+                          }
+                          type='button'
+                        >
+                          <MorphIcon icon={Link2} label='Link transaction' size={16} />
+                        </button>
+                        <button
+                          className='expenses-pane-4rt8__action edit'
+                          onClick={() => handleEdit(expense)}
+                          aria-label={`Edit ${expense.label}`}
+                          type='button'
+                        >
+                          <MorphIcon icon={Pencil} label='Edit' size={16} />
+                        </button>
+                        <button
+                          className='expenses-pane-4rt8__action delete'
+                          onClick={() => handleDelete(expense)}
+                          aria-label={`Delete ${expense.label}`}
+                          type='button'
+                        >
+                          <MorphIcon icon={Trash2} label='Delete' size={16} />
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
+
+      {linkingFor && (
+        <TransactionPicker
+          open
+          title={`Link "${linkingFor.label}" to a transaction`}
+          onClose={() => setLinkingFor(null)}
+          onSelect={(txn) =>
+            linkExpense.post({ id: linkingFor.id, transaction_id: txn.transaction_id })
+          }
+          onUnlink={
+            linkingFor.linked_label
+              ? () => linkExpense.post({ id: linkingFor.id, transaction_id: "" })
+              : undefined
+          }
+        />
+      )}
     </div>
   );
 };

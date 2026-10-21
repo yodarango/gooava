@@ -88,6 +88,11 @@
     & + .income-pane-6yt3__row {
       margin-top: var(--dr-spacing-2);
     }
+
+    /* while editing, the card hosts the form full-width instead of the row content */
+    &.editing {
+      display: block;
+    }
   }
 
   .income-pane-6yt3__details {

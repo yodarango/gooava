@@ -330,6 +330,26 @@ func DeletePlaidTransactions(userID uint, transactionIDs []string) error {
 }
 
 /**************************************************************************************
+* GetPlaidTransactionLabel returns the display label of one of the user's transactions —
+* the merchant name when present, the transaction name otherwise. Used when linking an
+* expense to a transaction so future occurrences can be matched by that label.
+**************************************************************************************/
+func GetPlaidTransactionLabel(userID uint, transactionID string) (string, error) {
+	var label string
+	err := ModelsRepo.DB.Conn.QueryRow(
+		`SELECT COALESCE(NULLIF(TRIM(COALESCE(merchant_name, '')), ''), TRIM(name))
+		 FROM plaid_transactions
+		 WHERE user_id = ? AND transaction_id = ?`,
+		userID, transactionID,
+	).Scan(&label)
+	if err != nil {
+		return "", fmt.Errorf("could not find plaid transaction %s: %w", transactionID, err)
+	}
+
+	return label, nil
+}
+
+/**************************************************************************************
 * ListPlaidTransactions returns the user's most recent transactions, newest first,
 * joined with the account name/mask for display.
 **************************************************************************************/

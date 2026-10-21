@@ -6,15 +6,16 @@ import (
 )
 
 type Expense struct {
-	Id        int64           `json:"id"`
-	UserID    uint            `json:"user_id"`
-	Category  string          `json:"category"`
-	Amount    float64         `json:"amount"`
-	Label     string          `json:"label"`
-	Recurring string          `json:"recurring"`  // "" (one-time), daily, weekly, biweekly, monthly, quarterly, yearly
-	RecurRule json.RawMessage `json:"recur_rule"` // JSON blob with the recurrence details, NULL when not recurring/daily
-	Notes     string          `json:"notes"`      // free-text (e.g. payment method); read-only via the API for now
-	CreatedAt string          `json:"created_at"`
+	Id          int64           `json:"id"`
+	UserID      uint            `json:"user_id"`
+	Category    string          `json:"category"`
+	Amount      float64         `json:"amount"`
+	Label       string          `json:"label"`
+	LinkedLabel string          `json:"linked_label"` // merchant/name of the user-linked Plaid transaction; occurrences auto-pay on match
+	Recurring   string          `json:"recurring"`    // "" (one-time), daily, weekly, biweekly, monthly, quarterly, yearly
+	RecurRule   json.RawMessage `json:"recur_rule"`   // JSON blob with the recurrence details, NULL when not recurring/daily
+	Notes       string          `json:"notes"`        // free-text (e.g. payment method); read-only via the API for now
+	CreatedAt   string          `json:"created_at"`
 }
 
 /**************************************************************************************
@@ -65,7 +66,8 @@ func (e *Expense) Create() error {
 **************************************************************************************/
 func ListExpenses(userID uint) ([]Expense, error) {
 	query := `
-		SELECT id, category, amount, label, COALESCE(recurring, ''), recur_rule, COALESCE(notes, '')
+		SELECT id, category, amount, label, COALESCE(linked_label, ''), COALESCE(recurring, ''),
+		       recur_rule, COALESCE(notes, ''), DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s')
 		FROM expenses
 		WHERE user_id = ?
 		ORDER BY id DESC
@@ -81,7 +83,7 @@ func ListExpenses(userID uint) ([]Expense, error) {
 	for rows.Next() {
 		var expense Expense
 		var recurRule []byte
-		err := rows.Scan(&expense.Id, &expense.Category, &expense.Amount, &expense.Label, &expense.Recurring, &recurRule, &expense.Notes)
+		err := rows.Scan(&expense.Id, &expense.Category, &expense.Amount, &expense.Label, &expense.LinkedLabel, &expense.Recurring, &recurRule, &expense.Notes, &expense.CreatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("could not scan expense: %w", err)
 		}
@@ -149,4 +151,27 @@ func DeleteExpense(userID uint, id int64) error {
 	}
 
 	return nil
+}
+
+/**************************************************************************************
+* SetExpenseLinkedLabel stores the merchant/name of the Plaid transaction the user
+* linked to the expense ("" clears the link). A linked expense's occurrences are
+* auto-marked paid whenever a synced transaction matches that label. Returns whether
+* the expense row was found.
+**************************************************************************************/
+func SetExpenseLinkedLabel(userID uint, expenseID int64, linkedLabel string) (bool, error) {
+	result, err := ModelsRepo.DB.Conn.Exec(
+		"UPDATE expenses SET linked_label = NULLIF(?, '') WHERE id = ? AND user_id = ?",
+		linkedLabel, expenseID, userID,
+	)
+	if err != nil {
+		return false, fmt.Errorf("could not update expense link: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return false, fmt.Errorf("could not verify expense link update: %w", err)
+	}
+
+	return rowsAffected > 0, nil
 }

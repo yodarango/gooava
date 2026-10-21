@@ -87,6 +87,11 @@
     & + .expenses-pane-4rt8__row {
       margin-top: var(--dr-spacing-2);
     }
+
+    /* while editing, the card hosts the form full-width instead of the row content */
+    &.editing {
+      display: block;
+    }
   }
 
   .expenses-pane-4rt8__details {
@@ -161,6 +166,17 @@
     &.edit:hover {
       background-color: rgba(var(--dr-delta-rgb), 0.12);
       color: var(--dr-delta);
+    }
+
+    &.link:hover {
+      background-color: rgba(var(--dr-delta-rgb), 0.12);
+      color: var(--dr-delta);
+    }
+
+    /* linked expenses auto-mark their bills paid when a matching transaction syncs */
+    &.link.linked {
+      background-color: rgba(var(--dr-success-rgb), 0.15);
+      color: var(--dr-success);
     }
 
     &.delete:hover {

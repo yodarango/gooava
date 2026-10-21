@@ -198,6 +198,79 @@ func DeleteExpense(w http.ResponseWriter, r *http.Request) {
 	httpResponse.Send(w)
 }
 
+/************************************************************************
+* Links one of the authenticated user's expenses to a synced Plaid transaction (or
+* clears the link when transaction_id is empty). The transaction's merchant/name becomes
+* the expense's linked label: from then on its occurrences are auto-marked paid whenever
+* a synced transaction matches that label.
+*
+* status: ✅
+************************************************************************/
+func LinkExpenseTransaction(w http.ResponseWriter, r *http.Request) {
+	var httpResponse models.HttpResponse
+
+	authUser, ok := r.Context().Value(constants.USER_CONTEXT_AUTH_KEY).(*models.AuthUser)
+	if !ok {
+		httpResponse.Error = "Authentication required"
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	var requestBody struct {
+		Id            int64  `json:"id"`
+		TransactionID string `json:"transaction_id"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil || requestBody.Id <= 0 {
+		httpResponse.Error = "a valid id is required"
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	// an empty transaction id clears the link; otherwise the transaction's own
+	// merchant/name becomes the label future occurrences are matched against
+	linkedLabel := ""
+	if strings.TrimSpace(requestBody.TransactionID) != "" {
+		label, err := models.GetPlaidTransactionLabel(authUser.Id, requestBody.TransactionID)
+		if err != nil {
+			httpResponse.Error = "transaction not found"
+			httpResponse.Success = false
+			httpResponse.Data = nil
+			httpResponse.Send(w)
+			return
+		}
+		linkedLabel = label
+	}
+
+	changed, err := models.SetExpenseLinkedLabel(authUser.Id, requestBody.Id, linkedLabel)
+	if err != nil {
+		httpResponse.Error = fmt.Sprintf("%v", err)
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+	if !changed {
+		httpResponse.Error = "expense not found"
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	httpResponse.Data = map[string]string{
+		"message":      map[bool]string{true: "Transaction linked", false: "Link removed"}[linkedLabel != ""],
+		"linked_label": linkedLabel,
+	}
+	httpResponse.Success = true
+	httpResponse.Error = nil
+	httpResponse.Send(w)
+}
+
 /**************************************************************************************
 * validateExpensePayload runs the shared create/update checks and normalizes the
 * expense in place (trims the label, drops the rule for one-time/daily expenses).

@@ -52,7 +52,8 @@ const scheduleSummary = (income) => {
 
 /*********************************************************************************************************
  * The Income tab: a title row ("Income" + plus icon that opens the add form) above the list of
- * saved income sources. Each row has edit (opens the form prefilled) and delete (with confirm).
+ * saved income sources. Each row has edit (opens the form prefilled, inline in the income's card)
+ * and delete (with confirm).
  * ******************************************************************************************************
  */
 export const IncomePane = () => {
@@ -126,13 +127,14 @@ export const IncomePane = () => {
         </button>
       </div>
 
-      {formOpen && (
+      {/* add form stays at the top; the edit form opens inside the edited income's card */}
+      {formOpen && !editing && (
         <div className='income-pane-6yt3__form'>
           <IncomeForm
             onCancel={handleFormDone}
             onDone={handleFormDone}
-            income={editing}
-            key={editing ? editing.id : "new"}
+            income={null}
+            key='new'
           />
         </div>
       )}
@@ -144,39 +146,57 @@ export const IncomePane = () => {
           <p className='income-pane-6yt3__empty'>No income yet — tap + to add one.</p>
         ) : (
           <ul>
-            {incomeList.map((income) => (
-              <li key={income.id} className='income-pane-6yt3__row'>
-                <div className='income-pane-6yt3__details'>
-                  <span className='income-pane-6yt3__label'>{income.label}</span>
-                  <span className='income-pane-6yt3__meta'>
-                    {scheduleSummary(income)}
-                  </span>
-                </div>
+            {incomeList.map((income) => {
+              const isEditing = formOpen && editing?.id === income.id;
 
-                <span className='income-pane-6yt3__amount'>
-                  +{formatUSD(income.amount)}
-                </span>
+              return (
+                <li
+                  key={income.id}
+                  className={`income-pane-6yt3__row ${isEditing ? "editing" : ""}`}
+                >
+                  {isEditing ? (
+                    <IncomeForm
+                      onCancel={handleFormDone}
+                      onDone={handleFormDone}
+                      income={editing}
+                      key={editing.id}
+                    />
+                  ) : (
+                    <>
+                      <div className='income-pane-6yt3__details'>
+                        <span className='income-pane-6yt3__label'>{income.label}</span>
+                        <span className='income-pane-6yt3__meta'>
+                          {scheduleSummary(income)}
+                        </span>
+                      </div>
 
-                <div className='income-pane-6yt3__actions'>
-                  <button
-                    className='income-pane-6yt3__action edit'
-                    onClick={() => handleEdit(income)}
-                    aria-label={`Edit ${income.label}`}
-                    type='button'
-                  >
-                    <MorphIcon icon={Pencil} label='Edit' size={16} />
-                  </button>
-                  <button
-                    className='income-pane-6yt3__action delete'
-                    onClick={() => handleDelete(income)}
-                    aria-label={`Delete ${income.label}`}
-                    type='button'
-                  >
-                    <MorphIcon icon={Trash2} label='Delete' size={16} />
-                  </button>
-                </div>
-              </li>
-            ))}
+                      <span className='income-pane-6yt3__amount'>
+                        +{formatUSD(income.amount)}
+                      </span>
+
+                      <div className='income-pane-6yt3__actions'>
+                        <button
+                          className='income-pane-6yt3__action edit'
+                          onClick={() => handleEdit(income)}
+                          aria-label={`Edit ${income.label}`}
+                          type='button'
+                        >
+                          <MorphIcon icon={Pencil} label='Edit' size={16} />
+                        </button>
+                        <button
+                          className='income-pane-6yt3__action delete'
+                          onClick={() => handleDelete(income)}
+                          aria-label={`Delete ${income.label}`}
+                          type='button'
+                        >
+                          <MorphIcon icon={Trash2} label='Delete' size={16} />
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

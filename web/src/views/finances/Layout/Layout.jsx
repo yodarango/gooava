@@ -2,6 +2,7 @@ import { usePlaidOAuthResume } from "./components/PlaidConnect/usePlaidConnect";
 import { FinancesSettings } from "./components/FinancesSettings/FinancesSettings";
 import { IncomeApprovals } from "./components/IncomeApprovals/IncomeApprovals";
 import { UpcomingBills } from "./components/UpcomingBills/UpcomingBills";
+import { PastDueBills } from "./components/PastDueBills/PastDueBills";
 import { BankBalance } from "./components/BankBalance/BankBalance";
 import { PlaidConnect } from "./components/PlaidConnect/PlaidConnect";
 import { Transactions } from "./components/Transactions/Transactions";
@@ -181,6 +182,12 @@ export const Layout = () => {
 
       {/* incomes awaiting the user's approval before they count toward the plan */}
       <IncomeApprovals onDecided={() => setRefreshKey((key) => key + 1)} />
+
+      {/* past-due bills awaiting a decision — matched ones confirmable, the rest manual */}
+      <PastDueBills
+        refreshKey={refreshKey}
+        onChanged={() => setRefreshKey((key) => key + 1)}
+      />
 
       <UpcomingBills refreshKey={refreshKey} />
 
