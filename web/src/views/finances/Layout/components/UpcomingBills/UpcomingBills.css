@@ -28,6 +28,42 @@
     margin: var(--dr-spacing-2) 0 0;
   }
 
+  /* per-paycheck savings plan under the headline when later periods come up short */
+  .upcoming-bills-5xk3__plan {
+    display: flex;
+    flex-direction: column;
+    gap: var(--dr-spacing-1);
+    list-style: none;
+    margin: var(--dr-spacing-2) 0 0;
+    padding: var(--dr-spacing-2) 0 0;
+    border-top: 1px solid rgba(var(--dr-eta-rgb), 0.1);
+  }
+
+  .upcoming-bills-5xk3__plan-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dr-spacing-2);
+  }
+
+  .upcoming-bills-5xk3__plan-label {
+    color: rgba(var(--dr-beta-rgb), 0.55);
+    font-size: var(--dr-font-size-5);
+    font-weight: var(--dr-font-weight-6);
+  }
+
+  .upcoming-bills-5xk3__plan-amount {
+    color: var(--dr-beta);
+    font-size: var(--dr-font-size-5);
+    font-weight: var(--dr-font-weight-7);
+
+    /* a period with nothing to reserve stays quiet */
+    &.none {
+      color: rgba(var(--dr-beta-rgb), 0.35);
+      font-weight: var(--dr-font-weight-6);
+    }
+  }
+
   .upcoming-bills-5xk3__list {
     display: flex;
     flex-direction: column;

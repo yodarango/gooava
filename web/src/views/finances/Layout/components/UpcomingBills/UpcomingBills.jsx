@@ -42,7 +42,8 @@ const formatDay = (date) =>
  * Paycheck plan card: splits the bills due across the next three paydays into per-period windows and
  * checks coverage — the current window against the money in the bank, later windows against the
  * paycheck amount (editable, saved per user). When a paycheck window comes up short, the headline
- * says how much to put away from this paycheck to cover it.
+ * breaks down how much to put away from each paycheck to cover it (each period reserves what it
+ * can spare for the ones after it; whatever's left falls on this paycheck).
  * ******************************************************************************************************
  */
 export const UpcomingBills = (props) => {
@@ -282,12 +283,28 @@ export const UpcomingBills = (props) => {
         ? incomeByWindow[index]
         : paycheck;
 
-  // what later periods can't cover must be reserved from this one — per-window coverage,
-  // so a window with less approved income than its bills shows the gap
-  const putAway = windows.slice(1).reduce((sum, window, i) => {
-    const coverage = coverageFor(i + 1);
-    return coverage === null ? sum : sum + Math.max(0, unpaidTotalFor(i + 1) - coverage);
-  }, 0);
+  // The savings plan, per paycheck. Walk the windows from the last one backwards: each
+  // period first covers its own bills, then reserves whatever it can spare for the
+  // periods after it; whatever it can't cover itself falls to the period before — with
+  // "this paycheck" (the money available right now) as the last resort. putAwayByWindow[i]
+  // is how much to set aside from period i's money.
+  const putAwayByWindow = windows.map(() => 0);
+  let laterNeed = 0;
+  windows
+    .map((window, index) => index)
+    .reverse()
+    .forEach((index) => {
+      if (index === 0) {
+        putAwayByWindow[0] = laterNeed; // last resort — everything later periods still need
+        return;
+      }
+      const coverage = coverageFor(index);
+      if (coverage === null) return; // coverage unknown — nothing can be reserved here
+      const spare = coverage - unpaidTotalFor(index);
+      putAwayByWindow[index] = Math.min(Math.max(spare, 0), laterNeed);
+      laterNeed = laterNeed - putAwayByWindow[index] + Math.max(-spare, 0);
+    });
+  const putAway = putAwayByWindow.reduce((sum, amount) => sum + amount, 0);
 
   // a future window is short only when we actually know its coverage
   const hasFutureShortfall = windows
@@ -385,15 +402,38 @@ export const UpcomingBills = (props) => {
         ) : null}
       </div>
 
-      {/* headline: the reserve needed from this paycheck, or the grand total when covered */}
+      {/* headline: the reserve needed across paychecks, or the grand total when covered */}
       {loading ? (
         <p className='upcoming-bills-5xk3__hint'>Loading…</p>
       ) : hasFutureShortfall && putAway > 0 ? (
         <>
           <p className='upcoming-bills-5xk3__total short'>{formatUSD(putAway)}</p>
           <p className='upcoming-bills-5xk3__hint'>
-            to put away from this paycheck — later periods come up short
+            to put away — later periods come up short
           </p>
+
+          {/* how much to set aside from each paycheck */}
+          <ul className='upcoming-bills-5xk3__plan'>
+            {windows.map((window, index) => (
+              <li
+                key={window.end.getTime()}
+                className='upcoming-bills-5xk3__plan-row'
+              >
+                <span className='upcoming-bills-5xk3__plan-label'>
+                  {index === 0
+                    ? "This paycheck"
+                    : `${formatDay(window.start)} paycheck`}
+                </span>
+                <span
+                  className={`upcoming-bills-5xk3__plan-amount ${putAwayByWindow[index] > 0 ? "" : "none"}`}
+                >
+                  {index > 0 && coverageFor(index) === null
+                    ? "—"
+                    : formatUSD(putAwayByWindow[index])}
+                </span>
+              </li>
+            ))}
+          </ul>
         </>
       ) : (
         <>

@@ -29,6 +29,7 @@ export const API_POST_EXPENSE_OCCURRENCES_ENSURE = API_BASE + "/expenses/occurre
 export const API_POST_EXPENSE_OCCURRENCES_PAID = API_BASE + "/expenses/occurrences/paid";
 export const API_POST_EXPENSE_OCCURRENCES_REVIEW = API_BASE + "/expenses/occurrences/review";
 export const API_POST_EXPENSE_OCCURRENCES_CONFIRM = API_BASE + "/expenses/occurrences/confirm";
+export const API_GET_EXPENSE_OCCURRENCES_HISTORY = API_BASE + "/expenses/occurrences/history";
 export const API_POST_EXPENSES_LINK = API_BASE + "/expenses/link";
 
 // api income routes

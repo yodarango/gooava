@@ -58,6 +58,7 @@ func Router () http.Handler {
 	mux.HandleFunc(constants.ROUTE_POST_EXPENSE_OCCURRENCES_PAID, models.Authenticate(SetExpenseOccurrencePaid))
 	mux.HandleFunc(constants.ROUTE_POST_EXPENSE_OCCURRENCES_REVIEW, models.Authenticate(ReviewPastDueOccurrences))
 	mux.HandleFunc(constants.ROUTE_POST_EXPENSE_OCCURRENCES_CONFIRM, models.Authenticate(ConfirmExpenseOccurrences))
+	mux.HandleFunc("GET "+constants.ROUTE_GET_EXPENSE_OCCURRENCES_HISTORY, models.Authenticate(ListExpenseOccurrenceHistory))
 	mux.HandleFunc(constants.ROUTE_POST_EXPENSES_LINK, models.Authenticate(LinkExpenseTransaction))
 
 	// income routes (authentication required)

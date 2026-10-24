@@ -1,0 +1,96 @@
+.billing-history-2hf8 {
+  display: flex;
+  flex-direction: column;
+
+  .billing-history-2hf8__list {
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .billing-history-2hf8__month {
+    color: rgba(var(--dr-beta-rgb), 0.45);
+    font-size: var(--dr-font-size-6);
+    font-weight: var(--dr-font-weight-7);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: var(--dr-spacing-3) 0 var(--dr-spacing-1);
+  }
+
+  li:first-child .billing-history-2hf8__month {
+    margin-top: 0;
+  }
+
+  /* divider between rows — sits above each row and each month header alike */
+  .billing-history-2hf8__list li + li {
+    border-top: 1px solid rgba(var(--dr-eta-rgb), 0.1);
+  }
+
+  .billing-history-2hf8__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dr-spacing-4);
+    padding: var(--dr-spacing-2) 0;
+  }
+
+  .billing-history-2hf8__details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--dr-spacing-1);
+    min-width: 0;
+  }
+
+  .billing-history-2hf8__name {
+    color: var(--dr-beta);
+    font-size: var(--dr-font-size-4);
+    font-weight: var(--dr-font-weight-6);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .billing-history-2hf8__meta {
+    color: rgba(var(--dr-beta-rgb), 0.5);
+    font-size: var(--dr-font-size-5);
+  }
+
+  .billing-history-2hf8__amount {
+    flex-shrink: 0;
+    color: var(--dr-beta);
+    font-size: var(--dr-font-size-4);
+    font-weight: var(--dr-font-weight-7);
+  }
+
+  .billing-history-2hf8__status {
+    color: rgba(var(--dr-beta-rgb), 0.5);
+    font-size: var(--dr-font-size-5);
+    margin: var(--dr-spacing-2) 0 0;
+    text-align: center;
+  }
+
+  .billing-history-2hf8__empty {
+    color: rgba(var(--dr-beta-rgb), 0.5);
+    font-size: var(--dr-font-size-5);
+    margin: var(--dr-spacing-2) 0 0;
+  }
+
+  .billing-history-2hf8__retry {
+    align-self: center;
+    background: none;
+    border: none;
+    margin: var(--dr-spacing-2) 0 0;
+    color: var(--dr-delta);
+    font-size: var(--dr-font-size-5);
+    font-weight: var(--dr-font-weight-6);
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  /* 1px trigger at the end of the list — entering the viewport fetches the next month */
+  .billing-history-2hf8__sentinel {
+    height: 1px;
+  }
+}

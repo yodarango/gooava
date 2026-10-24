@@ -6,9 +6,12 @@ import (
 	"gooava/constants"
 	"gooava/internal/models"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 )
+
+var monthPattern = regexp.MustCompile(`^\d{4}-\d{2}$`)
 
 // occurrenceEnsureRequest is the shared body of the ensure and review endpoints: the
 // date range to read back plus the (expense_id, due_on) pairs to lazily create.
@@ -237,6 +240,76 @@ func ConfirmExpenseOccurrences(w http.ResponseWriter, r *http.Request) {
 
 	httpResponse.Data = map[string]string{
 		"message": fmt.Sprintf("Marked %d as paid", marked),
+	}
+	httpResponse.Success = true
+	httpResponse.Error = nil
+	httpResponse.Send(w)
+}
+
+/************************************************************************
+* Lists one month of the authenticated user's billing history: every paid occurrence
+* whose due date falls in the requested month (?month=YYYY-MM, default the current
+* month), newest due date first. has_more tells the client whether any earlier month
+* holds paid rows, so it knows when to stop paging.
+*
+* status: ✅
+************************************************************************/
+func ListExpenseOccurrenceHistory(w http.ResponseWriter, r *http.Request) {
+	var httpResponse models.HttpResponse
+
+	authUser, ok := r.Context().Value(constants.USER_CONTEXT_AUTH_KEY).(*models.AuthUser)
+	if !ok {
+		httpResponse.Error = "Authentication required"
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	monthStart := time.Now()
+	if monthParam := r.URL.Query().Get("month"); monthParam != "" {
+		if !monthPattern.MatchString(monthParam) {
+			httpResponse.Error = "month must be YYYY-MM"
+			httpResponse.Success = false
+			httpResponse.Data = nil
+			httpResponse.Send(w)
+			return
+		}
+		parsed, err := time.Parse("2006-01", monthParam)
+		if err != nil {
+			httpResponse.Error = "month must be a valid month"
+			httpResponse.Success = false
+			httpResponse.Data = nil
+			httpResponse.Send(w)
+			return
+		}
+		monthStart = parsed
+	}
+
+	from := time.Date(monthStart.Year(), monthStart.Month(), 1, 0, 0, 0, 0, time.UTC).Format("2006-01-02")
+	to := time.Date(monthStart.Year(), monthStart.Month()+1, 1, 0, 0, 0, 0, time.UTC).Format("2006-01-02")
+
+	occurrences, err := models.ListPaidExpenseOccurrences(authUser.Id, from, to)
+	if err != nil {
+		httpResponse.Error = fmt.Sprintf("%v", err)
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	hasMore, err := models.HasPaidExpenseOccurrencesBefore(authUser.Id, from)
+	if err != nil {
+		httpResponse.Error = fmt.Sprintf("%v", err)
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	httpResponse.Data = map[string]interface{}{
+		"items":    occurrences,
+		"has_more": hasMore,
 	}
 	httpResponse.Success = true
 	httpResponse.Error = nil

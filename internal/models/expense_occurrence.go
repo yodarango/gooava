@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"fmt"
 	"strings"
 )
@@ -42,6 +43,13 @@ type PastDueOccurrence struct {
 type OccurrencePayment struct {
 	Id            int64  `json:"id"`
 	TransactionID string `json:"transaction_id"`
+}
+
+// PaidExpenseOccurrence is a paid occurrence joined with its expense's label — one row
+// of the billing history.
+type PaidExpenseOccurrence struct {
+	ExpenseOccurrence
+	ExpenseLabel string `json:"expense_label"`
 }
 
 /**************************************************************************************
@@ -201,6 +209,7 @@ func ListPastDueOccurrences(userID uint, fromDate, toDate string) ([]PastDueOccu
 **************************************************************************************/
 func SetExpenseOccurrencesPaidWithTransactions(userID uint, payments []OccurrencePayment) (int, error) {
 	marked := 0
+
 	for _, payment := range payments {
 		var exists int
 		err := ModelsRepo.DB.Conn.QueryRow(
@@ -226,6 +235,65 @@ func SetExpenseOccurrencesPaidWithTransactions(userID uint, payments []Occurrenc
 	}
 
 	return marked, nil
+}
+
+/**************************************************************************************
+* ListPaidExpenseOccurrences returns the user's paid occurrences with due_on in
+* [fromDate, toDate), newest due date first, joined with the expense label — one page
+* (one month) of the billing history.
+**************************************************************************************/
+func ListPaidExpenseOccurrences(userID uint, fromDate, toDate string) ([]PaidExpenseOccurrence, error) {
+	rows, err := ModelsRepo.DB.Conn.Query(
+		`SELECT eo.id, eo.expense_id, DATE_FORMAT(eo.due_on, '%Y-%m-%d'), eo.amount,
+		        COALESCE(eo.paid_source, ''), COALESCE(eo.paid_transaction_id, ''),
+		        COALESCE(DATE_FORMAT(eo.paid_at, '%Y-%m-%d %H:%i:%s'), ''),
+		        e.label
+		 FROM expense_occurrences eo
+		 JOIN expenses e ON e.id = eo.expense_id
+		 WHERE eo.user_id = ? AND eo.paid = 1 AND eo.due_on >= ? AND eo.due_on < ?
+		 ORDER BY eo.due_on DESC, eo.id DESC`,
+		userID, fromDate, toDate,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("could not list paid expense occurrences: %w", err)
+	}
+	defer rows.Close()
+
+	occurrences := make([]PaidExpenseOccurrence, 0)
+	for rows.Next() {
+		var o PaidExpenseOccurrence
+		if err := rows.Scan(
+			&o.Id, &o.ExpenseID, &o.DueOn, &o.Amount,
+			&o.PaidSource, &o.PaidTransactionID, &o.PaidAt,
+			&o.ExpenseLabel,
+		); err != nil {
+			return nil, fmt.Errorf("could not scan paid expense occurrence: %w", err)
+		}
+		occurrences = append(occurrences, o)
+	}
+
+	return occurrences, nil
+}
+
+/**************************************************************************************
+* HasPaidExpenseOccurrencesBefore reports whether the user has any paid occurrence with
+* a due date before the given one — i.e. whether the billing history has earlier pages.
+**************************************************************************************/
+func HasPaidExpenseOccurrencesBefore(userID uint, beforeDate string) (bool, error) {
+	var exists int
+	err := ModelsRepo.DB.Conn.QueryRow(
+		`SELECT 1 FROM expense_occurrences
+		 WHERE user_id = ? AND paid = 1 AND due_on < ? LIMIT 1`,
+		userID, beforeDate,
+	).Scan(&exists)
+	if err == sql.ErrNoRows {
+		return false, nil
+	}
+	if err != nil {
+		return false, fmt.Errorf("could not check earlier paid occurrences: %w", err)
+	}
+
+	return true, nil
 }
 
 // unpaidOccurrenceRow is an unpaid occurrence joined with its expense's matching labels.

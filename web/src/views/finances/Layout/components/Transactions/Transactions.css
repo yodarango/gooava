@@ -5,13 +5,37 @@
   box-shadow: 0 0.2rem 0.4rem rgba(var(--dr-beta-rgb), 0.2);
   padding: var(--dr-spacing-4);
 
-  .transactions-7qm2__label {
+  /* tab switcher above the list — Bank Activity / Historical billing */
+  .transactions-7qm2__tabs {
+    display: flex;
+    gap: var(--dr-spacing-2);
+    margin-bottom: var(--dr-spacing-2);
+  }
+
+  .transactions-7qm2__tab {
+    background: none;
+    border: none;
+    border-radius: 1rem;
+    padding: var(--dr-spacing-1) var(--dr-spacing-2);
     color: rgba(var(--dr-beta-rgb), 0.5);
     font-size: var(--dr-font-size-5);
     font-weight: var(--dr-font-weight-6);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin-bottom: var(--dr-spacing-2);
+    cursor: pointer;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+
+    &:hover {
+      color: var(--dr-delta);
+    }
+
+    &.active {
+      background-color: rgba(var(--dr-delta-rgb), 0.1);
+      color: var(--dr-delta);
+      font-weight: var(--dr-font-weight-7);
+    }
   }
 
   .transactions-7qm2__empty {
