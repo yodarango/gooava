@@ -8,8 +8,19 @@ import { PlaidConnect } from "./components/PlaidConnect/PlaidConnect";
 import { Transactions } from "./components/Transactions/Transactions";
 import { PaydayStrip } from "./components/PaydayStrip/PaydayStrip";
 import { useAppContext } from "../../context/appContextProvider";
-import { useGet } from "@utils";
-import { API_GET_PLAID_STATUS } from "@constants";
+import {
+  upcomingIncomeDates,
+  upcomingPaydays,
+  stripTime,
+  useGet,
+  usePost,
+} from "@utils";
+import {
+  API_GET_BANK_BALANCE,
+  API_POST_BANK_BALANCE,
+  API_GET_PLAID_STATUS,
+  API_GET_INCOMES,
+} from "@constants";
 import { Pencil, Check, X } from "lucide"; // data, not components
 import { MorphIcon } from "morphicons/react";
 import { useEffect, useState } from "react";
@@ -17,8 +28,8 @@ import { useEffect, useState } from "react";
 // styles
 import "./Layout.css";
 
-// Per-user storage: everything is keyed by the logged-in user's id so
-// multiple users on the same browser never see each other's data.
+// Legacy per-user localStorage key. Balances saved before syncing existed are
+// lifted up to the server once (see the balance fetch below), then cleared.
 const storageKeyFor = (userId) => `gooava:finances:${userId}`;
 
 const formatUSD = (value) =>
@@ -27,23 +38,15 @@ const formatUSD = (value) =>
     currency: "USD",
   }).format(value);
 
-// e.g. "Oct. 29 08:10 AM"
-const formatToday = (date) => {
-  const month = date.toLocaleDateString("en-US", { month: "short" });
-  const time = date.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-  return `${month}. ${date.getDate()} ${time}`;
-};
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 export const Layout = () => {
   const { state, showToast } = useAppContext();
+  const userId = state.user?.id;
 
   const [balance, setBalance] = useState(null);
   const [draft, setDraft] = useState("");
   const [editing, setEditing] = useState(false);
-  const [now, setNow] = useState(() => new Date());
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Bank connection status — when connected, the manual balance card and the
@@ -54,28 +57,63 @@ export const Layout = () => {
   });
   const bankConnected = !!status.data?.connected;
 
+  // Saves the balance to the server so it stays in sync across devices.
+  const save = usePost({
+    url: API_POST_BANK_BALANCE,
+    callback: (data) => {
+      if (data) showToast({ message: "Balance updated", type: "success" });
+    },
+  });
+
+  // silent twin used for the one-time legacy lift below (no toast on page load)
+  const lift = usePost({ url: API_POST_BANK_BALANCE });
+
+  // surface save errors as toasts
+  useEffect(() => {
+    if (save.error) showToast({ message: String(save.error), type: "danger" });
+  }, [save.error]);
+
+  // The synced balance — the db is the source of truth, so every device agrees.
+  useGet({
+    url: API_GET_BANK_BALANCE,
+    callback: (data) => {
+      if (data && typeof data.balance === "number") {
+        setBalance(data.balance);
+        return;
+      }
+
+      // One-time lift: a balance saved to localStorage before syncing existed
+      // is pushed up to the server, then cleared locally.
+      if (!userId) return;
+
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKeyFor(userId)));
+        if (saved && typeof saved.balance === "number") {
+          setBalance(saved.balance);
+          lift.post({ balance: saved.balance });
+          localStorage.removeItem(storageKeyFor(userId));
+        }
+      } catch {
+        // corrupted entry — start fresh
+      }
+    },
+  });
+
   // resume the bank-link flow when an OAuth bank redirects back to /finances
   usePlaidOAuthResume(() => setRefreshKey((key) => key + 1));
 
-  // Live clock so the header date/time stays current
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(id);
-  }, []);
+  // Days until the next payday — derived from the user's fixed incomes when they
+  // exist, otherwise the legacy every-other-Friday anchor (same as UpcomingBills).
+  const incomes = useGet({ url: API_GET_INCOMES, dependencies: [refreshKey] });
+  const incomeList = Array.isArray(incomes.data) ? incomes.data : [];
+  const fixedIncomes = incomeList.filter((income) => income.recurring);
 
-  const userId = state.user?.id;
-
-  // Load this user's balance once their identity is known
-  useEffect(() => {
-    if (!userId) return;
-
-    try {
-      const saved = JSON.parse(localStorage.getItem(storageKeyFor(userId)));
-      if (saved && typeof saved.balance === "number") setBalance(saved.balance);
-    } catch {
-      // corrupted entry — start fresh
-    }
-  }, [userId]);
+  const today = stripTime(new Date());
+  const nextPayDate =
+    fixedIncomes.length > 0
+      ? upcomingIncomeDates(fixedIncomes, today, 1)[0]
+      : upcomingPaydays(1, today)[0];
+  const daysTillPayday = Math.round((nextPayDate - today) / MS_PER_DAY);
 
   const startEditing = () => {
     setDraft(balance === null ? "" : String(balance));
@@ -98,11 +136,7 @@ export const Layout = () => {
     const rounded = Math.round(parsed * 100) / 100;
     setBalance(rounded);
     setEditing(false);
-    localStorage.setItem(
-      storageKeyFor(userId),
-      JSON.stringify({ balance: rounded })
-    );
-    showToast({ message: "Balance updated", type: "success" });
+    save.post({ balance: rounded });
   };
 
   const handleKeyDown = (e) => {
@@ -116,7 +150,11 @@ export const Layout = () => {
         <h1 className='finances-layout-4f8d__title'>Finances</h1>
         <FinancesSettings onChanged={() => setRefreshKey((key) => key + 1)} />
       </div>
-      <p className='finances-layout-4f8d__today'>{formatToday(now)}</p>
+      <p className='finances-layout-4f8d__today'>
+        {daysTillPayday === 0
+          ? "Payday is today"
+          : `${daysTillPayday} day${daysTillPayday === 1 ? "" : "s"} till payday`}
+      </p>
 
       <div className='finances-layout-4f8d__cards'>
         {/* Bank balance — pulled live once a bank is connected, editable manually otherwise */}
@@ -189,7 +227,7 @@ export const Layout = () => {
         onChanged={() => setRefreshKey((key) => key + 1)}
       />
 
-      <UpcomingBills refreshKey={refreshKey} />
+      <UpcomingBills refreshKey={refreshKey} manualBalance={balance} />
 
       <PaydayStrip />
 

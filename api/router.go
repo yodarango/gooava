@@ -37,6 +37,13 @@ func Router () http.Handler {
 	// 2FA settings (authentication required)
 	mux.HandleFunc(constants.ROUTE_POST_TWO_FA, models.Authenticate(ToggleTwoFA))
 
+	// finances routes (authentication required)
+	// GET and POST share the path, so these are method-qualified patterns (Go 1.22+ mux)
+	mux.HandleFunc("GET "+constants.ROUTE_GET_BANK_BALANCE, models.Authenticate(GetBankBalance))
+	mux.HandleFunc("POST "+constants.ROUTE_POST_BANK_BALANCE, models.Authenticate(SaveBankBalance))
+	mux.HandleFunc("GET "+constants.ROUTE_GET_FINANCE_PREFERENCES, models.Authenticate(GetFinancePreferences))
+	mux.HandleFunc("POST "+constants.ROUTE_POST_FINANCE_PREFERENCES, models.Authenticate(SaveFinancePreferences))
+
 	// plaid routes (authentication required)
 	mux.HandleFunc(constants.ROUTE_POST_PLAID_LINK_TOKEN, models.Authenticate(PlaidCreateLinkToken))
 	mux.HandleFunc(constants.ROUTE_POST_PLAID_EXCHANGE, models.Authenticate(PlaidExchangePublicToken))

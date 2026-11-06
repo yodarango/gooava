@@ -50,8 +50,9 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${DB_NAME:-gooava}
-      - MYSQL_USER=${DB_USER}
-      - MYSQL_PASSWORD=${DB_PASSWORD}
+      # no MYSQL_USER/MYSQL_PASSWORD: the app connects as DB_USER, which is root
+      # locally — and the image refuses MYSQL_USER=root on first init. A non-root
+      # app user would need to be created manually after first boot anyway.
     volumes:
       - gooava_mysql_data:/var/lib/mysql
     healthcheck:

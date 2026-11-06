@@ -2,6 +2,7 @@
 
 ################################################################################
 # Syncs the live (VPS) gooava MySQL database into the local docker MySQL.
+# Starts the local MySQL container (and Docker Desktop on macOS) when needed.
 #
 # One direction only: live -> local. This REPLACES your local data.
 #
@@ -33,10 +34,34 @@ if [ "$1" != "-y" ] && [ "$1" != "--yes" ]; then
   fi
 fi
 
-if ! docker compose ps --status running gooava_mysql 2>/dev/null | grep -q gooava_mysql; then
-  echo "❌ Local MySQL container is not running. Start it with:"
-  echo "   docker compose up -d gooava_mysql"
-  exit 1
+# The local MySQL container must be healthy before we pipe a dump into it —
+# start it ourselves instead of asking the user to.
+if ! docker compose ps gooava_mysql 2>/dev/null | grep -q "(healthy)"; then
+  # the daemon itself must be up first — on macOS, launch Docker Desktop
+  if ! docker info >/dev/null 2>&1; then
+    echo "🐳 Docker is not running — launching Docker Desktop..."
+    if ! open -a Docker 2>/dev/null; then
+      echo "❌ Could not launch Docker Desktop. Start Docker manually and re-run this script."
+      exit 1
+    fi
+
+    echo "⏳ Waiting for the Docker daemon..."
+    for _ in {1..30}; do
+      docker info >/dev/null 2>&1 && break
+      sleep 2
+    done
+    if ! docker info >/dev/null 2>&1; then
+      echo "❌ Docker daemon did not come up in time. Start Docker manually and re-run this script."
+      exit 1
+    fi
+  fi
+
+  echo "🐳 Starting the local MySQL container..."
+  # --wait blocks until the healthcheck (mysqladmin ping) passes
+  if ! docker compose up -d --wait --wait-timeout 120 gooava_mysql; then
+    echo "❌ MySQL did not become healthy in time. Check: docker compose logs gooava_mysql"
+    exit 1
+  fi
 fi
 
 # --- dump on the VPS ----------------------------------------------------------

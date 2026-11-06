@@ -20,6 +20,17 @@ import { stripTime } from "./payday";
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
+// Conservative per-cycle day spans used to size occurrence scans — months,
+// quarters, and years are counted at their longest so no occurrence is missed.
+const CYCLE_LENGTH_DAYS = {
+  weekly: 7,
+  biweekly: 14,
+  monthly: 31,
+  quarterly: 93,
+  semiannually: 186,
+  annually: 366,
+};
+
 // "YYYY-MM-DD" <-> local Date (time stripped). String parsing avoids timezone surprises.
 export function formatDateKey(date) {
   const d = stripTime(new Date(date));
@@ -210,12 +221,20 @@ export function pendingIncomeOccurrences(incomes, entries, afterEntryDate, throu
 
 /*********************************************************************************************************
  * Union of the next `count` occurrences of every fixed income on/after fromDate, sorted.
+ * The scan horizon is sized from the slowest frequency present so large counts still
+ * fill up (e.g. 36 monthly paydays needs ~3 years, not the old fixed 1-year horizon).
  * ******************************************************************************************************
  */
 export function upcomingIncomeDates(incomes, fromDate, count = 4) {
   const from = stripTime(new Date(fromDate));
+
+  let horizonDays = 366; // never shorter than the original 1-year horizon
+  for (const income of incomes) {
+    const cycleDays = CYCLE_LENGTH_DAYS[income.recurring] || 0;
+    horizonDays = Math.max(horizonDays, cycleDays * count + 31); // +1 month of slack
+  }
   const horizon = new Date(from);
-  horizon.setFullYear(horizon.getFullYear() + 1);
+  horizon.setDate(horizon.getDate() + horizonDays);
 
   return incomePaydays(incomes, from, horizon).slice(0, count);
 }

@@ -175,6 +175,25 @@
     }
   }
 
+  /* right side of the card head: window-count picker + paycheck editor */
+  .upcoming-bills-5xk3__controls {
+    display: flex;
+    align-items: center;
+    gap: var(--dr-spacing-3);
+  }
+
+  .upcoming-bills-5xk3__windows-select {
+    background: var(--dr-epsilon);
+    color: rgba(var(--dr-beta-rgb), 0.8);
+    border: none;
+    border-radius: 1rem;
+    outline: none;
+    padding: var(--dr-spacing-1) var(--dr-spacing-2);
+    font-size: var(--dr-font-size-5);
+    font-weight: var(--dr-font-weight-7);
+    cursor: pointer;
+  }
+
   .upcoming-bills-5xk3__paycheck {
     display: flex;
     align-items: center;
@@ -385,6 +404,28 @@
     font-size: var(--dr-font-size-5);
     font-weight: var(--dr-font-weight-6);
     margin: var(--dr-spacing-3) 0 0;
+  }
+
+  /* cumulative balance under each window's date range */
+  .upcoming-bills-5xk3__running {
+    color: var(--dr-beta);
+    font-size: var(--dr-font-size-5);
+    font-weight: var(--dr-font-weight-7);
+
+    &.short {
+      color: var(--dr-danger);
+    }
+  }
+
+  /* final period finances — the cumulative conclusion of the whole plan */
+  .upcoming-bills-5xk3__final {
+    border-top: 1px solid rgba(var(--dr-eta-rgb), 0.15);
+    margin-top: var(--dr-spacing-3);
+    padding-top: var(--dr-spacing-3);
+  }
+
+  .upcoming-bills-5xk3__total.negative {
+    color: var(--dr-danger);
   }
 }
 

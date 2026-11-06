@@ -2,6 +2,8 @@ import { useAppContext } from "../../../../context/appContextProvider";
 import {
   API_POST_EXPENSE_OCCURRENCES_ENSURE,
   API_POST_EXPENSE_OCCURRENCES_PAID,
+  API_GET_FINANCE_PREFERENCES,
+  API_POST_FINANCE_PREFERENCES,
   API_GET_INCOME_ENTRIES,
   API_GET_PLAID_ACCOUNTS,
   API_GET_INCOMES,
@@ -25,8 +27,9 @@ import { useEffect, useRef, useState } from "react";
 import "./UpcomingBills.css";
 
 const paycheckKeyFor = (userId) => `gooava:paycheck:${userId}`;
-// same key the Finances layout uses for the manually entered balance
-const balanceKeyFor = (userId) => `gooava:finances:${userId}`;
+
+// selectable sizes for the paycheck plan — saved per user on the server
+const WINDOW_COUNT_OPTIONS = [3, 6, 9, 12, 24, 36];
 
 const formatUSD = (value) =>
   new Intl.NumberFormat("en-US", {
@@ -39,7 +42,8 @@ const formatDay = (date) =>
   date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
 /*********************************************************************************************************
- * Paycheck plan card: splits the bills due across the next three paydays into per-period windows and
+ * Paycheck plan card: splits the bills due across the next N paydays (user-selectable:
+ * 3/6/9/12/24/36, synced per user) into per-period windows and
  * checks coverage — the current window against the money in the bank, later windows against the
  * paycheck amount (editable, saved per user). When a paycheck window comes up short, the headline
  * breaks down how much to put away from each paycheck to cover it (each period reserves what it
@@ -47,7 +51,9 @@ const formatDay = (date) =>
  * ******************************************************************************************************
  */
 export const UpcomingBills = (props) => {
-  const { refreshKey = 0 } = props;
+  // manualBalance comes synced from the Layout (db-backed) — the connected
+  // checking total still wins when a bank is linked
+  const { refreshKey = 0, manualBalance = null } = props;
   const { state, showToast } = useAppContext();
   const userId = state.user?.id;
 
@@ -59,7 +65,27 @@ export const UpcomingBills = (props) => {
   const [paycheck, setPaycheck] = useState(null);
   const [paycheckDraft, setPaycheckDraft] = useState("");
   const [editingPaycheck, setEditingPaycheck] = useState(false);
-  const [manualBalance, setManualBalance] = useState(null);
+
+  // how many paycheck windows the plan shows — synced per user (default 6)
+  const [windowCount, setWindowCount] = useState(6);
+
+  const savePreferences = usePost({ url: API_POST_FINANCE_PREFERENCES });
+
+  useGet({
+    url: API_GET_FINANCE_PREFERENCES,
+    callback: (data) => {
+      if (data && WINDOW_COUNT_OPTIONS.includes(data.paycheck_windows)) {
+        setWindowCount(data.paycheck_windows);
+      }
+    },
+  });
+
+  // surface preference save errors as toasts
+  useEffect(() => {
+    if (savePreferences.error) {
+      showToast({ message: String(savePreferences.error), type: "danger" });
+    }
+  }, [savePreferences.error]);
 
   // occurrence entries keyed by "expenseId:YYYY-MM-DD" -> { id, paid, ... } from the db
   const [occurrenceMap, setOccurrenceMap] = useState({});
@@ -94,17 +120,6 @@ export const UpcomingBills = (props) => {
     .filter((account) => account.subtype === "checking")
     .reduce((sum, account) => sum + (account.current_balance || 0), 0);
 
-  useEffect(() => {
-    if (!userId || hasBankBalance) return;
-
-    try {
-      const saved = JSON.parse(localStorage.getItem(balanceKeyFor(userId)));
-      if (saved && typeof saved.balance === "number") setManualBalance(saved.balance);
-    } catch {
-      // corrupted entry — start fresh
-    }
-  }, [userId, hasBankBalance]);
-
   const available = hasBankBalance ? checkingTotal : manualBalance;
 
   // paydays come from the fixed incomes (approved or not); fall back to the legacy
@@ -123,13 +138,14 @@ export const UpcomingBills = (props) => {
   const fixedIncomes = incomeList.filter((income) => income.recurring);
   const hasIncomeSchedule = fixedIncomes.length > 0;
 
-  // 3 windows ending at the next 3 paydays
+  // `windowCount` windows ending at the next paydays (fetch one extra — when today
+  // is payday the first end shifts ahead so the plan still shows `windowCount`)
   const today = stripTime(new Date());
   const ends = hasIncomeSchedule
-    ? upcomingIncomeDates(fixedIncomes, today, 4)
-    : upcomingPaydays(4, today);
+    ? upcomingIncomeDates(fixedIncomes, today, windowCount + 1)
+    : upcomingPaydays(windowCount + 1, today);
   if (ends.length > 0 && ends[0].getTime() <= today.getTime()) ends.shift(); // today is payday — plan ahead
-  const windowEnds = ends.slice(0, 3);
+  const windowEnds = ends.slice(0, windowCount);
 
   const windows = billWindows(
     Array.isArray(expenses.data) ? expenses.data : [],
@@ -283,6 +299,33 @@ export const UpcomingBills = (props) => {
         ? incomeByWindow[index]
         : paycheck;
 
+  // what each window pockets: with an income schedule it's the income scheduled in
+  // that window; otherwise the manual paycheck (window 0 lives off the bank balance)
+  const incomeForWindow = (index) =>
+    hasIncomeSchedule ? incomeByWindow[index] : index === 0 ? 0 : paycheck;
+
+  // Cumulative running balance: start from what's in the bank, then each window adds
+  // its income and deducts its unpaid bills. An unknown input (no balance set, no
+  // paycheck amount) makes that window's and every following balance unknown.
+  const runningAfterByWindow = [];
+  let runningBalance = available;
+  windows.forEach((window, index) => {
+    const income = incomeForWindow(index);
+    if (runningBalance === null || income === null) {
+      runningBalance = null;
+      runningAfterByWindow.push(null);
+      return;
+    }
+    runningBalance += income - unpaidTotalFor(index);
+    runningAfterByWindow.push(runningBalance);
+  });
+
+  // "final period finances" — where the user stands after the last window
+  const finalBalance =
+    runningAfterByWindow.length > 0
+      ? runningAfterByWindow[runningAfterByWindow.length - 1]
+      : null;
+
   // The savings plan, per paycheck. Walk the windows from the last one backwards: each
   // period first covers its own bills, then reserves whatever it can spare for the
   // periods after it; whatever it can't cover itself falls to the period before — with
@@ -342,6 +385,14 @@ export const UpcomingBills = (props) => {
     showToast({ message: "Paycheck updated", type: "success" });
   };
 
+  const changeWindowCount = (e) => {
+    const count = parseInt(e.target.value, 10);
+    if (!WINDOW_COUNT_OPTIONS.includes(count)) return;
+
+    setWindowCount(count);
+    savePreferences.post({ paycheck_windows: count });
+  };
+
   const handlePaycheckKeyDown = (e) => {
     if (e.key === "Enter") savePaycheck();
     if (e.key === "Escape") setEditingPaycheck(false);
@@ -354,52 +405,69 @@ export const UpcomingBills = (props) => {
       <div className='upcoming-bills-5xk3__head'>
         <p className='upcoming-bills-5xk3__label'>Paycheck plan</p>
 
-        {/* the manual paycheck editor only applies until an income schedule exists —
-            from then on each window is covered by its scheduled income */}
-        {!hasIncomeSchedule && editingPaycheck ? (
-          <div className='upcoming-bills-5xk3__paycheck-edit'>
-            <input
-              onChange={(e) => setPaycheckDraft(e.target.value)}
-              onKeyDown={handlePaycheckKeyDown}
-              className='upcoming-bills-5xk3__paycheck-input'
-              placeholder='0.00'
-              inputMode='decimal'
-              value={paycheckDraft}
-              type='number'
-              min='0'
-              step='0.01'
-              autoFocus
-            />
-            <button
-              className='upcoming-bills-5xk3__icon-btn save'
-              onClick={savePaycheck}
-              aria-label='Save paycheck'
-              type='button'
-            >
-              <MorphIcon icon={Check} label='Save' size={16} />
-            </button>
-            <button
-              className='upcoming-bills-5xk3__icon-btn cancel'
-              onClick={() => setEditingPaycheck(false)}
-              aria-label='Cancel'
-              type='button'
-            >
-              <MorphIcon icon={X} label='Cancel' size={16} />
-            </button>
-          </div>
-        ) : !hasIncomeSchedule ? (
-          <button
-            className='upcoming-bills-5xk3__paycheck'
-            onClick={startEditingPaycheck}
-            title='Click to edit'
-            type='button'
+        <div className='upcoming-bills-5xk3__controls'>
+          {/* how many paychecks ahead the plan shows — saved per user */}
+          <select
+            className='upcoming-bills-5xk3__windows-select'
+            onChange={changeWindowCount}
+            value={windowCount}
+            aria-label='Paychecks to show'
+            title='Paychecks to show'
           >
-            <span>
-              Paycheck: {paycheck === null ? "— set amount —" : formatUSD(paycheck)}
-            </span>
-            <MorphIcon icon={Pencil} label='Edit paycheck' size={14} />
-          </button>
-        ) : null}
+            {WINDOW_COUNT_OPTIONS.map((count) => (
+              <option key={count} value={count}>
+                {count}
+              </option>
+            ))}
+          </select>
+
+          {/* the manual paycheck editor only applies until an income schedule exists —
+              from then on each window is covered by its scheduled income */}
+          {!hasIncomeSchedule && editingPaycheck ? (
+            <div className='upcoming-bills-5xk3__paycheck-edit'>
+              <input
+                onChange={(e) => setPaycheckDraft(e.target.value)}
+                onKeyDown={handlePaycheckKeyDown}
+                className='upcoming-bills-5xk3__paycheck-input'
+                placeholder='0.00'
+                inputMode='decimal'
+                value={paycheckDraft}
+                type='number'
+                min='0'
+                step='0.01'
+                autoFocus
+              />
+              <button
+                className='upcoming-bills-5xk3__icon-btn save'
+                onClick={savePaycheck}
+                aria-label='Save paycheck'
+                type='button'
+              >
+                <MorphIcon icon={Check} label='Save' size={16} />
+              </button>
+              <button
+                className='upcoming-bills-5xk3__icon-btn cancel'
+                onClick={() => setEditingPaycheck(false)}
+                aria-label='Cancel'
+                type='button'
+              >
+                <MorphIcon icon={X} label='Cancel' size={16} />
+              </button>
+            </div>
+          ) : !hasIncomeSchedule ? (
+            <button
+              className='upcoming-bills-5xk3__paycheck'
+              onClick={startEditingPaycheck}
+              title='Click to edit'
+              type='button'
+            >
+              <span>
+                Paycheck: {paycheck === null ? "— set amount —" : formatUSD(paycheck)}
+              </span>
+              <MorphIcon icon={Pencil} label='Edit paycheck' size={14} />
+            </button>
+          ) : null}
+        </div>
       </div>
 
       {/* headline: the reserve needed across paychecks, or the grand total when covered */}
@@ -440,10 +508,10 @@ export const UpcomingBills = (props) => {
           <p className='upcoming-bills-5xk3__total'>{formatUSD(grandTotal)}</p>
           <p className='upcoming-bills-5xk3__hint'>
             {hasIncomeSchedule
-              ? "due across the next 3 paydays — every period is covered ✓"
+              ? `due across the next ${windowCount} paydays — every period is covered ✓`
               : paycheck === null
-                ? "due across the next 3 paydays — add income in settings to see if you're covered"
-                : "due across the next 3 paydays — every period is covered ✓"}
+                ? `due across the next ${windowCount} paydays — add income in settings to see if you're covered`
+                : `due across the next ${windowCount} paydays — every period is covered ✓`}
           </p>
         </>
       )}
@@ -455,6 +523,7 @@ export const UpcomingBills = (props) => {
           const unpaidTotal = unpaidTotalFor(index);
           const paidTotal = window.total - unpaidTotal;
           const verdict = coverage === null ? null : coverage - unpaidTotal;
+          const runningAfter = runningAfterByWindow[index] ?? null;
 
           const billCount = window.bills.length;
           const isOpen = !!openWindows[index];
@@ -483,6 +552,14 @@ export const UpcomingBills = (props) => {
                         ? `${formatUSD(incomeByWindow[index])} scheduled`
                         : "from paycheck"}
                   </span>
+                  {/* cumulative: what remains once this window's bills are deducted */}
+                  {runningAfter !== null && (
+                    <span
+                      className={`upcoming-bills-5xk3__running ${runningAfter < 0 ? "short" : ""}`}
+                    >
+                      {formatUSD(runningAfter)} after
+                    </span>
+                  )}
                 </div>
 
                 <div className='upcoming-bills-5xk3__window-summary'>
@@ -601,6 +678,30 @@ export const UpcomingBills = (props) => {
           You&apos;re short {formatUSD(-firstWindowVerdict)} before{" "}
           {formatDay(windowEnds[0])}
         </p>
+      )}
+
+      {/* final cumulative standing across the whole plan */}
+      {!loading && (
+        <div className='upcoming-bills-5xk3__final'>
+          <p className='upcoming-bills-5xk3__label'>Final period finances</p>
+          {finalBalance === null ? (
+            <p className='upcoming-bills-5xk3__hint'>
+              — set your balance{!hasIncomeSchedule ? " and paycheck" : ""} to see
+              where you end up
+            </p>
+          ) : (
+            <>
+              <p
+                className={`upcoming-bills-5xk3__total ${finalBalance < 0 ? "negative" : ""}`}
+              >
+                {formatUSD(finalBalance)}
+              </p>
+              <p className='upcoming-bills-5xk3__hint'>
+                balance + income − bills across the next {windowCount} paychecks
+              </p>
+            </>
+          )}
+        </div>
       )}
     </section>
   );

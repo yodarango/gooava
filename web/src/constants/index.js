@@ -41,6 +41,12 @@ export const API_GET_INCOME_ENTRIES = API_BASE + "/incomes/entries";
 export const API_POST_INCOME_ENTRIES_APPROVE = API_BASE + "/incomes/entries/approve";
 export const API_POST_INCOME_ENTRIES_REJECT = API_BASE + "/incomes/entries/reject";
 
+// api finances routes
+export const API_GET_BANK_BALANCE = API_BASE + "/finances/bank-balance";
+export const API_POST_BANK_BALANCE = API_BASE + "/finances/bank-balance";
+export const API_GET_FINANCE_PREFERENCES = API_BASE + "/finances/preferences";
+export const API_POST_FINANCE_PREFERENCES = API_BASE + "/finances/preferences";
+
 // api plaid routes
 export const API_POST_PLAID_LINK_TOKEN = API_BASE + "/plaid/link-token/create";
 export const API_POST_PLAID_EXCHANGE = API_BASE + "/plaid/exchange";
