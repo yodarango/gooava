@@ -30,6 +30,10 @@ else
 fi
 
 # Copy the files to the VPS
+# Cleanup note: only dangling images are pruned per deploy. The builder cache is
+# capped with --keep-storage instead of a time-based prune — the old
+# `--filter until=24h` wiped the Go build/module caches after every deploy and
+# forced a multi-minute plaid-go recompile every time.
 ssh_main "\
 cd /var/www/repos/gooava/app; \
 git reset --hard origin/main; \
@@ -42,9 +46,9 @@ export DOCKER_BUILDKIT=1; \
 export COMPOSE_DOCKER_CLI_BUILD=1; \
 docker compose build --parallel; \
 docker compose up -d; \
-echo '🧹 Cleaning old docker build cache and dangling images...'; \
+echo '🧹 Cleaning dangling images...'; \
 docker image prune -f; \
-docker builder prune -f --filter until=24h; \
+docker builder prune -f --keep-storage 5GB; \
 echo '🚀🚀🚀 Deployment successful'"
 
 
