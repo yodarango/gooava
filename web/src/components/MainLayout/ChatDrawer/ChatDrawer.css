@@ -1,0 +1,291 @@
+/* backdrop — below the toast (z-index 15), above the bottom nav (12) */
+.chat-drawer-x7q2__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 13;
+  background-color: rgba(var(--dr-beta-rgb), 0.4);
+  animation: chat-drawer-x7q2-fade 0.2s ease-out;
+}
+
+.chat-drawer-x7q2__drawer {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 14;
+  width: 100%;
+  max-width: 48rem; /* 480px cap */
+  height: 100vh;
+  height: 100dvh;
+  background-color: var(--dr-gamma);
+  box-shadow: -0.4rem 0 1.6rem rgba(var(--dr-beta-rgb), 0.2);
+  animation: chat-drawer-x7q2-slide 0.25s ease-out;
+}
+
+.chat-drawer-x7q2__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--dr-spacing-4);
+  padding: var(--dr-spacing-4);
+  border-bottom: 1px solid rgba(var(--dr-eta-rgb), 0.1);
+}
+
+.chat-drawer-x7q2__title {
+  color: var(--dr-beta);
+  font-size: var(--dr-font-size-2);
+  font-weight: var(--dr-font-weight-8);
+  margin: 0;
+}
+
+.chat-drawer-x7q2__close,
+.chat-drawer-x7q2__back {
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: var(--dr-beta);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.chat-drawer-x7q2__close:hover,
+.chat-drawer-x7q2__back:hover {
+  background-color: rgba(var(--dr-beta-rgb), 0.08);
+}
+
+.chat-drawer-x7q2__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ---- conversation list view ---- */
+.chat-drawer-x7q2__list-view {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--dr-spacing-4);
+}
+
+.chat-drawer-x7q2__new {
+  margin-bottom: var(--dr-spacing-4);
+}
+
+.chat-drawer-x7q2__new .button {
+  width: 100%;
+}
+
+.chat-drawer-x7q2__empty {
+  color: rgba(var(--dr-beta-rgb), 0.5);
+  font-size: var(--dr-font-size-4);
+  margin: 0;
+}
+
+.chat-drawer-x7q2__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dr-spacing-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.chat-drawer-x7q2__row {
+  display: flex;
+  align-items: center;
+  gap: var(--dr-spacing-2);
+  background-color: var(--dr-zeta);
+  border: 1px solid rgba(var(--dr-eta-rgb), 0.1);
+  border-radius: 1.5rem;
+  box-shadow: 0 0.2rem 0.4rem rgba(var(--dr-beta-rgb), 0.2);
+  padding: var(--dr-spacing-2) var(--dr-spacing-2) var(--dr-spacing-2)
+    var(--dr-spacing-4);
+}
+
+.chat-drawer-x7q2__row-open {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--dr-spacing-1);
+  flex: 1;
+  min-width: 0;
+  padding: var(--dr-spacing-1) 0;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.chat-drawer-x7q2__row-title {
+  color: var(--dr-beta);
+  font-size: var(--dr-font-size-4);
+  font-weight: var(--dr-font-weight-7);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-drawer-x7q2__row-date {
+  color: rgba(var(--dr-beta-rgb), 0.5);
+  font-size: var(--dr-font-size-5);
+}
+
+.chat-drawer-x7q2__row-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: rgba(var(--dr-beta-rgb), 0.5);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.chat-drawer-x7q2__row-delete:hover {
+  background-color: rgba(var(--dr-delta-rgb), 0.1);
+  color: var(--dr-delta);
+}
+
+/* ---- chat view ---- */
+.chat-drawer-x7q2__chat-view {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.chat-drawer-x7q2__chat-header {
+  display: flex;
+  align-items: center;
+  gap: var(--dr-spacing-2);
+  padding: var(--dr-spacing-2) var(--dr-spacing-4);
+  border-bottom: 1px solid rgba(var(--dr-eta-rgb), 0.1);
+}
+
+.chat-drawer-x7q2__chat-title {
+  color: var(--dr-beta);
+  font-size: var(--dr-font-size-4);
+  font-weight: var(--dr-font-weight-7);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-drawer-x7q2__messages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dr-spacing-2);
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--dr-spacing-4);
+}
+
+.chat-drawer-x7q2__loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--dr-spacing-4);
+}
+
+.chat-drawer-x7q2__bubble-row {
+  display: flex;
+}
+
+.chat-drawer-x7q2__bubble-row.user {
+  justify-content: flex-end;
+}
+
+.chat-drawer-x7q2__bubble-row.assistant {
+  justify-content: flex-start;
+}
+
+.chat-drawer-x7q2__bubble {
+  max-width: 85%;
+  border-radius: 1.5rem;
+  padding: var(--dr-spacing-2) var(--dr-spacing-3);
+}
+
+.chat-drawer-x7q2__bubble.assistant {
+  background-color: var(--dr-epsilon);
+  color: var(--dr-beta);
+  border-bottom-left-radius: 0.4rem;
+}
+
+.chat-drawer-x7q2__bubble.user {
+  background-color: var(--dr-delta);
+  color: var(--dr-zeta);
+  border-bottom-right-radius: 0.4rem;
+}
+
+.chat-drawer-x7q2__bubble-text {
+  margin: 0;
+  font-size: var(--dr-font-size-4);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.chat-drawer-x7q2__bubble-time {
+  display: block;
+  margin-top: var(--dr-spacing-1);
+  font-size: var(--dr-font-size-5);
+  opacity: 0.6;
+  text-align: right;
+}
+
+/* composer — the wrapper owns Enter-to-send (see the JSX comment) */
+.chat-drawer-x7q2__composer {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--dr-spacing-2);
+  padding: var(--dr-spacing-3) var(--dr-spacing-4);
+  border-top: 1px solid rgba(var(--dr-eta-rgb), 0.1);
+}
+
+.chat-drawer-x7q2__composer .textarea-container {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-drawer-x7q2__composer .button {
+  flex-shrink: 0;
+}
+
+@keyframes chat-drawer-x7q2-slide {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes chat-drawer-x7q2-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+

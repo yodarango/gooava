@@ -56,6 +56,13 @@ const ROUTE_GET_PLAID_ACCOUNTS = ROUTE_API_BASE + "/plaid/accounts"
 const ROUTE_GET_PLAID_ITEMS = ROUTE_API_BASE + "/plaid/items"
 const ROUTE_GET_PLAID_STATUS = ROUTE_API_BASE + "/plaid/status"
 
+// chat
+const ROUTE_GET_CHAT_CONVERSATIONS = ROUTE_API_BASE + "/chat/conversations"
+const ROUTE_POST_CHAT_CONVERSATIONS = ROUTE_API_BASE + "/chat/conversations"
+const ROUTE_POST_CHAT_CONVERSATIONS_DELETE = ROUTE_API_BASE + "/chat/conversations/delete"
+const ROUTE_GET_CHAT_MESSAGES = ROUTE_API_BASE + "/chat/messages"
+const ROUTE_POST_CHAT_MESSAGES = ROUTE_API_BASE + "/chat/messages"
+
 // context must have a predefined custom context key type
 type contextKey string
 

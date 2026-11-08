@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func Router () http.Handler {
+func Router() http.Handler {
 
 	mux := http.NewServeMux()
 
@@ -81,6 +81,14 @@ func Router () http.Handler {
 	mux.HandleFunc(constants.ROUTE_POST_INCOME_ENTRIES_APPROVE, models.Authenticate(ApproveIncomeEntry))
 	mux.HandleFunc(constants.ROUTE_POST_INCOME_ENTRIES_REJECT, models.Authenticate(RejectIncomeEntry))
 
+	// chat routes (authentication required) — the send endpoint is rate limited per
+	// client IP: every send is a paid OpenAI call.
+	chatSendLimiter := newRateLimiter(20, time.Minute)
+	mux.HandleFunc("GET "+constants.ROUTE_GET_CHAT_CONVERSATIONS, models.Authenticate(ListChatConversations))
+	mux.HandleFunc("POST "+constants.ROUTE_POST_CHAT_CONVERSATIONS, models.Authenticate(CreateChatConversation))
+	mux.HandleFunc(constants.ROUTE_POST_CHAT_CONVERSATIONS_DELETE, models.Authenticate(DeleteChatConversation))
+	mux.HandleFunc("GET "+constants.ROUTE_GET_CHAT_MESSAGES, models.Authenticate(ListChatMessages))
+	mux.HandleFunc("POST "+constants.ROUTE_POST_CHAT_MESSAGES, chatSendLimiter.wrap(models.Authenticate(SendChatMessage)))
 
 	// Serve static files from the frontend build
 	staticPath := os.Getenv("STATIC_PATH")
@@ -143,7 +151,6 @@ func SampleAuth(w http.ResponseWriter, r *http.Request) {
 func SamplePub(w http.ResponseWriter, r *http.Request) {
 	var httpResponse models.HttpResponse
 
-
 	httpResponse.Data = "Hello"
 	httpResponse.Success = true
 	httpResponse.Error = nil
@@ -155,7 +162,7 @@ func SamplePub(w http.ResponseWriter, r *http.Request) {
 *
 * status: ✅
 ************************************************************************/
-func Login(w http.ResponseWriter, r *http.Request){
+func Login(w http.ResponseWriter, r *http.Request) {
 	var httpResponse models.HttpResponse
 	var user models.User
 
@@ -192,7 +199,7 @@ func Login(w http.ResponseWriter, r *http.Request){
 
 	data := map[string]interface{}{
 		"AuthToken": token,
-		"User": user,
+		"User":      user,
 	}
 
 	httpResponse.Data = data
@@ -206,7 +213,7 @@ func Login(w http.ResponseWriter, r *http.Request){
 *
 * status: ✅
 ************************************************************************/
-func Signup(w http.ResponseWriter, r *http.Request){
+func Signup(w http.ResponseWriter, r *http.Request) {
 	var httpResponse models.HttpResponse
 	var user models.User
 
@@ -232,9 +239,8 @@ func Signup(w http.ResponseWriter, r *http.Request){
 
 	data := map[string]interface{}{
 		"AuthToken": token,
-		"User": user,
+		"User":      user,
 	}
-
 
 	httpResponse.Success = false
 	httpResponse.Data = data
@@ -247,7 +253,7 @@ func Signup(w http.ResponseWriter, r *http.Request){
 *
 * status: ✅
 ************************************************************************/
-func VerifyEmail(w http.ResponseWriter, r *http.Request){
+func VerifyEmail(w http.ResponseWriter, r *http.Request) {
 	var httpResponse models.HttpResponse
 	var user models.User
 
@@ -285,7 +291,7 @@ func VerifyEmail(w http.ResponseWriter, r *http.Request){
 
 	data := map[string]interface{}{
 		"AuthToken": token,
-		"User": user,
+		"User":      user,
 	}
 
 	httpResponse.Data = data
@@ -301,7 +307,7 @@ func VerifyEmail(w http.ResponseWriter, r *http.Request){
 *
 * status: ✅
 ************************************************************************/
-func ForgotPassword(w http.ResponseWriter, r *http.Request){
+func ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	var httpResponse models.HttpResponse
 	var user models.User
 
@@ -329,7 +335,7 @@ func ForgotPassword(w http.ResponseWriter, r *http.Request){
 *
 * status: ✅
 ************************************************************************/
-func ChangePassword(w http.ResponseWriter, r *http.Request){
+func ChangePassword(w http.ResponseWriter, r *http.Request) {
 	var httpResponse models.HttpResponse
 	var user models.User
 
@@ -365,7 +371,7 @@ func ChangePassword(w http.ResponseWriter, r *http.Request){
 * Updates user profile (first name and last name)
 * status: ✅
 ************************************************************************/
-func UpdateProfile(w http.ResponseWriter, r *http.Request){
+func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	var httpResponse models.HttpResponse
 	var user models.User
 
@@ -429,14 +435,13 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request){
 	httpResponse.Send(w)
 }
 
-
 /************************************************************************
 * Toggles two-factor authentication for the authenticated user. Returns a
 * fresh token so the session carries the updated two_fa_enabled claim.
 *
 * status: ✅
 ************************************************************************/
-func ToggleTwoFA(w http.ResponseWriter, r *http.Request){
+func ToggleTwoFA(w http.ResponseWriter, r *http.Request) {
 	var httpResponse models.HttpResponse
 	var user models.User
 
@@ -507,7 +512,7 @@ func ToggleTwoFA(w http.ResponseWriter, r *http.Request){
 *
 * status: ✅
 ************************************************************************/
-func VerifyTwoFA(w http.ResponseWriter, r *http.Request){
+func VerifyTwoFA(w http.ResponseWriter, r *http.Request) {
 	var httpResponse models.HttpResponse
 	var user models.User
 
@@ -545,7 +550,7 @@ func VerifyTwoFA(w http.ResponseWriter, r *http.Request){
 
 	data := map[string]interface{}{
 		"AuthToken": token,
-		"User": user,
+		"User":      user,
 	}
 
 	httpResponse.Data = data

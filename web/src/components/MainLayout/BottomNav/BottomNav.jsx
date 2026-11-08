@@ -1,9 +1,11 @@
 import { useAppContext } from "../../../views/context/appContextProvider";
-import { UtensilsCrossed, CookingPot, House, DoorOpen, CircleDollarSign, HandCoins, Calendar, CalendarDays } from "lucide";
+import { UtensilsCrossed, CookingPot, House, DoorOpen, CircleDollarSign, HandCoins, Calendar, CalendarDays, MessageCircle, MessagesSquare } from "lucide";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MorphIcon } from "morphicons/react";
 import { ROUTE_FINANCES, ROUTE_CALENDAR, ROUTE_HOME } from "@constants";
 import { useState } from "react";
+import { ChatDrawer } from "../ChatDrawer/ChatDrawer";
+import { createPortal } from "react-dom";
 
 // styles
 import "./BottomNav.css";
@@ -15,6 +17,9 @@ export const BottomNav = () => {
 
   const [hoveredItem, setHoveredItem] = useState(null);
 
+  // the chat item does not navigate — it opens the assistant drawer over any page
+  const [chatOpen, setChatOpen] = useState(false);
+
   const isHomeActive = location.pathname === ROUTE_HOME;
   const isFinancesActive = location.pathname === ROUTE_FINANCES;
   const isCalendarActive = location.pathname === ROUTE_CALENDAR;
@@ -23,82 +28,105 @@ export const BottomNav = () => {
     showToast({ message: `${feature} are coming soon!`, type: "info" });
 
   return (
-    <nav className='bottom-nav-9x2k' aria-label='Main navigation'>
-      <div className='bottom-nav-9x2k__pill'>
-        <button
-          onMouseEnter={() => setHoveredItem("meals")}
-          onMouseLeave={() => setHoveredItem(null)}
-          className='bottom-nav-9x2k__item'
-          onClick={comingSoon("Meals")}
-          aria-label='Meals'
-          type='button'
-        >
-          <MorphIcon
-            icon={hoveredItem === "meals" ? CookingPot : UtensilsCrossed}
-            spring='snappy'
-            label='Meals'
-            size={24}
-          />
-        </button>
+    <>
+      <nav className='bottom-nav-9x2k' aria-label='Main navigation'>
+        <div className='bottom-nav-9x2k__pill'>
+          <button
+            onMouseEnter={() => setHoveredItem("meals")}
+            onMouseLeave={() => setHoveredItem(null)}
+            className='bottom-nav-9x2k__item'
+            onClick={comingSoon("Meals")}
+            aria-label='Meals'
+            type='button'
+          >
+            <MorphIcon
+              icon={hoveredItem === "meals" ? CookingPot : UtensilsCrossed}
+              spring='snappy'
+              label='Meals'
+              size={24}
+            />
+          </button>
 
-        <button
-          onMouseEnter={() => setHoveredItem("home")}
-          onMouseLeave={() => setHoveredItem(null)}
-          className={`bottom-nav-9x2k__item bottom-nav-9x2k__item--home ${isHomeActive ? "active" : ""}`}
-          onClick={() => navigate(ROUTE_HOME)}
-          aria-label='Home'
-          type='button'
-        >
-          <MorphIcon
-            icon={
-              hoveredItem === "home" || isHomeActive ? DoorOpen : House
-            }
-            spring='snappy'
-            label='Home'
-            size={26}
-          />
-        </button>
+          <button
+            onMouseEnter={() => setHoveredItem("home")}
+            onMouseLeave={() => setHoveredItem(null)}
+            className={`bottom-nav-9x2k__item bottom-nav-9x2k__item--home ${isHomeActive ? "active" : ""}`}
+            onClick={() => navigate(ROUTE_HOME)}
+            aria-label='Home'
+            type='button'
+          >
+            <MorphIcon
+              icon={
+                hoveredItem === "home" || isHomeActive ? DoorOpen : House
+              }
+              spring='snappy'
+              label='Home'
+              size={26}
+            />
+          </button>
 
-        <button
-          onMouseEnter={() => setHoveredItem("finances")}
-          onMouseLeave={() => setHoveredItem(null)}
-          className={`bottom-nav-9x2k__item ${isFinancesActive ? "active" : ""}`}
-          onClick={() => navigate(ROUTE_FINANCES)}
-          aria-label='Finances'
-          type='button'
-        >
-          <MorphIcon
-            icon={
-              hoveredItem === "finances" || isFinancesActive
-                ? HandCoins
-                : CircleDollarSign
-            }
-            spring='snappy'
-            label='Finances'
-            size={24}
-          />
-        </button>
+          <button
+            onMouseEnter={() => setHoveredItem("finances")}
+            onMouseLeave={() => setHoveredItem(null)}
+            className={`bottom-nav-9x2k__item ${isFinancesActive ? "active" : ""}`}
+            onClick={() => navigate(ROUTE_FINANCES)}
+            aria-label='Finances'
+            type='button'
+          >
+            <MorphIcon
+              icon={
+                hoveredItem === "finances" || isFinancesActive
+                  ? HandCoins
+                  : CircleDollarSign
+              }
+              spring='snappy'
+              label='Finances'
+              size={24}
+            />
+          </button>
 
-        <button
-          onMouseEnter={() => setHoveredItem("calendar")}
-          onMouseLeave={() => setHoveredItem(null)}
-          className={`bottom-nav-9x2k__item ${isCalendarActive ? "active" : ""}`}
-          onClick={() => navigate(ROUTE_CALENDAR)}
-          aria-label='Calendar'
-          type='button'
-        >
-          <MorphIcon
-            icon={
-              hoveredItem === "calendar" || isCalendarActive
-                ? CalendarDays
-                : Calendar
-            }
-            spring='snappy'
-            label='Calendar'
-            size={24}
-          />
-        </button>
-      </div>
-    </nav>
+          <button
+            onMouseEnter={() => setHoveredItem("calendar")}
+            onMouseLeave={() => setHoveredItem(null)}
+            className={`bottom-nav-9x2k__item ${isCalendarActive ? "active" : ""}`}
+            onClick={() => navigate(ROUTE_CALENDAR)}
+            aria-label='Calendar'
+            type='button'
+          >
+            <MorphIcon
+              icon={
+                hoveredItem === "calendar" || isCalendarActive
+                  ? CalendarDays
+                  : Calendar
+              }
+              spring='snappy'
+              label='Calendar'
+              size={24}
+            />
+          </button>
+
+          <button
+            onMouseEnter={() => setHoveredItem("chat")}
+            onMouseLeave={() => setHoveredItem(null)}
+            className={`bottom-nav-9x2k__item ${chatOpen ? "active" : ""}`}
+            onClick={() => setChatOpen(true)}
+            aria-label='Finance assistant'
+            type='button'
+          >
+            <MorphIcon
+              icon={
+                hoveredItem === "chat" || chatOpen ? MessagesSquare : MessageCircle
+              }
+              spring='snappy'
+              label='Finance assistant'
+              size={24}
+            />
+          </button>
+        </div>
+      </nav>
+
+      {chatOpen &&
+        createPortal(<ChatDrawer onClose={() => setChatOpen(false)} />, document.body)}
+    </>
   );
 };

@@ -59,6 +59,13 @@ export const API_GET_PLAID_ACCOUNTS = API_BASE + "/plaid/accounts";
 export const API_GET_PLAID_ITEMS = API_BASE + "/plaid/items";
 export const API_GET_PLAID_STATUS = API_BASE + "/plaid/status";
 
+// api chat routes
+export const API_GET_CHAT_CONVERSATIONS = API_BASE + "/chat/conversations";
+export const API_POST_CHAT_CONVERSATIONS = API_BASE + "/chat/conversations";
+export const API_POST_CHAT_CONVERSATIONS_DELETE = API_BASE + "/chat/conversations/delete";
+export const API_GET_CHAT_MESSAGES = API_BASE + "/chat/messages";
+export const API_POST_CHAT_MESSAGES = API_BASE + "/chat/messages";
+
 // user statuses
 export const USER_STATUS_PENDING = "pending";
 export const USER_STATUS_ACTIVE = "active";
