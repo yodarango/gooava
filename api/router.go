@@ -43,6 +43,7 @@ func Router() http.Handler {
 	mux.HandleFunc("POST "+constants.ROUTE_POST_BANK_BALANCE, models.Authenticate(SaveBankBalance))
 	mux.HandleFunc("GET "+constants.ROUTE_GET_FINANCE_PREFERENCES, models.Authenticate(GetFinancePreferences))
 	mux.HandleFunc("POST "+constants.ROUTE_POST_FINANCE_PREFERENCES, models.Authenticate(SaveFinancePreferences))
+	mux.HandleFunc("GET "+constants.ROUTE_GET_SPENDING_BREAKDOWN, models.Authenticate(GetSpendingBreakdown))
 
 	// plaid routes (authentication required)
 	mux.HandleFunc(constants.ROUTE_POST_PLAID_LINK_TOKEN, models.Authenticate(PlaidCreateLinkToken))

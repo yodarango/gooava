@@ -49,6 +49,7 @@ export const API_GET_BANK_BALANCE = API_BASE + "/finances/bank-balance";
 export const API_POST_BANK_BALANCE = API_BASE + "/finances/bank-balance";
 export const API_GET_FINANCE_PREFERENCES = API_BASE + "/finances/preferences";
 export const API_POST_FINANCE_PREFERENCES = API_BASE + "/finances/preferences";
+export const API_GET_SPENDING_BREAKDOWN = API_BASE + "/finances/spending-breakdown";
 
 // api plaid routes
 export const API_POST_PLAID_LINK_TOKEN = API_BASE + "/plaid/link-token/create";

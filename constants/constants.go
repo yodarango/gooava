@@ -46,6 +46,7 @@ const ROUTE_GET_BANK_BALANCE = ROUTE_API_BASE + "/finances/bank-balance"
 const ROUTE_POST_BANK_BALANCE = ROUTE_API_BASE + "/finances/bank-balance"
 const ROUTE_GET_FINANCE_PREFERENCES = ROUTE_API_BASE + "/finances/preferences"
 const ROUTE_POST_FINANCE_PREFERENCES = ROUTE_API_BASE + "/finances/preferences"
+const ROUTE_GET_SPENDING_BREAKDOWN = ROUTE_API_BASE + "/finances/spending-breakdown"
 
 // plaid
 const ROUTE_POST_PLAID_LINK_TOKEN = ROUTE_API_BASE + "/plaid/link-token/create"

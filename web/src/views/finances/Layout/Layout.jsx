@@ -1,5 +1,6 @@
 import { usePlaidOAuthResume } from "./components/PlaidConnect/usePlaidConnect";
 import { FinancesSettings } from "./components/FinancesSettings/FinancesSettings";
+import { FinancesBreakdown } from "./components/FinancesBreakdown/FinancesBreakdown";
 import { IncomeApprovals } from "./components/IncomeApprovals/IncomeApprovals";
 import { UpcomingBills } from "./components/UpcomingBills/UpcomingBills";
 import { BankBalance } from "./components/BankBalance/BankBalance";
@@ -147,8 +148,9 @@ export const Layout = () => {
 
   return (
     <div className='finances-layout-4f8d'>
-      {/* the page title lives in the app header — this row just hosts settings */}
+      {/* the page title lives in the app header — this row hosts graph breakdown + settings */}
       <div className='finances-layout-4f8d__header'>
+        <FinancesBreakdown />
         <FinancesSettings onChanged={() => setRefreshKey((key) => key + 1)} />
       </div>
       <p className='finances-layout-4f8d__today'>
