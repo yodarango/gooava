@@ -1,7 +1,7 @@
 import React from "react";
 
 export const Loading = (props) => {
-  const { color = "#0077ff", size = 200, ...restProps } = props;
+  const { color = "#ffdde2", size = 200, ...restProps } = props;
 
   // Calculate proportional dimensions based on size
   const rectWidth = (30 / 200) * size;

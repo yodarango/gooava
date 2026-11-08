@@ -197,8 +197,8 @@ const ChatView = (props) => {
           </div>
         ) : messages.length === 0 ? (
           <p className='chat-drawer-x7q2__empty'>
-            Ask things like “if I spend $40 this week, is that wise?” or “what bills
-            could I cut?”
+            Ask things like “if I spend $40 this week, is that wise?” or “what
+            bills could I cut?”
           </p>
         ) : (
           messages.map((message) => (
@@ -207,7 +207,9 @@ const ChatView = (props) => {
               className={`chat-drawer-x7q2__bubble-row ${message.role}`}
             >
               <div className={`chat-drawer-x7q2__bubble ${message.role}`}>
-                <p className='chat-drawer-x7q2__bubble-text'>{message.content}</p>
+                <p className='chat-drawer-x7q2__bubble-text'>
+                  {message.content}
+                </p>
                 {message.created_at && (
                   <span className='chat-drawer-x7q2__bubble-time'>
                     {message.created_at.slice(5, 16)}
@@ -220,7 +222,7 @@ const ChatView = (props) => {
         {send.loading && (
           <div className='chat-drawer-x7q2__bubble-row assistant'>
             <div className='chat-drawer-x7q2__bubble assistant'>
-              <Loading size={24} />
+              Thinking real hard...
             </div>
           </div>
         )}
