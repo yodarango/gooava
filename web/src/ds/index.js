@@ -19,4 +19,8 @@ export {
   PopupMenuItem,
   PopupMenu,
 } from "./PopupMenu/PopupMenu";
+export {
+  PaydayCalendar as Calendar,
+  PaydayCalendar,
+} from "../views/finances/Layout/components/PaydayCalendar/PaydayCalendar";
 export * from "./utils";

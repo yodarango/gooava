@@ -79,6 +79,21 @@
   flex: 1;
 }
 
+.milestones-pane-3k8v__date-highlight {
+  color: var(--dr-delta);
+  font-weight: var(--dr-font-weight-7);
+}
+
+.milestones-pane-3k8v__calendar-box {
+  margin-top: var(--dr-spacing-1);
+
+  .payday-calendar-7m3q {
+    box-shadow: none;
+    border: 1px solid rgba(var(--dr-eta-rgb), 0.12);
+    padding: var(--dr-spacing-3);
+  }
+}
+
 .milestones-pane-3k8v__field-row {
   display: flex;
   gap: var(--dr-spacing-3);

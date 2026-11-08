@@ -5,7 +5,7 @@ import {
   API_POST_MILESTONES_UPDATE,
   API_POST_MILESTONES_DELETE,
 } from "@constants";
-import { Button, Input } from "@ds";
+import { Button, Calendar, Input } from "@ds";
 import { Pencil, Plus, Trash2, X } from "lucide";
 import { MorphIcon } from "morphicons/react";
 import { useEffect, useMemo, useState } from "react";
@@ -28,6 +28,15 @@ const formatDate = (dateStr) => {
     day: "numeric",
     year: "numeric",
   });
+};
+
+const parseDollarAmount = (val) => {
+  if (typeof val !== "string") val = String(val ?? "");
+  const cleaned = val.replace(/[$,]/g, "").trim();
+  if (!cleaned) return null;
+  const num = Number(cleaned);
+  if (isNaN(num) || num <= 0) return null;
+  return Math.round(num * 100) / 100;
 };
 
 /*********************************************************************************************************
@@ -69,10 +78,23 @@ const MilestoneForm = ({ milestone, onDone, onCancel }) => {
     }
   }, [request.error, showToast]);
 
+  const selectedCalendarDate = useMemo(() => {
+    if (!targetDate) return null;
+    const [y, m, d] = targetDate.split("-").map(Number);
+    return { year: y, month: m, day: d };
+  }, [targetDate]);
+
+  const handleCalendarSelect = ({ year, month, day }) => {
+    const yStr = String(year);
+    const mStr = String(month).padStart(2, "0");
+    const dStr = String(day).padStart(2, "0");
+    setTargetDate(`${yStr}-${mStr}-${dStr}`);
+  };
+
   // live financial estimate of per-paycheck breakdown
   const estimate = useMemo(() => {
-    const amount = parseFloat(targetAmount);
-    if (!amount || amount <= 0 || !targetDate) return null;
+    const amount = parseDollarAmount(targetAmount);
+    if (!amount || !targetDate) return null;
 
     const today = new Date();
     const [y, m, d] = targetDate.split("-").map(Number);
@@ -92,13 +114,19 @@ const MilestoneForm = ({ milestone, onDone, onCancel }) => {
       showToast({ message: "Please enter a title", type: "danger" });
       return;
     }
-    const amount = parseFloat(targetAmount);
-    if (!amount || amount <= 0) {
-      showToast({ message: "Target amount must be greater than 0", type: "danger" });
+    const amount = parseDollarAmount(targetAmount);
+    if (!amount) {
+      showToast({
+        message: "Please enter a valid dollar amount (e.g. 2500 or 2,500.00)",
+        type: "danger",
+      });
       return;
     }
     if (!targetDate) {
-      showToast({ message: "Please pick a target completion date", type: "danger" });
+      showToast({
+        message: "Please pick a target completion date on the calendar below",
+        type: "danger",
+      });
       return;
     }
 
@@ -111,10 +139,6 @@ const MilestoneForm = ({ milestone, onDone, onCancel }) => {
 
     request.post(payload);
   };
-
-  const minDate = new Date();
-  minDate.setDate(minDate.getDate() + 1);
-  const minDateStr = minDate.toISOString().split("T")[0];
 
   return (
     <form className='milestones-pane-3k8v__form' onSubmit={handleSubmit}>
@@ -132,28 +156,28 @@ const MilestoneForm = ({ milestone, onDone, onCancel }) => {
         />
       </div>
 
-      <div className='milestones-pane-3k8v__field-row'>
-        <div className='milestones-pane-3k8v__field'>
-          <label className='milestones-pane-3k8v__label'>Target amount ($)</label>
-          <Input
-            type='number'
-            step='0.01'
-            min='1'
-            placeholder='e.g. 5000'
-            value={targetAmount}
-            onChange={(e) => setTargetAmount(e.target.value)}
-            required
-          />
-        </div>
+      <div className='milestones-pane-3k8v__field'>
+        <label className='milestones-pane-3k8v__label'>Target amount ($)</label>
+        <Input
+          type='text'
+          placeholder='e.g. 5,000'
+          value={targetAmount}
+          onChange={(e) => setTargetAmount(e.target.value)}
+          required
+        />
+      </div>
 
-        <div className='milestones-pane-3k8v__field'>
-          <label className='milestones-pane-3k8v__label'>Target date</label>
-          <Input
-            type='date'
-            min={minDateStr}
-            value={targetDate}
-            onChange={(e) => setTargetDate(e.target.value)}
-            required
+      <div className='milestones-pane-3k8v__field'>
+        <p className='milestones-pane-3k8v__label'>
+          Target completion date:{" "}
+          <span className='milestones-pane-3k8v__date-highlight'>
+            {targetDate ? formatDate(targetDate) : "Pick on calendar below"}
+          </span>
+        </p>
+        <div className='milestones-pane-3k8v__calendar-box'>
+          <Calendar
+            onDaySelect={handleCalendarSelect}
+            selectedDate={selectedCalendarDate}
           />
         </div>
       </div>

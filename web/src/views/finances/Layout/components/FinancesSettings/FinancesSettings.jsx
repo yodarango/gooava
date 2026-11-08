@@ -1,7 +1,15 @@
 import { API_GET_PLAID_ACCOUNTS, API_GET_PLAID_ITEMS } from "@constants";
 import { usePlaidConnect } from "../PlaidConnect/usePlaidConnect";
 import { Tabs, TabItem, TabContent, Button } from "@ds";
-import { Settings, X } from "lucide"; // data, not components
+import {
+  HandCoins,
+  Landmark,
+  Receipt,
+  Settings,
+  Tags,
+  Target,
+  X,
+} from "lucide"; // data, not components
 import { MorphIcon } from "morphicons/react";
 import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
@@ -72,11 +80,36 @@ const SettingsDrawer = (props) => {
 
         <div className='finances-settings-8h3j__body'>
           <Tabs>
-            <TabItem>Accounts</TabItem>
-            <TabItem>Expenses</TabItem>
-            <TabItem>Income</TabItem>
-            <TabItem>Categories</TabItem>
-            <TabItem>Milestones</TabItem>
+            <TabItem>
+              <span className='finances-settings-8h3j__tab-inner'>
+                <MorphIcon icon={Landmark} label='Accounts' size={16} />
+                <span className='finances-settings-8h3j__tab-text'>Accounts</span>
+              </span>
+            </TabItem>
+            <TabItem>
+              <span className='finances-settings-8h3j__tab-inner'>
+                <MorphIcon icon={Receipt} label='Expenses' size={16} />
+                <span className='finances-settings-8h3j__tab-text'>Expenses</span>
+              </span>
+            </TabItem>
+            <TabItem>
+              <span className='finances-settings-8h3j__tab-inner'>
+                <MorphIcon icon={HandCoins} label='Income' size={16} />
+                <span className='finances-settings-8h3j__tab-text'>Income</span>
+              </span>
+            </TabItem>
+            <TabItem>
+              <span className='finances-settings-8h3j__tab-inner'>
+                <MorphIcon icon={Tags} label='Categories' size={16} />
+                <span className='finances-settings-8h3j__tab-text'>Categories</span>
+              </span>
+            </TabItem>
+            <TabItem>
+              <span className='finances-settings-8h3j__tab-inner'>
+                <MorphIcon icon={Target} label='Milestones' size={16} />
+                <span className='finances-settings-8h3j__tab-text'>Milestones</span>
+              </span>
+            </TabItem>
 
             <TabContent>
               <div className='finances-settings-8h3j__body'>
