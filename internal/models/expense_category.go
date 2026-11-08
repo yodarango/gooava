@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"fmt"
 )
 
@@ -68,4 +69,70 @@ func ListExpenseCategories(userID uint) ([]ExpenseCategory, error) {
 	}
 
 	return categories, nil
+}
+
+
+/**************************************************************************************
+* Update overwrites a category's fields. When the label changes, expenses linked by the
+* old label string are re-pointed to the new one (expenses link to categories by label).
+*
+* status: ✅
+**************************************************************************************/
+func (c *ExpenseCategory) Update() error {
+	var oldLabel string
+	err := ModelsRepo.DB.Conn.QueryRow(
+		"SELECT label FROM expense_categories WHERE id = ? AND user_id = ?",
+		c.Id, c.UserID,
+	).Scan(&oldLabel)
+	if err == sql.ErrNoRows {
+		return fmt.Errorf("category not found")
+	}
+	if err != nil {
+		return fmt.Errorf("could not load expense category: %w", err)
+	}
+
+	if _, err := ModelsRepo.DB.Conn.Exec(
+		"UPDATE expense_categories SET label = ?, description = ?, color = ? WHERE id = ? AND user_id = ?",
+		c.Label, c.Description, c.Color, c.Id, c.UserID,
+	); err != nil {
+		return fmt.Errorf("could not update expense category: %w", err)
+	}
+
+	// re-point expenses linked by the old label string
+	if oldLabel != c.Label {
+		if _, err := ModelsRepo.DB.Conn.Exec(
+			"UPDATE expenses SET category = ? WHERE user_id = ? AND category = ?",
+			c.Label, c.UserID, oldLabel,
+		); err != nil {
+			return fmt.Errorf("could not re-link expenses to the renamed category: %w", err)
+		}
+	}
+
+	return nil
+}
+
+/**************************************************************************************
+* DeleteExpenseCategory removes a category by id. Expenses keep their category text —
+* the link is by label string, so nothing else needs cleanup.
+*
+* status: ✅
+**************************************************************************************/
+func DeleteExpenseCategory(userID uint, id int64) error {
+	result, err := ModelsRepo.DB.Conn.Exec(
+		"DELETE FROM expense_categories WHERE id = ? AND user_id = ?",
+		id, userID,
+	)
+	if err != nil {
+		return fmt.Errorf("could not delete expense category: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("could not verify expense category deletion: %w", err)
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("category not found")
+	}
+
+	return nil
 }

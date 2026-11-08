@@ -43,7 +43,7 @@
   right: 0;
   z-index: 14;
   width: 100%;
-  max-width: 80rem;
+  max-width: 60rem; /* 600px cap */
   height: 100vh;
   height: 100dvh;
   background-color: var(--dr-gamma);

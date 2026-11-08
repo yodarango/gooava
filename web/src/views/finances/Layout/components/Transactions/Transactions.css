@@ -5,6 +5,15 @@
   box-shadow: 0 0.2rem 0.4rem rgba(var(--dr-beta-rgb), 0.2);
   padding: var(--dr-spacing-4);
 
+  /* search bar under the tab switcher — filters whichever tab is showing */
+  .transactions-7qm2__search {
+    margin: var(--dr-spacing-2) 0 var(--dr-spacing-3);
+
+    .custom-input {
+      width: 100%;
+    }
+  }
+
   /* tab switcher above the list — Bank Activity / Historical billing */
   .transactions-7qm2__tabs {
     display: flex;

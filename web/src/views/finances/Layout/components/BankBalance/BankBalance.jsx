@@ -37,7 +37,9 @@ export const BankBalance = (props) => {
       showToast({
         message:
           `Bank synced — ${data.added} new, ${data.modified} updated, ${data.removed} removed` +
-          (failed > 0 ? ` — ${failed} source${failed > 1 ? "s" : ""} failed` : ""),
+          (failed > 0
+            ? ` — ${failed} source${failed > 1 ? "s" : ""} failed`
+            : ""),
         type: failed > 0 ? "warning" : "success",
       });
       if (onSynced) onSynced();
@@ -49,20 +51,24 @@ export const BankBalance = (props) => {
     if (sync.error) showToast({ message: String(sync.error), type: "danger" });
   }, [sync.error]);
 
-  const checkingAccounts = (Array.isArray(accounts.data) ? accounts.data : []).filter(
-    (account) => account.subtype === "checking"
-  );
+  const checkingAccounts = (
+    Array.isArray(accounts.data) ? accounts.data : []
+  ).filter((account) => account.subtype === "checking");
 
   const total = checkingAccounts.reduce(
     (sum, account) => sum + (account.current_balance || 0),
-    0
+    0,
   );
 
   return (
     <section className='bank-balance-6pw1'>
       <div className='bank-balance-6pw1__header'>
         <p className='bank-balance-6pw1__label'>In the bank</p>
-        <Button secondary onClick={() => sync.post({})} isLoading={sync.loading}>
+        <Button
+          secondary
+          onClick={() => sync.post({})}
+          isLoading={sync.loading}
+        >
           Sync
         </Button>
       </div>
@@ -84,10 +90,6 @@ export const BankBalance = (props) => {
       )}
 
       <p className='bank-balance-6pw1__total'>{formatUSD(total)}</p>
-
-      <p className='bank-balance-6pw1__hint'>
-        Pulled from your connected bank — hit Sync to refresh.
-      </p>
     </section>
   );
 };

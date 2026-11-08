@@ -289,6 +289,20 @@ func validateExpensePayload(expense *models.Expense) error {
 		return fmt.Errorf("invalid recurring value")
 	}
 
+	// reminders: the switch needs at least one valid recipient; emails are stored
+	// trimmed, comma-separated
+	expense.ReminderEmails = strings.TrimSpace(expense.ReminderEmails)
+	if expense.IsReminderOn {
+		if expense.ReminderEmails == "" {
+			return fmt.Errorf("add at least one reminder email")
+		}
+		for _, email := range strings.Split(expense.ReminderEmails, ",") {
+			if trimmed := strings.TrimSpace(email); trimmed == "" || !strings.Contains(trimmed, "@") {
+				return fmt.Errorf("reminder emails must be valid, comma-separated emails")
+			}
+		}
+	}
+
 	if err := validateRecurRule(expense.Recurring, expense.RecurRule); err != nil {
 		return err
 	}

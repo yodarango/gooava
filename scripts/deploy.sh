@@ -31,7 +31,7 @@ fi
 
 # Copy the files to the VPS
 # Cleanup note: only dangling images are pruned per deploy. The builder cache is
-# capped with --keep-storage instead of a time-based prune — the old
+# capped with --max-storage instead of a time-based prune — the old
 # `--filter until=24h` wiped the Go build/module caches after every deploy and
 # forced a multi-minute plaid-go recompile every time.
 ssh_main "\
@@ -48,7 +48,7 @@ docker compose build --parallel; \
 docker compose up -d; \
 echo '🧹 Cleaning dangling images...'; \
 docker image prune -f; \
-docker builder prune -f --keep-storage 5GB; \
+docker builder prune -f --max-storage 5GB; \
 echo '🚀🚀🚀 Deployment successful'"
 
 

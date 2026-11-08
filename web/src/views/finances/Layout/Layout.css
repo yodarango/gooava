@@ -23,6 +23,24 @@
     font-weight: var(--dr-font-weight-8);
   }
 
+  /* the current paycheck's leftover, next to the days-till-payday heading */
+  .finances-layout-4f8d__left {
+    display: inline-block;
+    margin-left: var(--dr-spacing-3);
+    border-radius: 1rem;
+    padding: 0.2rem var(--dr-spacing-3);
+    background-color: var(--dr-success);
+    color: var(--dr-beta); /* dark on bright green — same pairing as the plan chips */
+    font-size: var(--dr-font-size-4);
+    font-weight: var(--dr-font-weight-7);
+    vertical-align: middle;
+
+    &.short {
+      background-color: var(--dr-danger);
+      color: var(--dr-zeta);
+    }
+  }
+
   .finances-layout-4f8d__cards {
     display: grid;
     grid-template-columns: 1fr 1fr;

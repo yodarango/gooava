@@ -94,6 +94,20 @@ docker compose exec -T gooava_mysql sh -c 'mysql -u root -p"$MYSQL_ROOT_PASSWORD
 
 echo "✅ Local database replaced with the live one."
 
+# --- sync env vars needed to run locally ----------------------------------
+
+# The JWT_SECRET and DATA_ENCRYPTION_KEY must match the live server or
+# auth tokens and encrypted Plaid access tokens are undecipherable locally.
+echo "🔑 Syncing JWT_SECRET, DATA_ENCRYPTION_KEY, CORS_ORIGIN, BASE_URL from live..."
+for key in JWT_SECRET DATA_ENCRYPTION_KEY CORS_ORIGIN BASE_URL; do
+  live_line=$(ssh_main "grep '^${key}=' $REMOTE_APP_DIR/.env" 2>/dev/null)
+  if [ -n "$live_line" ]; then
+    # remove any existing local line, then append the live one
+    sed -i '' "/^${key}=/d" .env
+    echo "$live_line" >> .env
+  fi
+done
+
 # the app runs migrations at startup — if local code is ahead of live, a
 # restart re-applies the pending migrations onto the fresh data
 if docker compose ps --status running gooava_app 2>/dev/null | grep -q gooava_app; then

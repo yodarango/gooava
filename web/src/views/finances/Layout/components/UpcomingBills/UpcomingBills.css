@@ -128,12 +128,6 @@
     }
   }
 
-  /* the "· $X paid ✓" note next to a window's due total */
-  .upcoming-bills-5xk3__paid-off {
-    color: var(--dr-success);
-    font-weight: var(--dr-font-weight-6);
-  }
-
   .upcoming-bills-5xk3__details {
     display: flex;
     flex-direction: column;
@@ -162,6 +156,83 @@
     font-weight: var(--dr-font-weight-7);
   }
 
+  /* pencil next to a bill amount — hand-edit that occurrence */
+  .upcoming-bills-5xk3__amount-edit {
+    display: inline-flex;
+    align-items: center;
+    background: none;
+    border: none;
+    padding: 0 0 0 var(--dr-spacing-1);
+    cursor: pointer;
+    color: rgba(var(--dr-beta-rgb), 0.4);
+    vertical-align: middle;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 0.75;
+    }
+  }
+
+  /* past-due paycheck card — red border while it holds unpaid bills */
+  .upcoming-bills-5xk3__window.past-due {
+    border: 1px solid var(--dr-danger);
+  }
+
+  /* past-due bill rows go red and carry a badge */
+  .upcoming-bills-5xk3__row.past-due:not(.paid) .upcoming-bills-5xk3__name,
+  .upcoming-bills-5xk3__row.past-due:not(.paid) .upcoming-bills-5xk3__amount {
+    color: var(--dr-danger);
+  }
+
+  .upcoming-bills-5xk3__pastdue-badge {
+    background: var(--dr-danger);
+    color: var(--dr-zeta);
+    border-radius: 1rem;
+    font-size: var(--dr-font-size-6);
+    font-weight: var(--dr-font-weight-7);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0 var(--dr-spacing-2);
+  }
+
+  /* pastel purple badge for automatically withdrawn bills */
+  .upcoming-bills-5xk3__auto-badge {
+    background-color: #ece4fb;
+    color: #6b4fd8;
+    border-radius: 1rem;
+    font-size: var(--dr-font-size-6);
+    font-weight: var(--dr-font-weight-7);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0 var(--dr-spacing-2);
+  }
+
+  /* open-body stat lines: scheduled expenses / left from this paycheck / accumulated */
+  .upcoming-bills-5xk3__window-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: var(--dr-spacing-1);
+  }
+
+  .upcoming-bills-5xk3__stat {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: rgba(var(--dr-beta-rgb), 0.55);
+    font-size: var(--dr-font-size-4);
+    font-weight: var(--dr-font-weight-6);
+
+    span:last-child {
+      color: var(--dr-beta);
+      font-weight: var(--dr-font-weight-7);
+
+      &.short {
+        color: var(--dr-danger);
+      }
+    }
+  }
+
   /* label + paycheck editor row */
   .upcoming-bills-5xk3__head {
     display: flex;
@@ -182,17 +253,6 @@
     gap: var(--dr-spacing-3);
   }
 
-  .upcoming-bills-5xk3__windows-select {
-    background: var(--dr-epsilon);
-    color: rgba(var(--dr-beta-rgb), 0.8);
-    border: none;
-    border-radius: 1rem;
-    outline: none;
-    padding: var(--dr-spacing-1) var(--dr-spacing-2);
-    font-size: var(--dr-font-size-5);
-    font-weight: var(--dr-font-weight-7);
-    cursor: pointer;
-  }
 
   .upcoming-bills-5xk3__paycheck {
     display: flex;
@@ -350,17 +410,6 @@
     padding: 0 var(--dr-spacing-4) var(--dr-spacing-3);
   }
 
-  .upcoming-bills-5xk3__window-totals {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--dr-spacing-2);
-    margin-top: var(--dr-spacing-1);
-    color: rgba(var(--dr-beta-rgb), 0.7);
-    font-size: var(--dr-font-size-4);
-    font-weight: var(--dr-font-weight-6);
-  }
-
   .upcoming-bills-5xk3__verdict {
     flex-shrink: 0;
     border-radius: 1rem;
@@ -406,17 +455,6 @@
     margin: var(--dr-spacing-3) 0 0;
   }
 
-  /* cumulative balance under each window's date range */
-  .upcoming-bills-5xk3__running {
-    color: var(--dr-beta);
-    font-size: var(--dr-font-size-5);
-    font-weight: var(--dr-font-weight-7);
-
-    &.short {
-      color: var(--dr-danger);
-    }
-  }
-
   /* final period finances — the cumulative conclusion of the whole plan */
   .upcoming-bills-5xk3__final {
     border-top: 1px solid rgba(var(--dr-eta-rgb), 0.15);
@@ -426,6 +464,10 @@
 
   .upcoming-bills-5xk3__total.negative {
     color: var(--dr-danger);
+  }
+
+  .upcoming-bills-5xk3__total.positive {
+    color: var(--dr-success);
   }
 }
 

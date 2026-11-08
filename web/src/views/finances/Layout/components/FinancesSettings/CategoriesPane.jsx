@@ -1,9 +1,13 @@
-import { API_GET_EXPENSE_CATEGORIES } from "@constants";
+import { useAppContext } from "../../../../context/appContextProvider";
+import {
+  API_POST_EXPENSE_CATEGORIES_DELETE,
+  API_GET_EXPENSE_CATEGORIES,
+} from "@constants";
 import { CategoryForm } from "./CategoryForm";
-import { Plus, X } from "lucide"; // data, not components
+import { Pencil, Plus, Trash2, X } from "lucide"; // data, not components
 import { MorphIcon } from "morphicons/react";
-import { useState } from "react";
-import { useGet } from "@utils";
+import { useEffect, useState } from "react";
+import { useGet, usePost } from "@utils";
 
 // styles
 import "./CategoriesPane.css";
@@ -14,7 +18,10 @@ import "./CategoriesPane.css";
  * ******************************************************************************************************
  */
 export const CategoriesPane = () => {
+  const { showToast } = useAppContext();
+
   const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState(null); // category being edited, null = add mode
   const [refreshKey, setRefreshKey] = useState(0);
 
   const categories = useGet({
@@ -22,8 +29,45 @@ export const CategoriesPane = () => {
     dependencies: [refreshKey],
   });
 
+  const deleteCategory = usePost({
+    url: API_POST_EXPENSE_CATEGORIES_DELETE,
+    callback: (data) => {
+      if (!data) return;
+      showToast({ message: "Category deleted", type: "success" });
+      setRefreshKey((key) => key + 1);
+    },
+  });
+
+  // surface delete errors as toasts
+  useEffect(() => {
+    if (deleteCategory.error) {
+      showToast({ message: String(deleteCategory.error), type: "danger" });
+    }
+  }, [deleteCategory.error]);
+
+  // plus opens the add form (or closes it if already open in add mode)
+  const handlePlus = () => {
+    if (formOpen && !editing) {
+      setFormOpen(false);
+      return;
+    }
+    setEditing(null);
+    setFormOpen(true);
+  };
+
+  const handleEdit = (category) => {
+    setEditing(category);
+    setFormOpen(true);
+  };
+
+  const handleDelete = (category) => {
+    if (!window.confirm(`Delete the "${category.label}" category?`)) return;
+    deleteCategory.post({ id: category.id });
+  };
+
   const handleFormDone = () => {
     setFormOpen(false);
+    setEditing(null);
     setRefreshKey((key) => key + 1);
   };
 
@@ -35,7 +79,7 @@ export const CategoriesPane = () => {
         <h3 className='categories-pane-7zx2__title'>Categories</h3>
         <button
           className='categories-pane-7zx2__add'
-          onClick={() => setFormOpen((open) => !open)}
+          onClick={handlePlus}
           aria-label={formOpen ? "Close form" : "Add category"}
           type='button'
         >
@@ -49,7 +93,12 @@ export const CategoriesPane = () => {
 
       {formOpen && (
         <div className='categories-pane-7zx2__form'>
-          <CategoryForm onDone={handleFormDone} onCancel={handleFormDone} />
+          <CategoryForm
+            key={editing ? editing.id : "new"}
+            category={editing}
+            onDone={handleFormDone}
+            onCancel={handleFormDone}
+          />
         </div>
       )}
 
@@ -77,6 +126,28 @@ export const CategoriesPane = () => {
                   )}
                 </div>
                 <span className='categories-pane-7zx2__hex'>{category.color}</span>
+
+                <div className='categories-pane-7zx2__actions'>
+                  <button
+                    className='categories-pane-7zx2__action edit'
+                    onClick={() => handleEdit(category)}
+                    aria-label={`Edit ${category.label}`}
+                    title='Edit category'
+                    type='button'
+                  >
+                    <MorphIcon icon={Pencil} label='Edit' size={15} />
+                  </button>
+                  <button
+                    className='categories-pane-7zx2__action delete'
+                    onClick={() => handleDelete(category)}
+                    aria-label={`Delete ${category.label}`}
+                    disabled={deleteCategory.loading}
+                    title='Delete category'
+                    type='button'
+                  >
+                    <MorphIcon icon={Trash2} label='Delete' size={15} />
+                  </button>
+                </div>
               </li>
             ))}
           </ul>

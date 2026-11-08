@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"net/smtp"
 	"os"
+	"strings"
 )
 
 type EmailService struct {
@@ -216,4 +217,56 @@ func (es *EmailService) SendTwoFACodeEmail(toEmail, firstName, code string) erro
 	addr := fmt.Sprintf("%s:%s", es.SMTPHost, es.SMTPPort)
 
 	return smtp.SendMail(addr, auth, es.FromEmail, []string{toEmail}, []byte(message))
+}
+
+
+type BillReminderEmailData struct {
+	FirstName string
+	Label     string
+	Amount    string
+	DueDate   string
+	Timing    string // "in 3 days" | "tomorrow" | "past due"
+}
+
+/**************************************************************************************
+* SendBillReminderEmail emails the bill's reminder list about an upcoming or past-due
+* occurrence. toEmails is the user-entered comma-separated list, already parsed.
+**************************************************************************************/
+func (es *EmailService) SendBillReminderEmail(toEmails []string, firstName, label, amount, dueDate, timing string) error {
+	if es.SMTPHost == "" || es.SMTPPort == "" || es.SMTPUsername == "" || es.SMTPPassword == "" {
+		return fmt.Errorf("SMTP configuration is incomplete. Please check your environment variables")
+	}
+
+	tmpl, err := template.ParseFiles("templates/bill_reminder.html")
+	if err != nil {
+		return fmt.Errorf("failed to parse bill reminder email template: %w", err)
+	}
+
+	var body bytes.Buffer
+	if err := tmpl.Execute(&body, BillReminderEmailData{
+		FirstName: firstName,
+		Label:     label,
+		Amount:    amount,
+		DueDate:   dueDate,
+		Timing:    timing,
+	}); err != nil {
+		return fmt.Errorf("failed to execute bill reminder email template: %w", err)
+	}
+
+	subject := fmt.Sprintf("Bill reminder: %s is due %s", label, timing)
+	message := fmt.Sprintf("To: %s\r\n"+
+		"Subject: %s\r\n"+
+		"MIME-Version: 1.0\r\n"+
+		"Content-Type: text/html; charset=UTF-8\r\n"+
+		"\r\n"+
+		"%s", strings.Join(toEmails, ", "), subject, body.String())
+
+	auth := smtp.PlainAuth("", es.SMTPUsername, es.SMTPPassword, es.SMTPHost)
+
+	addr := fmt.Sprintf("%s:%s", es.SMTPHost, es.SMTPPort)
+	if err := smtp.SendMail(addr, auth, es.FromEmail, toEmails, []byte(message)); err != nil {
+		return fmt.Errorf("failed to send bill reminder email: %w", err)
+	}
+
+	return nil
 }

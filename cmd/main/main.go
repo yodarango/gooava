@@ -41,6 +41,10 @@ func main (){
 	api.SetRouterConfig(appRepo)
 	models.SetModelsConfig(appRepo)
 
+	// bill reminder emails run in-process — the container is always up on the VPS,
+	// so they go out even when nobody loads the app
+	models.StartBillReminderLoop()
+
 	// inizialize the server
 	server := &http.Server{
 		Addr: ":8016",

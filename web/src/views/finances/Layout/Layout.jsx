@@ -2,7 +2,6 @@ import { usePlaidOAuthResume } from "./components/PlaidConnect/usePlaidConnect";
 import { FinancesSettings } from "./components/FinancesSettings/FinancesSettings";
 import { IncomeApprovals } from "./components/IncomeApprovals/IncomeApprovals";
 import { UpcomingBills } from "./components/UpcomingBills/UpcomingBills";
-import { PastDueBills } from "./components/PastDueBills/PastDueBills";
 import { BankBalance } from "./components/BankBalance/BankBalance";
 import { PlaidConnect } from "./components/PlaidConnect/PlaidConnect";
 import { Transactions } from "./components/Transactions/Transactions";
@@ -48,6 +47,8 @@ export const Layout = () => {
   const [draft, setDraft] = useState("");
   const [editing, setEditing] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  // the current paycheck's leftover, reported by the plan card below
+  const [planLeft, setPlanLeft] = useState(null);
 
   // Bank connection status — when connected, the manual balance card and the
   // connect card are swapped for live bank data.
@@ -154,6 +155,14 @@ export const Layout = () => {
         {daysTillPayday === 0
           ? "Payday is today"
           : `${daysTillPayday} day${daysTillPayday === 1 ? "" : "s"} till payday`}
+        {planLeft !== null && (
+          <span
+            className={`finances-layout-4f8d__left ${planLeft < 0 ? "short" : ""}`}
+            title='Balance after the current paycheck’s bills (and put-aways) come out'
+          >
+            {formatUSD(planLeft)} after bills
+          </span>
+        )}
       </p>
 
       <div className='finances-layout-4f8d__cards'>
@@ -221,13 +230,12 @@ export const Layout = () => {
       {/* incomes awaiting the user's approval before they count toward the plan */}
       <IncomeApprovals onDecided={() => setRefreshKey((key) => key + 1)} />
 
-      {/* past-due bills awaiting a decision — matched ones confirmable, the rest manual */}
-      <PastDueBills
-        refreshKey={refreshKey}
-        onChanged={() => setRefreshKey((key) => key + 1)}
-      />
 
-      <UpcomingBills refreshKey={refreshKey} manualBalance={balance} />
+      <UpcomingBills
+        refreshKey={refreshKey}
+        manualBalance={balance}
+        onPlanComputed={setPlanLeft}
+      />
 
       <PaydayStrip />
 

@@ -10,7 +10,7 @@ import {
 } from "@constants";
 import { useEffect, useMemo, useState } from "react";
 import { useGet, usePost } from "@utils";
-import { Button, Input } from "@ds";
+import { Button, Dropdown, Input, Switch, TextArea } from "@ds";
 
 // styles
 import "./ExpensesForm.css";
@@ -51,6 +51,8 @@ export const ExpensesForm = (props) => {
 
   // recurring schedule state
   const [recurring, setRecurring] = useState("");
+  const [reminderOn, setReminderOn] = useState(false);
+  const [reminderEmails, setReminderEmails] = useState("");
   const [dayOfWeek, setDayOfWeek] = useState(5); // Friday
   const [selectedDays, setSelectedDays] = useState([]); // biweekly (2) / monthly (1)
   const [selectedDate, setSelectedDate] = useState(null); // { month, day } — quarterly / yearly
@@ -62,6 +64,8 @@ export const ExpensesForm = (props) => {
     setSelectedDays([]);
     setSelectedDate(null);
     setSelectedMonths([]);
+    setReminderOn(!!expense?.is_reminder_on);
+    setReminderEmails(expense?.reminder_emails || "");
 
     if (!expense) {
       setCategory(EXPENSE_CATEGORIES[0]);
@@ -283,11 +287,27 @@ export const ExpensesForm = (props) => {
       return;
     }
 
+    if (reminderOn) {
+      const emails = reminderEmails
+        .split(",")
+        .map((email) => email.trim())
+        .filter(Boolean);
+      if (emails.length === 0 || emails.some((email) => !email.includes("@"))) {
+        showToast({
+          message: "Add valid, comma-separated reminder emails",
+          type: "danger",
+        });
+        return;
+      }
+    }
+
     const payload = {
       category,
       amount: Math.round(parsedAmount * 100) / 100,
       label: trimmedLabel,
       recurring,
+      is_reminder_on: reminderOn,
+      reminder_emails: reminderEmails.trim(),
       ...(rule ? { recur_rule: rule } : {}),
     };
 
@@ -301,21 +321,14 @@ export const ExpensesForm = (props) => {
   return (
     <form className='expenses-form-2nb5' onSubmit={handleSubmit}>
       <div className='expenses-form-2nb5__field'>
-        <label className='expenses-form-2nb5__label' htmlFor='expense-category'>
-          Category
-        </label>
-        <select
-          className='expenses-form-2nb5__select'
-          onChange={(e) => setCategory(e.target.value)}
-          id='expense-category'
+        <p className='expenses-form-2nb5__label'>Category</p>
+        <Dropdown
           value={category}
-        >
-          {categoryOptions.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
+          options={categoryOptions.map((option) => ({ value: option, label: option }))}
+          onChange={setCategory}
+          ariaLabel='Category'
+          className='expenses-form-2nb5__dropdown'
+        />
       </div>
 
       <div className='expenses-form-2nb5__field'>
@@ -378,40 +391,26 @@ export const ExpensesForm = (props) => {
       </div>
 
       <div className='expenses-form-2nb5__field'>
-        <label className='expenses-form-2nb5__label' htmlFor='expense-recurring'>
-          Recurring
-        </label>
-        <select
-          onChange={(e) => handleRecurringChange(e.target.value)}
-          className='expenses-form-2nb5__select'
-          id='expense-recurring'
+        <p className='expenses-form-2nb5__label'>Recurring</p>
+        <Dropdown
           value={recurring}
-        >
-          {RECURRING_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+          options={RECURRING_OPTIONS}
+          onChange={handleRecurringChange}
+          ariaLabel='Recurring'
+          className='expenses-form-2nb5__dropdown'
+        />
       </div>
 
       {recurring === "weekly" && (
         <div className='expenses-form-2nb5__field'>
-          <label className='expenses-form-2nb5__label' htmlFor='expense-day-of-week'>
-            Day of the week
-          </label>
-          <select
-            onChange={(e) => setDayOfWeek(Number(e.target.value))}
-            className='expenses-form-2nb5__select'
-            id='expense-day-of-week'
+          <p className='expenses-form-2nb5__label'>Day of the week</p>
+          <Dropdown
             value={dayOfWeek}
-          >
-            {DAYS_OF_WEEK.map((name, index) => (
-              <option key={name} value={index}>
-                {name}
-              </option>
-            ))}
-          </select>
+            options={DAYS_OF_WEEK.map((name, index) => ({ value: index, label: name }))}
+            onChange={setDayOfWeek}
+            ariaLabel='Day of the week'
+            className='expenses-form-2nb5__dropdown'
+          />
         </div>
       )}
 
@@ -490,6 +489,25 @@ export const ExpensesForm = (props) => {
           />
         </div>
       )}
+
+      {/* email reminders — 3 days before due, 1 day before, and daily while past due */}
+      <div className='expenses-form-2nb5__field'>
+        <p className='expenses-form-2nb5__label'>Reminders</p>
+        <div className='expenses-form-2nb5__reminder'>
+          <Switch checked={reminderOn} onChange={setReminderOn} />
+          <span>Remind me about this bill</span>
+        </div>
+        {reminderOn && (
+          <TextArea
+            value={reminderEmails}
+            onChange={(e) => setReminderEmails(e.target.value)}
+            placeholder='email@example.com, other@example.com'
+            minRows={2}
+            maxRows={5}
+            aria-label='Reminder emails, comma separated'
+          />
+        )}
+      </div>
 
       <div className='expenses-form-2nb5__actions'>
         <Button primary type='submit' isLoading={isLoading} className='w-100'>

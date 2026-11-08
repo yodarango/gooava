@@ -2,10 +2,12 @@ import { useAppContext } from "../../../../context/appContextProvider";
 import {
   API_POST_EXPENSE_OCCURRENCES_ENSURE,
   API_POST_EXPENSE_OCCURRENCES_PAID,
+  API_POST_EXPENSE_OCCURRENCE_AMOUNT,
   API_GET_FINANCE_PREFERENCES,
   API_POST_FINANCE_PREFERENCES,
   API_GET_INCOME_ENTRIES,
   API_GET_PLAID_ACCOUNTS,
+  API_POST_EXPENSES,
   API_GET_INCOMES,
   API_GET_EXPENSES,
 } from "@constants";
@@ -13,12 +15,15 @@ import {
   upcomingIncomeDates,
   incomeOccurrences,
   upcomingPaydays,
+  incomePaydays,
   formatDateKey,
   billWindows,
   stripTime,
+  isPayday,
   useGet,
   usePost,
 } from "@utils";
+import { Dropdown } from "@ds";
 import { Pencil, Check, X, ChevronDown } from "lucide"; // data, not components
 import { MorphIcon } from "morphicons/react";
 import { useEffect, useRef, useState } from "react";
@@ -53,7 +58,7 @@ const formatDay = (date) =>
 export const UpcomingBills = (props) => {
   // manualBalance comes synced from the Layout (db-backed) — the connected
   // checking total still wins when a bank is linked
-  const { refreshKey = 0, manualBalance = null } = props;
+  const { refreshKey = 0, manualBalance = null, onPlanComputed } = props;
   const { state, showToast } = useAppContext();
   const userId = state.user?.id;
 
@@ -96,6 +101,14 @@ export const UpcomingBills = (props) => {
 
   // which paycheck cards are open — all closed by default
   const [openWindows, setOpenWindows] = useState({});
+
+  // flips true once the first ensure pass returns — past-due paychecks render only
+  // after that, so paid history doesn't flash as unpaid on load
+  const [occurrencesLoaded, setOccurrencesLoaded] = useState(false);
+
+  // occurrence id being amount-edited (pencil) + its draft value
+  const [editingAmountId, setEditingAmountId] = useState(null);
+  const [amountDraft, setAmountDraft] = useState("");
 
   const toggleWindow = (index) =>
     setOpenWindows((prev) => ({ ...prev, [index]: !prev[index] }));
@@ -147,92 +160,83 @@ export const UpcomingBills = (props) => {
   if (ends.length > 0 && ends[0].getTime() <= today.getTime()) ends.shift(); // today is payday — plan ahead
   const windowEnds = ends.slice(0, windowCount);
 
-  const windows = billWindows(
-    Array.isArray(expenses.data) ? expenses.data : [],
-    today,
-    windowEnds
-  );
+  const expenseList = Array.isArray(expenses.data) ? expenses.data : [];
+
+  // The plan owns the "put away" expense: its occurrences are materialized from the
+  // plan's math (one per paycheck that owes a reserve), so it's excluded from the
+  // schedule expansion — otherwise it would feed back into its own computation.
+  // The oldest matching expense is canonical — same pick the server makes.
+  const putAwayExpense =
+    expenseList
+      .filter((expense) => expense.category === "put away")
+      .sort((a, b) => a.id - b.id)[0] || null;
+  const planExpenses = expenseList.filter((expense) => expense.category !== "put away");
+
+  const windows = billWindows(planExpenses, today, windowEnds);
+
+  // Past paychecks stay in the plan while they hold an unpaid bill — boundaries are
+  // the paydays before today (the income schedule, else the legacy every-other-Friday
+  // anchor), at most 4 windows back.
+  const pastPaydays = (() => {
+    if (hasIncomeSchedule) {
+      const scanFrom = new Date(today);
+      scanFrom.setDate(scanFrom.getDate() - 75);
+      return incomePaydays(fixedIncomes, scanFrom, today).slice(-5);
+    }
+    const found = [];
+    const cursor = new Date(today);
+    while (found.length < 5) {
+      cursor.setDate(cursor.getDate() - 1);
+      if (isPayday(cursor)) found.push(new Date(cursor));
+    }
+    return found.reverse(); // ascending
+  })();
+
+  // windows behind the current one, e.g. [p4,p5), [p5, today) — rendered only while
+  // an unpaid bill keeps them alive
+  const pastBoundaries = [...pastPaydays, today];
+  const pastWindows =
+    pastBoundaries.length > 1
+      ? billWindows(planExpenses, pastBoundaries[0], pastBoundaries.slice(1))
+      : [];
+
+  // one-time expenses never expand into windows — an unpaid one created in a past
+  // window belongs to that window
+  for (const expense of planExpenses) {
+    if (expense.recurring || !expense.created_at) continue;
+    const created = stripTime(new Date(expense.created_at.replace(" ", "T")));
+    if (created >= today) continue;
+    const window = pastWindows.find((w) => created >= w.start && created < w.end);
+    if (window) window.bills.push({ expense, date: created });
+  }
 
   // every occurrence across the whole rendered range — these become the DB entries.
   // One-time expenses have no recurrence dates, so their single occurrence is their created day;
   // recurring expenses expand into every due date in the window.
-  const expenseList = Array.isArray(expenses.data) ? expenses.data : [];
-  const rangeStart = today;
+  const rangeStart = pastBoundaries.length > 1 ? pastBoundaries[0] : today;
   const rangeEnd = windowEnds.length > 0 ? windowEnds[windowEnds.length - 1] : today;
 
-  // the items to lazily ensure + the request range, as a stable signature so the effect only
-  // re-fires when the actual occurrences change (not on every render)
-  const occurrenceSignature = JSON.stringify([
-    formatDateKey(rangeStart),
-    formatDateKey(rangeEnd),
-    expenseList.map((e) => `${e.id}:${e.linked_label || ""}`),
-    occurrenceRefresh,
-    refreshKey,
-  ]);
+  // create the plan-owned "put away" expense once — the reserve rows in each
+  // paycheck are its occurrences (the real amounts live on those rows)
+  const createPutAway = usePost({
+    url: API_POST_EXPENSES,
+    callback: () => expenses.refetch(),
+  });
+  const putAwayCreateAttemptedRef = useRef(false);
 
-  // Lazily create the occurrence entries for the rendered window, auto-pay the ones whose
-  // expense the user explicitly linked to a transaction, then load the resulting paid
-  // state. Re-runs when the range, the expense set, or the manual-refresh token changes.
   useEffect(() => {
-    if (!userId) return;
-    if (windowEnds.length === 0) return;
-    // skip if we already ensured this exact range + expense set
-    if (ensuredRangeRef.current === occurrenceSignature) return;
+    if (expenses.loading || !Array.isArray(expenses.data)) return;
+    if (putAwayExpense || putAwayCreateAttemptedRef.current) return;
 
-    // build the occurrence items the interface is about to show
-    const items = [];
-    for (const expense of expenseList) {
-      if (expense.recurring) {
-        for (const window of windows) {
-          for (const bill of window.bills) {
-            if (bill.expense.id === expense.id) {
-              items.push({ expense_id: expense.id, due_on: formatDateKey(bill.date) });
-            }
-          }
-        }
-      } else {
-        // one-time expense: a single entry on its created date
-        const created = expense.created_at
-          ? formatDateKey(new Date(expense.created_at.replace(" ", "T")))
-          : formatDateKey(today);
-        items.push({ expense_id: expense.id, due_on: created });
-      }
-    }
-
-    let cancelled = false;
-    const ensure = async () => {
-      try {
-        const response = await fetch(API_POST_EXPENSE_OCCURRENCES_ENSURE, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + localStorage.getItem("auth"),
-          },
-          body: JSON.stringify({
-            from: formatDateKey(rangeStart),
-            to: formatDateKey(rangeEnd),
-            items,
-          }),
-        });
-        const result = await response.json();
-        if (cancelled || !result.success) return;
-
-        const map = {};
-        for (const o of result.data || []) {
-          map[`${o.expense_id}:${o.due_on}`] = o;
-        }
-        ensuredRangeRef.current = occurrenceSignature;
-        setOccurrenceMap(map);
-      } catch {
-        // network/parse failure — leave the plan rendering unpaid rather than break it
-      }
-    };
-    ensure();
-    return () => {
-      cancelled = true;
-    };
+    putAwayCreateAttemptedRef.current = true;
+    createPutAway.post({
+      label: "Put away",
+      category: "put away",
+      amount: 0.01, // placeholder — each occurrence carries the real reserve amount
+      recurring: "",
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [occurrenceSignature, userId]);
+  }, [expenses.loading, expenses.data, putAwayExpense]);
 
   // merge the DB paid state onto each rendered bill. A bill is paid when its occurrence entry
   // is paid; paid bills are excluded from totals/put-away but still shown (crossed off).
@@ -255,6 +259,62 @@ export const UpcomingBills = (props) => {
     const occurrence = occurrenceFor(expenseId, date);
     if (!occurrence) return; // entry not ensured yet
     markPaid.post({ id: occurrence.id, paid: !occurrence.paid });
+  };
+
+  // the occurrence row's amount wins over the expense default — it carries the
+  // snapshot as-ensured plus any pencil edit (planAmount = the put away row's
+  // plan-computed amount before its occurrence exists)
+  const amountFor = (bill) =>
+    occurrenceFor(bill.expense.id, bill.date)?.amount ??
+    bill.planAmount ??
+    bill.expense.amount;
+
+  // unpaid bills sitting in past windows — they stay in the plan until paid, and the
+  // money on hand has to cover them before anything else
+  const pastWindowUnpaid = (window) =>
+    window.bills.reduce(
+      (sum, bill) =>
+        sum + (isBillPaid(bill.expense.id, bill.date) ? 0 : amountFor(bill) || 0),
+      0
+    );
+  const pastDueTotal = pastWindows.reduce((sum, window) => sum + pastWindowUnpaid(window), 0);
+
+  const saveAmount = usePost({
+    url: API_POST_EXPENSE_OCCURRENCE_AMOUNT,
+    callback: (data) => {
+      if (!data) return;
+      ensuredRangeRef.current = ""; // force a re-ensure so amounts reload
+      setOccurrenceRefresh((key) => key + 1);
+    },
+  });
+
+  // surface amount save errors as toasts
+  useEffect(() => {
+    if (saveAmount.error) {
+      showToast({ message: String(saveAmount.error), type: "danger" });
+    }
+  }, [saveAmount.error]);
+
+  const startEditingAmount = (occurrence) => {
+    setEditingAmountId(occurrence.id);
+    setAmountDraft(String(occurrence.amount));
+  };
+
+  const saveAmountEdit = () => {
+    const parsed = parseFloat(amountDraft);
+
+    if (amountDraft.trim() === "" || isNaN(parsed) || parsed < 0) {
+      showToast({ message: "Please enter a valid amount (0 or more)", type: "danger" });
+      return;
+    }
+
+    saveAmount.post({ id: editingAmountId, amount: Math.round(parsed * 100) / 100 });
+    setEditingAmountId(null);
+  };
+
+  const handleAmountKeyDown = (e) => {
+    if (e.key === "Enter") saveAmountEdit();
+    if (e.key === "Escape") setEditingAmountId(null);
   };
 
   // income arriving within each window (keyed by window index). Every scheduled occurrence
@@ -283,7 +343,7 @@ export const UpcomingBills = (props) => {
   const unpaidTotalByWindow = windows.map((window) =>
     window.bills.reduce(
       (sum, bill) =>
-        sum + (isBillPaid(bill.expense.id, bill.date) ? 0 : bill.expense.amount || 0),
+        sum + (isBillPaid(bill.expense.id, bill.date) ? 0 : amountFor(bill) || 0),
       0
     )
   );
@@ -304,27 +364,14 @@ export const UpcomingBills = (props) => {
   const incomeForWindow = (index) =>
     hasIncomeSchedule ? incomeByWindow[index] : index === 0 ? 0 : paycheck;
 
-  // Cumulative running balance: start from what's in the bank, then each window adds
-  // its income and deducts its unpaid bills. An unknown input (no balance set, no
-  // paycheck amount) makes that window's and every following balance unknown.
-  const runningAfterByWindow = [];
-  let runningBalance = available;
-  windows.forEach((window, index) => {
-    const income = incomeForWindow(index);
-    if (runningBalance === null || income === null) {
-      runningBalance = null;
-      runningAfterByWindow.push(null);
-      return;
-    }
-    runningBalance += income - unpaidTotalFor(index);
-    runningAfterByWindow.push(runningBalance);
-  });
-
-  // "final period finances" — where the user stands after the last window
-  const finalBalance =
-    runningAfterByWindow.length > 0
-      ? runningAfterByWindow[runningAfterByWindow.length - 1]
-      : null;
+  // what a short window receives from earlier paychecks' put-aways — its own
+  // shortfall (the plan below covers every shortfall on paper, window 0 last resort)
+  const reserveReceivedFor = (index) => {
+    if (index === 0) return 0;
+    const coverage = coverageFor(index);
+    if (coverage === null) return 0;
+    return Math.max(unpaidTotalFor(index) - coverage, 0);
+  };
 
   // The savings plan, per paycheck. Walk the windows from the last one backwards: each
   // period first covers its own bills, then reserves whatever it can spare for the
@@ -349,6 +396,137 @@ export const UpcomingBills = (props) => {
     });
   const putAway = putAwayByWindow.reduce((sum, amount) => sum + amount, 0);
 
+  // The outstanding reserve a paycheck still owes — exactly like a bill: 0 once its
+  // occurrence is paid (money set aside), the hand-edited amount when penciled,
+  // otherwise the plan's computed amount.
+  const putAwayOutstandingFor = (index) => {
+    const planned = putAwayByWindow[index] || 0;
+    if (planned <= 0 || !putAwayExpense) return 0;
+
+    const due = new Date(windowEnds[index]);
+    due.setDate(due.getDate() - 1);
+    const occurrence = occurrenceFor(putAwayExpense.id, due);
+
+    if (occurrence && occurrence.paid) return 0;
+    return occurrence ? occurrence.amount : planned;
+  };
+
+  // the items to lazily ensure + the request range, as a stable signature so the effect only
+  // re-fires when the actual occurrences change (not on every render). The put away amounts
+  // are part of it — a plan change re-materializes those rows server-side.
+  const occurrenceSignature = JSON.stringify([
+    formatDateKey(rangeStart),
+    formatDateKey(rangeEnd),
+    planExpenses.map((e) => `${e.id}:${e.linked_label || ""}`),
+    putAwayExpense?.id || 0,
+    putAwayByWindow.map((amount) => Math.round(amount * 100)),
+    occurrenceRefresh,
+    refreshKey,
+  ]);
+
+  // Lazily create the occurrence entries for the rendered window (the put away expense
+  // gets one row per paycheck that owes a reserve, due the day before its payday),
+  // auto-pay the ones whose expense the user explicitly linked to a transaction, then
+  // load the resulting paid state.
+  useEffect(() => {
+    if (!userId) return;
+    if (windowEnds.length === 0) return;
+    // skip if we already ensured this exact range + expense set + plan
+    if (ensuredRangeRef.current === occurrenceSignature) return;
+
+    // build the occurrence items the interface is about to show
+    const items = [];
+    for (const expense of planExpenses) {
+      if (expense.recurring) {
+        for (const window of [...pastWindows, ...windows]) {
+          for (const bill of window.bills) {
+            if (bill.expense.id === expense.id) {
+              items.push({ expense_id: expense.id, due_on: formatDateKey(bill.date) });
+            }
+          }
+        }
+      } else {
+        // one-time expense: a single entry on its created date
+        const created = expense.created_at
+          ? formatDateKey(new Date(expense.created_at.replace(" ", "T")))
+          : formatDateKey(today);
+        items.push({ expense_id: expense.id, due_on: created });
+      }
+    }
+    // materialize the reserve each paycheck owes, due the day before its payday
+    if (putAwayExpense) {
+      windowEnds.forEach((end, index) => {
+        const amount = Math.round(putAwayByWindow[index] * 100) / 100;
+        if (amount > 0) {
+          const due = new Date(end);
+          due.setDate(due.getDate() - 1);
+          items.push({ expense_id: putAwayExpense.id, due_on: formatDateKey(due), amount });
+        }
+      });
+    }
+
+    let cancelled = false;
+    const ensure = async () => {
+      try {
+        const response = await fetch(API_POST_EXPENSE_OCCURRENCES_ENSURE, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + localStorage.getItem("auth"),
+          },
+          body: JSON.stringify({
+            from: formatDateKey(rangeStart),
+            to: formatDateKey(rangeEnd),
+            items,
+          }),
+        });
+        const result = await response.json();
+        if (cancelled || !result.success) return;
+
+        const map = {};
+        for (const o of result.data || []) {
+          map[`${o.expense_id}:${o.due_on}`] = o;
+        }
+        ensuredRangeRef.current = occurrenceSignature;
+        setOccurrenceMap(map);
+        setOccurrencesLoaded(true);
+      } catch {
+        // network/parse failure — leave the plan rendering unpaid rather than break it
+      }
+    };
+    ensure();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [occurrenceSignature, userId]);
+
+  // Cumulative running balance: start from what's in the bank; each window adds its
+  // income (+ reserves received from earlier paychecks) and deducts its unpaid bills
+  // (+ the reserves it puts away for later ones). Reserves net to zero across the
+  // windows, so the final balance still equals balance + income − bills. An unknown
+  // input (no balance set, no paycheck amount) makes the rest of the run unknown.
+  const runningAfterByWindow = [];
+  // past-due unpaid bills are owed out of the money on hand before any window runs
+  let runningBalance = available === null ? null : available - pastDueTotal;
+  windows.forEach((window, index) => {
+    const income = incomeForWindow(index);
+    if (runningBalance === null || income === null) {
+      runningBalance = null;
+      runningAfterByWindow.push(null);
+      return;
+    }
+    runningBalance +=
+      income + reserveReceivedFor(index) - unpaidTotalFor(index) - putAwayOutstandingFor(index);
+    runningAfterByWindow.push(runningBalance);
+  });
+
+  // "final period finances" — where the user stands after the last window
+  const finalBalance =
+    runningAfterByWindow.length > 0
+      ? runningAfterByWindow[runningAfterByWindow.length - 1]
+      : null;
+
   // a future window is short only when we actually know its coverage
   const hasFutureShortfall = windows
     .slice(1)
@@ -357,13 +535,26 @@ export const UpcomingBills = (props) => {
       return coverage !== null && unpaidTotalFor(i + 1) > coverage;
     });
 
+  // what the money on hand comes to after past-due bills, this window's bills, AND
+  // the reserves it must put away for later short windows
   const firstWindowVerdict =
     available === null || windows.length === 0
       ? null
-      : available - unpaidTotalFor(0);
+      : available - pastDueTotal - unpaidTotalFor(0) - putAwayOutstandingFor(0);
 
-  const grandTotal = windows.reduce((sum, window, i) => sum + unpaidTotalFor(i), 0);
+  // total still owed across the whole plan — unpaid bills plus outstanding put aways
+  const grandTotal = windows.reduce(
+    (sum, window, i) => sum + unpaidTotalFor(i) + putAwayOutstandingFor(i),
+    0
+  );
   const loading = expenses.loading && !expenses.data;
+
+  // report the current paycheck's leftover so the page heading can show it next to
+  // the days-till-payday text
+  useEffect(() => {
+    if (onPlanComputed) onPlanComputed(firstWindowVerdict);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [firstWindowVerdict]);
 
   const startEditingPaycheck = () => {
     setPaycheckDraft(paycheck === null ? "" : String(paycheck));
@@ -385,8 +576,7 @@ export const UpcomingBills = (props) => {
     showToast({ message: "Paycheck updated", type: "success" });
   };
 
-  const changeWindowCount = (e) => {
-    const count = parseInt(e.target.value, 10);
+  const changeWindowCount = (count) => {
     if (!WINDOW_COUNT_OPTIONS.includes(count)) return;
 
     setWindowCount(count);
@@ -398,6 +588,119 @@ export const UpcomingBills = (props) => {
     if (e.key === "Escape") setEditingPaycheck(false);
   };
 
+  // shared bill row — current/future windows and past-due paychecks. pastDue turns
+  // the row red and adds the badge for bills that went unpaid past their due date.
+  const renderBillRow = (bill, pastDue = false) => {
+    const occurrence = occurrenceFor(bill.expense.id, bill.date);
+    const paid = !!occurrence?.paid;
+
+    return (
+      <li
+        key={`${bill.expense.id}-${bill.date.getTime()}`}
+        className={`upcoming-bills-5xk3__row ${paid ? "paid" : ""} ${pastDue && !paid ? "past-due" : ""}`}
+      >
+        <button
+          className={`upcoming-bills-5xk3__check ${paid ? "paid" : ""}`}
+          onClick={() => togglePaid(bill.expense.id, bill.date)}
+          aria-label={
+            paid
+              ? `Mark ${bill.expense.label} unpaid`
+              : `Mark ${bill.expense.label} paid`
+          }
+          title={
+            paid
+              ? occurrence.paid_source === "auto"
+                ? "Paid — matched a bank transaction"
+                : "Paid — marked manually"
+              : "Mark as paid"
+          }
+          disabled={!occurrence || markPaid.loading}
+          type='button'
+        >
+          {paid && <MorphIcon icon={Check} label='Paid' size={14} />}
+        </button>
+
+        <div className='upcoming-bills-5xk3__details'>
+          <span className='upcoming-bills-5xk3__name'>
+            {bill.expense.label}
+          </span>
+          <span className='upcoming-bills-5xk3__meta'>
+            {bill.expense.category}
+            {" · "}
+            {bill.date.getTime() === today.getTime()
+              ? "today"
+              : bill.date.toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                })}
+            {paid && " · paid ✓"}
+            {bill.expense.linked_label && (
+              <>
+                {" "}
+                <span className='upcoming-bills-5xk3__auto-badge'>auto</span>
+              </>
+            )}
+            {pastDue && !paid && (
+              <>
+                {" "}
+                <span className='upcoming-bills-5xk3__pastdue-badge'>past due</span>
+              </>
+            )}
+          </span>
+        </div>
+
+        {occurrence && !paid && editingAmountId === occurrence.id ? (
+          <span className='upcoming-bills-5xk3__paycheck-edit'>
+            <input
+              onChange={(e) => setAmountDraft(e.target.value)}
+              onKeyDown={handleAmountKeyDown}
+              className='upcoming-bills-5xk3__paycheck-input'
+              placeholder='0.00'
+              inputMode='decimal'
+              value={amountDraft}
+              type='number'
+              min='0'
+              step='0.01'
+              autoFocus
+            />
+            <button
+              className='upcoming-bills-5xk3__icon-btn save'
+              onClick={saveAmountEdit}
+              aria-label='Save amount'
+              type='button'
+            >
+              <MorphIcon icon={Check} label='Save' size={16} />
+            </button>
+            <button
+              className='upcoming-bills-5xk3__icon-btn cancel'
+              onClick={() => setEditingAmountId(null)}
+              aria-label='Cancel'
+              type='button'
+            >
+              <MorphIcon icon={X} label='Cancel' size={16} />
+            </button>
+          </span>
+        ) : (
+          <span className='upcoming-bills-5xk3__amount'>
+            {formatUSD(amountFor(bill))}
+            {occurrence && !paid && (
+              <button
+                className='upcoming-bills-5xk3__amount-edit'
+                onClick={() => startEditingAmount(occurrence)}
+                aria-label={`Edit the amount of ${bill.expense.label}`}
+                title='Edit this bill’s amount'
+                type='button'
+              >
+                <MorphIcon icon={Pencil} label='Edit amount' size={13} />
+              </button>
+            )}
+          </span>
+        )}
+      </li>
+    );
+  };
+
   return (
     <section
       className={`upcoming-bills-5xk3 ${putAway > 0 ? "attention" : ""}`}
@@ -407,19 +710,16 @@ export const UpcomingBills = (props) => {
 
         <div className='upcoming-bills-5xk3__controls'>
           {/* how many paychecks ahead the plan shows — saved per user */}
-          <select
-            className='upcoming-bills-5xk3__windows-select'
-            onChange={changeWindowCount}
+          <Dropdown
+            secondary
             value={windowCount}
-            aria-label='Paychecks to show'
-            title='Paychecks to show'
-          >
-            {WINDOW_COUNT_OPTIONS.map((count) => (
-              <option key={count} value={count}>
-                {count}
-              </option>
-            ))}
-          </select>
+            options={WINDOW_COUNT_OPTIONS.map((count) => ({
+              value: count,
+              label: `${count}`,
+            }))}
+            onChange={changeWindowCount}
+            ariaLabel='Paychecks to show'
+          />
 
           {/* the manual paycheck editor only applies until an income schedule exists —
               from then on each window is covered by its scheduled income */}
@@ -470,62 +770,125 @@ export const UpcomingBills = (props) => {
         </div>
       </div>
 
-      {/* headline: the reserve needed across paychecks, or the grand total when covered */}
+      {/* headline: total still owed across the whole plan (put away rows included) */}
       {loading ? (
         <p className='upcoming-bills-5xk3__hint'>Loading…</p>
-      ) : hasFutureShortfall && putAway > 0 ? (
-        <>
-          <p className='upcoming-bills-5xk3__total short'>{formatUSD(putAway)}</p>
-          <p className='upcoming-bills-5xk3__hint'>
-            to put away — later periods come up short
-          </p>
-
-          {/* how much to set aside from each paycheck */}
-          <ul className='upcoming-bills-5xk3__plan'>
-            {windows.map((window, index) => (
-              <li
-                key={window.end.getTime()}
-                className='upcoming-bills-5xk3__plan-row'
-              >
-                <span className='upcoming-bills-5xk3__plan-label'>
-                  {index === 0
-                    ? "This paycheck"
-                    : `${formatDay(window.start)} paycheck`}
-                </span>
-                <span
-                  className={`upcoming-bills-5xk3__plan-amount ${putAwayByWindow[index] > 0 ? "" : "none"}`}
-                >
-                  {index > 0 && coverageFor(index) === null
-                    ? "—"
-                    : formatUSD(putAwayByWindow[index])}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </>
       ) : (
         <>
           <p className='upcoming-bills-5xk3__total'>{formatUSD(grandTotal)}</p>
           <p className='upcoming-bills-5xk3__hint'>
-            {hasIncomeSchedule
-              ? `due across the next ${windowCount} paydays — every period is covered ✓`
-              : paycheck === null
-                ? `due across the next ${windowCount} paydays — add income in settings to see if you're covered`
-                : `due across the next ${windowCount} paydays — every period is covered ✓`}
+            due across the next {windowCount} paydays
+            {!hasIncomeSchedule && paycheck === null
+              ? " — add income in settings to see if you're covered"
+              : hasFutureShortfall
+                ? " — a later period comes up short (see its put away rows)"
+                : " — every period is covered ✓"}
           </p>
         </>
       )}
+
+      {/* past paychecks stay in the plan while an unpaid bill keeps them alive —
+          red border on the card, red rows with a past due badge */}
+      {!loading &&
+        occurrencesLoaded &&
+        pastWindows.map((window) => {
+          const unpaidBills = window.bills.filter(
+            (bill) => !isBillPaid(bill.expense.id, bill.date)
+          );
+          if (unpaidBills.length === 0) return null;
+
+          const pastKey = `past-${window.end.getTime()}`;
+          const isOpen = !!openWindows[pastKey];
+          const unpaidTotal = pastWindowUnpaid(window);
+
+          return (
+            <div
+              className={`upcoming-bills-5xk3__window past-due ${isOpen ? "open" : ""}`}
+              key={pastKey}
+            >
+              <button
+                className='upcoming-bills-5xk3__window-toggle'
+                onClick={() => toggleWindow(pastKey)}
+                aria-expanded={isOpen}
+                type='button'
+              >
+                <div className='upcoming-bills-5xk3__window-title'>
+                  <span className='upcoming-bills-5xk3__window-range'>
+                    {formatDay(window.start)} → {formatDay(window.end)}
+                  </span>
+                  <span className='upcoming-bills-5xk3__window-source'>
+                    paycheck behind
+                  </span>
+                </div>
+
+                <div className='upcoming-bills-5xk3__window-summary'>
+                  <span className='upcoming-bills-5xk3__verdict short'>past due</span>
+                  <span className='upcoming-bills-5xk3__window-due'>
+                    {formatUSD(unpaidTotal)} · {unpaidBills.length} bill{unpaidBills.length === 1 ? "" : "s"}
+                  </span>
+                  <span
+                    className={`upcoming-bills-5xk3__chevron ${isOpen ? "open" : ""}`}
+                  >
+                    <MorphIcon
+                      icon={ChevronDown}
+                      label={isOpen ? "Collapse" : "Expand"}
+                      size={18}
+                    />
+                  </span>
+                </div>
+              </button>
+
+              {isOpen && (
+                <div className='upcoming-bills-5xk3__window-body'>
+                  <ul className='upcoming-bills-5xk3__list'>
+                    {unpaidBills.map((bill) => renderBillRow(bill, true))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          );
+        })}
 
       {/* per-window breakdown */}
       {!loading &&
         windows.map((window, index) => {
           const coverage = coverageFor(index);
           const unpaidTotal = unpaidTotalFor(index);
-          const paidTotal = window.total - unpaidTotal;
-          const verdict = coverage === null ? null : coverage - unpaidTotal;
+          const reserveReceived = reserveReceivedFor(index);
+          const putAwayOutstanding = putAwayOutstandingFor(index);
+
+          // the put away renders as a normal bill in this paycheck — due the day
+          // before the payday that ends the window
+          const putAwayDate = new Date(window.end);
+          putAwayDate.setDate(putAwayDate.getDate() - 1);
+          const displayBills =
+            putAwayByWindow[index] > 0 && putAwayExpense
+              ? [
+                  ...window.bills,
+                  {
+                    expense: putAwayExpense,
+                    date: putAwayDate,
+                    planAmount: putAwayByWindow[index],
+                  },
+                ]
+              : window.bills;
+
+          // reserves fold into the verdict: putting money away lowers what this window
+          // keeps; a short window is covered by what earlier paychecks reserved for it
+          const verdict =
+            coverage === null
+              ? null
+              : coverage + reserveReceived - unpaidTotal - putAwayOutstanding;
           const runningAfter = runningAfterByWindow[index] ?? null;
 
-          const billCount = window.bills.length;
+          const displayedDue = unpaidTotal + putAwayOutstanding;
+          const billCount = displayBills.length;
+          // open-body stat lines
+          const scheduledTotal = displayBills.reduce(
+            (sum, bill) => sum + (amountFor(bill) || 0),
+            0
+          );
+          const leftHere = index === 0 ? firstWindowVerdict : verdict;
           const isOpen = !!openWindows[index];
 
           return (
@@ -552,28 +915,21 @@ export const UpcomingBills = (props) => {
                         ? `${formatUSD(incomeByWindow[index])} scheduled`
                         : "from paycheck"}
                   </span>
-                  {/* cumulative: what remains once this window's bills are deducted */}
-                  {runningAfter !== null && (
-                    <span
-                      className={`upcoming-bills-5xk3__running ${runningAfter < 0 ? "short" : ""}`}
-                    >
-                      {formatUSD(runningAfter)} after
-                    </span>
-                  )}
                 </div>
 
                 <div className='upcoming-bills-5xk3__window-summary'>
-                  {verdict !== null && (
+                  {/* one badge: this window's left-over combined with the running
+                      total accumulated across all paychecks */}
+                  {runningAfter !== null && (
                     <span
-                      className={`upcoming-bills-5xk3__verdict ${verdict >= 0 ? "left" : "short"}`}
+                      className={`upcoming-bills-5xk3__verdict ${runningAfter >= 0 ? "left" : "short"}`}
+                      title='Accumulated balance after this paycheck'
                     >
-                      {verdict >= 0
-                        ? `${formatUSD(verdict)} left`
-                        : `${formatUSD(-verdict)} short`}
+                      {formatUSD(runningAfter)}
                     </span>
                   )}
                   <span className='upcoming-bills-5xk3__window-due'>
-                    {formatUSD(unpaidTotal)} · {billCount} bill{billCount === 1 ? "" : "s"}
+                    {formatUSD(displayedDue)} · {billCount} bill{billCount === 1 ? "" : "s"}
                   </span>
                   <span
                     className={`upcoming-bills-5xk3__chevron ${isOpen ? "open" : ""}`}
@@ -590,80 +946,37 @@ export const UpcomingBills = (props) => {
               {/* expanded body — the bill list, only when open */}
               {isOpen && (
                 <div className='upcoming-bills-5xk3__window-body'>
-                  <div className='upcoming-bills-5xk3__window-totals'>
-                    <span>
-                      {formatUSD(unpaidTotal)} due
-                      {paidTotal > 0 && (
-                        <span className='upcoming-bills-5xk3__paid-off'>
-                          {" "}· {formatUSD(paidTotal)} paid ✓
-                        </span>
-                      )}
-                    </span>
-                    {verdict === null && (
-                      <span className='upcoming-bills-5xk3__verdict unknown'>
-                        {index === 0 ? "balance unknown" : "no income approved"}
+                  {/* the three stat lines: what this paycheck owes, what it keeps once
+                      its bills (and past-due ones, for the current one) are paid, and
+                      the running total accumulated across all paychecks */}
+                  <div className='upcoming-bills-5xk3__window-stats'>
+                    <div className='upcoming-bills-5xk3__stat'>
+                      <span>Scheduled expenses</span>
+                      <span>{formatUSD(scheduledTotal)}</span>
+                    </div>
+                    <div className='upcoming-bills-5xk3__stat'>
+                      <span>Left from this paycheck</span>
+                      <span className={leftHere !== null && leftHere < 0 ? "short" : ""}>
+                        {leftHere === null
+                          ? index === 0
+                            ? "— balance unknown"
+                            : "— no income approved"
+                          : formatUSD(leftHere)}
                       </span>
-                    )}
+                    </div>
+                    <div className='upcoming-bills-5xk3__stat'>
+                      <span>Accumulated balance</span>
+                      <span className={runningAfter !== null && runningAfter < 0 ? "short" : ""}>
+                        {runningAfter === null ? "—" : formatUSD(runningAfter)}
+                      </span>
+                    </div>
                   </div>
 
-                  {window.bills.length === 0 ? (
+                  {displayBills.length === 0 ? (
                     <p className='upcoming-bills-5xk3__none'>No bills due</p>
                   ) : (
                     <ul className='upcoming-bills-5xk3__list'>
-                      {window.bills.map((bill) => {
-                        const occurrence = occurrenceFor(bill.expense.id, bill.date);
-                        const paid = !!occurrence?.paid;
-
-                        return (
-                          <li
-                            key={`${bill.expense.id}-${bill.date.getTime()}`}
-                            className={`upcoming-bills-5xk3__row ${paid ? "paid" : ""}`}
-                          >
-                            <button
-                              className={`upcoming-bills-5xk3__check ${paid ? "paid" : ""}`}
-                              onClick={() => togglePaid(bill.expense.id, bill.date)}
-                              aria-label={
-                                paid
-                                  ? `Mark ${bill.expense.label} unpaid`
-                                  : `Mark ${bill.expense.label} paid`
-                              }
-                              title={
-                                paid
-                                  ? occurrence.paid_source === "auto"
-                                    ? "Paid — matched a bank transaction"
-                                    : "Paid — marked manually"
-                                  : "Mark as paid"
-                              }
-                              disabled={!occurrence || markPaid.loading}
-                              type='button'
-                            >
-                              {paid && <MorphIcon icon={Check} label='Paid' size={14} />}
-                            </button>
-
-                            <div className='upcoming-bills-5xk3__details'>
-                              <span className='upcoming-bills-5xk3__name'>
-                                {bill.expense.label}
-                              </span>
-                              <span className='upcoming-bills-5xk3__meta'>
-                                {bill.expense.category}
-                                {" · "}
-                                {bill.date.getTime() === today.getTime()
-                                  ? "today"
-                                  : bill.date.toLocaleDateString("en-US", {
-                                      weekday: "short",
-                                      month: "short",
-                                      day: "numeric",
-                                    })}
-                                {paid && " · paid ✓"}
-                              </span>
-                            </div>
-
-                            <span className='upcoming-bills-5xk3__amount'>
-                              {formatUSD(bill.expense.amount)}
-                            </span>
-                          </li>
-                        );
-                      })}
+                      {displayBills.map((bill) => renderBillRow(bill))}
                     </ul>
                   )}
                 </div>
@@ -692,7 +1005,7 @@ export const UpcomingBills = (props) => {
           ) : (
             <>
               <p
-                className={`upcoming-bills-5xk3__total ${finalBalance < 0 ? "negative" : ""}`}
+                className={`upcoming-bills-5xk3__total ${finalBalance < 0 ? "negative" : "positive"}`}
               >
                 {formatUSD(finalBalance)}
               </p>

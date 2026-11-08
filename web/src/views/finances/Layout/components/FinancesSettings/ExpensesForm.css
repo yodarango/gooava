@@ -1,3 +1,21 @@
+/* reminder switch + autogrow emails textarea */
+.expenses-form-2nb5__reminder {
+  display: flex;
+  align-items: center;
+  gap: var(--dr-spacing-2);
+  color: rgba(var(--dr-beta-rgb), 0.8);
+  font-size: var(--dr-font-size-4);
+  font-weight: var(--dr-font-weight-6);
+  margin-bottom: var(--dr-spacing-2);
+}
+/* ds dropdowns fill the form width */
+.expenses-form-2nb5__dropdown {
+  width: 100%;
+  justify-content: space-between;
+  padding: var(--dr-spacing-2) var(--dr-spacing-4);
+}
+
+
 .expenses-form-2nb5 {
   display: flex;
   flex-direction: column;

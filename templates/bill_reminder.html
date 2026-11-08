@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Bill Reminder</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+        border-radius: 10px 10px 0 0;
+      }
+      .content {
+        background: #f9f9f9;
+        padding: 30px;
+        border-radius: 0 0 10px 10px;
+      }
+      .bill {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 20px 0;
+        text-align: center;
+      }
+      .amount {
+        color: #667eea;
+        font-size: 2.4rem;
+        font-weight: bold;
+        margin: 10px 0;
+      }
+      .timing {
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.85rem;
+      }
+      .footer {
+        text-align: center;
+        margin-top: 30px;
+        color: #666;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>💸 Bill reminder</h1>
+      </div>
+      <div class="content">
+        <h2>Hi {{.FirstName}}!</h2>
+        <p>Heads up — <strong>{{.Label}}</strong> is due {{.Timing}}:</p>
+
+        <div class="bill">
+          <div class="amount">{{.Amount}}</div>
+          <div class="timing">due {{.DueDate}} · {{.Timing}}</div>
+        </div>
+
+        <p>
+          You’re getting this email because reminders are on for this bill in
+          Gooava. Turn them off in the expense settings anytime.
+        </p>
+      </div>
+      <div class="footer">
+        <p>Happy building! ❤️</p>
+      </div>
+    </div>
+  </body>
+</html>

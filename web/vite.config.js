@@ -19,8 +19,15 @@ export default defineConfig({
     },
   },
   server: {
+    // bind to IPv4 too — on macOS vite can end up on IPv6 [::1] only, and
+    // browsers that resolve localhost to 127.0.0.1 get connection refused
+    host: "127.0.0.1",
     proxy: {
-      // Add development proxies here when needed
+      // dev server forwards API calls to the Go backend (go run ./cmd/main/main.go)
+      "/api": {
+        target: "http://localhost:8016",
+        changeOrigin: true,
+      },
     },
   },
 });

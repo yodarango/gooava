@@ -143,7 +143,11 @@ export const ExpensesPane = (props) => {
     setRefreshKey((key) => key + 1);
   };
 
-  const expenseList = Array.isArray(expenses.data) ? expenses.data : [];
+  // the plan-owned "put away" expense stays out of the settings list — it is
+  // managed by the paycheck plan, not edited by hand
+  const expenseList = (Array.isArray(expenses.data) ? expenses.data : []).filter(
+    (expense) => expense.category !== "put away"
+  );
 
   return (
     <div className='expenses-pane-4rt8'>

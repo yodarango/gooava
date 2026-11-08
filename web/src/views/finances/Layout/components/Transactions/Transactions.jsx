@@ -1,7 +1,8 @@
 import { BillingHistory } from "../BillingHistory/BillingHistory";
 import { API_GET_PLAID_TRANSACTIONS } from "@constants";
+import { matchesRecordQuery, useGet } from "@utils";
 import { useState } from "react";
-import { useGet } from "@utils";
+import { Input } from "@ds";
 
 // styles
 import "./Transactions.css";
@@ -34,13 +35,18 @@ export const Transactions = (props) => {
 
   const [tab, setTab] = useState("activity"); // "activity" | "history"
   const [historyMounted, setHistoryMounted] = useState(false);
+  // one search bar filters whichever tab is showing — by title or by amount
+  const [query, setQuery] = useState("");
 
   const { data, loading } = useGet({
     url: API_GET_PLAID_TRANSACTIONS + "?limit=50",
     dependencies: [refreshKey],
   });
 
-  const transactions = Array.isArray(data) ? data : [];
+  const allTransactions = Array.isArray(data) ? data : [];
+  const transactions = allTransactions.filter((txn) =>
+    matchesRecordQuery(txn.merchant_name || txn.name, txn.amount, query)
+  );
 
   const showTab = (next) => {
     setTab(next);
@@ -70,13 +76,25 @@ export const Transactions = (props) => {
         </button>
       </div>
 
+      {/* one bar filters both tabs — by title or by amount */}
+      <div className='transactions-7qm2__search'>
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder='Search by title or amount…'
+          aria-label='Search transactions by title or amount'
+        />
+      </div>
+
       <div hidden={tab !== "activity"} role='tabpanel'>
-        {loading && transactions.length === 0 ? (
+        {loading && allTransactions.length === 0 ? (
           <p className='transactions-7qm2__empty'>Loading transactions…</p>
-        ) : transactions.length === 0 ? (
+        ) : allTransactions.length === 0 ? (
           <p className='transactions-7qm2__empty'>
             No transactions yet — connect your bank.
           </p>
+        ) : transactions.length === 0 ? (
+          <p className='transactions-7qm2__empty'>No matches for “{query}”.</p>
         ) : (
           <ul className='transactions-7qm2__list'>
             {transactions.map((txn) => {
@@ -118,7 +136,7 @@ export const Transactions = (props) => {
 
       {historyMounted && (
         <div hidden={tab !== "history"} role='tabpanel'>
-          <BillingHistory />
+          <BillingHistory query={query} />
         </div>
       )}
     </section>

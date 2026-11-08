@@ -1,3 +1,39 @@
+/* edit/delete actions on each category row */
+.categories-pane-7zx2__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--dr-spacing-1);
+  flex-shrink: 0;
+}
+
+.categories-pane-7zx2__action {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  border: none;
+  margin: 0;
+  background-color: var(--dr-epsilon);
+  color: var(--dr-beta);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.categories-pane-7zx2__action.edit:hover {
+  background-color: rgba(var(--dr-delta-rgb), 0.12);
+  color: var(--dr-delta);
+}
+
+.categories-pane-7zx2__action.delete:hover {
+  background-color: rgba(var(--dr-danger-rgb), 0.12);
+  color: var(--dr-danger);
+}
+
 .categories-pane-7zx2 {
   display: flex;
   flex-direction: column;

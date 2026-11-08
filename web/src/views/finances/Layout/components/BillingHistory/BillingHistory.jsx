@@ -1,4 +1,5 @@
 import { API_GET_EXPENSE_OCCURRENCES_HISTORY } from "@constants";
+import { matchesRecordQuery } from "@utils";
 import { useEffect, useRef, useState } from "react";
 
 // styles
@@ -34,7 +35,10 @@ const monthKeyOf = (date) =>
  * fetch. Months without a single paid bill are skipped, so every fetch that returns adds rows.
  * ******************************************************************************************************
  */
-export const BillingHistory = () => {
+export const BillingHistory = (props) => {
+  // shared search bar from the Transactions card — filters by title or amount
+  const { query = "" } = props;
+
   const [items, setItems] = useState([]);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -109,13 +113,22 @@ export const BillingHistory = () => {
     );
   }
 
+  const visibleItems = items.filter((occurrence) =>
+    matchesRecordQuery(occurrence.expense_label, occurrence.amount, query)
+  );
+
   return (
     <div className='billing-history-2hf8'>
+      {items.length > 0 && visibleItems.length === 0 && (
+        <p className='billing-history-2hf8__status'>No matches for “{query}”.</p>
+      )}
+
       <ul className='billing-history-2hf8__list'>
-        {items.map((occurrence, index) => {
+        {visibleItems.map((occurrence, index) => {
           // month group header whenever the month changes between consecutive rows
           const showMonth =
-            index === 0 || formatMonth(items[index - 1].due_on) !== formatMonth(occurrence.due_on);
+            index === 0 ||
+            formatMonth(visibleItems[index - 1].due_on) !== formatMonth(occurrence.due_on);
 
           return (
             <li key={occurrence.id}>
@@ -129,7 +142,12 @@ export const BillingHistory = () => {
                     due {formatDay(occurrence.due_on)}
                     {occurrence.paid_at &&
                       ` · paid ${formatDay(occurrence.paid_at.split(" ")[0])}`}
-                    {occurrence.paid_source === "auto" && " · auto ✓"}
+                    {occurrence.paid_source === "auto" && (
+                      <>
+                        {" "}
+                        <span className='billing-history-2hf8__auto'>auto ✓</span>
+                      </>
+                    )}
                   </span>
                 </div>
 

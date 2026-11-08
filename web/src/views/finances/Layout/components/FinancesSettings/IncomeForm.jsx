@@ -8,7 +8,7 @@ import {
 import { formatDateKey, parseDateKey } from "@utils";
 import { useEffect, useState } from "react";
 import { usePost } from "@utils";
-import { Button, Input } from "@ds";
+import { Button, Dropdown, Input } from "@ds";
 
 // styles
 import "./IncomeForm.css";
@@ -273,21 +273,14 @@ export const IncomeForm = (props) => {
       </div>
 
       <div className='income-form-7qw2__field'>
-        <label className='income-form-7qw2__label' htmlFor='income-kind'>
-          Type
-        </label>
-        <select
-          onChange={(e) => setKind(e.target.value)}
-          className='income-form-7qw2__select'
-          id='income-kind'
+        <p className='income-form-7qw2__label'>Type</p>
+        <Dropdown
           value={kind}
-        >
-          {KIND_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+          options={KIND_OPTIONS}
+          onChange={setKind}
+          ariaLabel='Type'
+          className='income-form-7qw2__dropdown'
+        />
       </div>
 
       {kind === "one_time" && (
@@ -299,41 +292,27 @@ export const IncomeForm = (props) => {
 
       {kind === "fixed" && (
         <div className='income-form-7qw2__field'>
-          <label className='income-form-7qw2__label' htmlFor='income-recurring'>
-            Frequency
-          </label>
-          <select
-            onChange={(e) => handleRecurringChange(e.target.value)}
-            className='income-form-7qw2__select'
-            id='income-recurring'
+          <p className='income-form-7qw2__label'>Frequency</p>
+          <Dropdown
             value={recurring}
-          >
-            {FREQUENCY_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+            options={FREQUENCY_OPTIONS}
+            onChange={handleRecurringChange}
+            ariaLabel='Frequency'
+            className='income-form-7qw2__dropdown'
+          />
         </div>
       )}
 
       {kind === "fixed" && recurring === "weekly" && (
         <div className='income-form-7qw2__field'>
-          <label className='income-form-7qw2__label' htmlFor='income-day-of-week'>
-            Day of the week
-          </label>
-          <select
-            onChange={(e) => setDayOfWeek(Number(e.target.value))}
-            className='income-form-7qw2__select'
-            id='income-day-of-week'
+          <p className='income-form-7qw2__label'>Day of the week</p>
+          <Dropdown
             value={dayOfWeek}
-          >
-            {DAYS_OF_WEEK.map((name, index) => (
-              <option key={name} value={index}>
-                {name}
-              </option>
-            ))}
-          </select>
+            options={DAYS_OF_WEEK.map((name, index) => ({ value: index, label: name }))}
+            onChange={setDayOfWeek}
+            ariaLabel='Day of the week'
+            className='income-form-7qw2__dropdown'
+          />
         </div>
       )}
 

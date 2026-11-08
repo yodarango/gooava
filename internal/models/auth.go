@@ -115,10 +115,11 @@ func Authenticate(next http.HandlerFunc) http.HandlerFunc {
 
 		var response HttpResponse
 
-		if tokenString != "" {
-			tokenString = tokenString[len("Bearer "):]
-			tokenString = strings.ReplaceAll(strings.TrimSpace(tokenString), "\"", "")
-		}
+		// strip the "Bearer " prefix — TrimPrefix is a no-op when the header is
+		// missing the prefix or too short, so malformed headers fall through to
+		// VerifyToken and get a 401 instead of panicking the server
+		tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+		tokenString = strings.ReplaceAll(strings.TrimSpace(tokenString), "\"", "")
 
 		// ask chat gpt how to return the user in the context
 		user, verificationErr := VerifyToken(tokenString)

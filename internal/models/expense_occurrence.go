@@ -14,6 +14,7 @@ type ExpenseOccurrence struct {
 	ExpenseID         int64   `json:"expense_id"`
 	DueOn             string  `json:"due_on"` // YYYY-MM-DD
 	Amount            float64 `json:"amount"`
+	AmountCustom      bool    `json:"amount_custom"` // hand-edited — expense updates stop cascading onto this row
 	Paid              bool    `json:"paid"`
 	PaidSource        string  `json:"paid_source"` // "", "auto", "manual"
 	PaidTransactionID string  `json:"paid_transaction_id"`
@@ -63,6 +64,27 @@ func EnsureExpenseOccurrences(userID uint, items []struct {
 	Amount    float64
 }) error {
 	for _, item := range items {
+		if item.Amount > 0 {
+			// plan-materialized rows (the "put away" expense): the plan computes the
+			// amount per occurrence, so refresh it — unless the row is paid (done)
+			// or hand-edited (amount_custom). The amount is passed twice because the
+			// table names alone would make the update clause ambiguous with the
+			// SELECT's expenses columns.
+			_, err := ModelsRepo.DB.Conn.Exec(
+				`INSERT INTO expense_occurrences(user_id, expense_id, due_on, amount)
+				 SELECT ?, e.id, ?, ?
+				 FROM expenses e
+				 WHERE e.id = ? AND e.user_id = ?
+				 ON DUPLICATE KEY UPDATE
+				   expense_occurrences.amount = IF(expense_occurrences.paid = 0 AND expense_occurrences.amount_custom = 0, ?, expense_occurrences.amount)`,
+				userID, item.DueOn, item.Amount, item.ExpenseID, userID, item.Amount,
+			)
+			if err != nil {
+				return fmt.Errorf("could not ensure expense occurrence (%v on %v): %w", item.ExpenseID, item.DueOn, err)
+			}
+			continue
+		}
+
 		_, err := ModelsRepo.DB.Conn.Exec(
 			`INSERT IGNORE INTO expense_occurrences(user_id, expense_id, due_on, amount)
 			 SELECT ?, e.id, ?, e.amount
@@ -78,13 +100,60 @@ func EnsureExpenseOccurrences(userID uint, items []struct {
 }
 
 /**************************************************************************************
+* GetPutAwayExpenseID returns the id of the user's plan-owned "put away" expense
+* (category 'put away'), or 0 when it does not exist yet.
+**************************************************************************************/
+func GetPutAwayExpenseID(userID uint) (int64, error) {
+	var id int64
+	err := ModelsRepo.DB.Conn.QueryRow(
+		"SELECT id FROM expenses WHERE user_id = ? AND category = 'put away' ORDER BY id LIMIT 1",
+		userID,
+	).Scan(&id)
+	if err == sql.ErrNoRows {
+		return 0, nil
+	}
+	if err != nil {
+		return 0, fmt.Errorf("could not look up put away expense: %w", err)
+	}
+	return id, nil
+}
+
+/**************************************************************************************
+* PruneExpenseOccurrences deletes the expense's unpaid, non-custom occurrences in
+* [fromDate, toDate] whose due_on is not in keepDates — the plan's materialized
+* put-away rows must exactly match what the current plan computed.
+**************************************************************************************/
+func PruneExpenseOccurrences(userID uint, expenseID int64, fromDate, toDate string, keepDates []string) error {
+	query := `
+		DELETE FROM expense_occurrences
+		WHERE user_id = ? AND expense_id = ? AND paid = 0 AND amount_custom = 0
+		  AND due_on >= ? AND due_on <= ?
+	`
+	args := []interface{}{userID, expenseID, fromDate, toDate}
+
+	if len(keepDates) > 0 {
+		placeholders := make([]string, len(keepDates))
+		for i, date := range keepDates {
+			placeholders[i] = "?"
+			args = append(args, date)
+		}
+		query += fmt.Sprintf(" AND due_on NOT IN (%s)", strings.Join(placeholders, ","))
+	}
+
+	if _, err := ModelsRepo.DB.Conn.Exec(query, args...); err != nil {
+		return fmt.Errorf("could not prune expense occurrences: %w", err)
+	}
+	return nil
+}
+
+/**************************************************************************************
 * ListExpenseOccurrences returns every occurrence for the user with due_on in
 * [fromDate, toDate] (inclusive), joined with the expense label for display.
 * Ordered by due date.
 **************************************************************************************/
 func ListExpenseOccurrences(userID uint, fromDate, toDate string) ([]ExpenseOccurrence, error) {
 	query := `
-		SELECT id, expense_id, DATE_FORMAT(due_on, '%Y-%m-%d'), amount, paid,
+		SELECT id, expense_id, DATE_FORMAT(due_on, '%Y-%m-%d'), amount, amount_custom, paid,
 		       COALESCE(paid_source, ''), COALESCE(paid_transaction_id, ''),
 		       COALESCE(DATE_FORMAT(paid_at, '%Y-%m-%d %H:%i:%s'), '')
 		FROM expense_occurrences
@@ -101,7 +170,7 @@ func ListExpenseOccurrences(userID uint, fromDate, toDate string) ([]ExpenseOccu
 	occurrences := make([]ExpenseOccurrence, 0)
 	for rows.Next() {
 		var o ExpenseOccurrence
-		if err := rows.Scan(&o.Id, &o.ExpenseID, &o.DueOn, &o.Amount, &o.Paid, &o.PaidSource, &o.PaidTransactionID, &o.PaidAt); err != nil {
+		if err := rows.Scan(&o.Id, &o.ExpenseID, &o.DueOn, &o.Amount, &o.AmountCustom, &o.Paid, &o.PaidSource, &o.PaidTransactionID, &o.PaidAt); err != nil {
 			return nil, fmt.Errorf("could not scan expense occurrence: %w", err)
 		}
 		occurrences = append(occurrences, o)
@@ -483,3 +552,28 @@ func SetExpenseOccurrencePaid(userID uint, id int64, paid bool) (bool, error) {
 
 	return rowsAffected > 0, nil
 }
+
+/**************************************************************************************
+* UpdateExpenseOccurrenceAmount hand-sets one unpaid occurrence's amount and flags it
+* custom, so expense-level amount edits stop cascading onto it. Paid rows are billing
+* history and stay frozen. Returns whether a row changed.
+**************************************************************************************/
+func UpdateExpenseOccurrenceAmount(userID uint, id int64, amount float64) (bool, error) {
+	result, err := ModelsRepo.DB.Conn.Exec(
+		`UPDATE expense_occurrences
+		 SET amount = ?, amount_custom = 1
+		 WHERE id = ? AND user_id = ? AND paid = 0`,
+		amount, id, userID,
+	)
+	if err != nil {
+		return false, fmt.Errorf("could not update occurrence amount: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return false, fmt.Errorf("could not verify occurrence amount update: %w", err)
+	}
+
+	return rowsAffected > 0, nil
+}
+

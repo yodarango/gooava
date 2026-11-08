@@ -1,4 +1,5 @@
 export { formatLocalTime } from "./time";
+export { matchesRecordQuery } from "./search";
 export { usePost } from "./usePost";
 export { shuffle } from "./shuffle";
 export { Swipe } from "./Swipe.jsx";

@@ -1,5 +1,8 @@
 import { useAppContext } from "../../../../context/appContextProvider";
-import { API_POST_EXPENSE_CATEGORIES } from "@constants";
+import {
+  API_POST_EXPENSE_CATEGORIES_UPDATE,
+  API_POST_EXPENSE_CATEGORIES,
+} from "@constants";
 import { Button, Input, TextArea } from "@ds";
 import { useEffect, useState } from "react";
 import { usePost } from "@utils";
@@ -10,17 +13,20 @@ import "./CategoryForm.css";
 const DEFAULT_COLOR = "#f24c66"; // --dr-delta
 
 /*********************************************************************************************************
- * Form to add an expense category: label, description and a color picked with the native color input.
- * Expenses link to categories by the label string.
+ * Form to add or edit an expense category: label, description and a color picked with
+ * the native color input. With the `category` prop it edits (and a rename re-points the
+ * expenses linked by the old label); without it, it creates. Expenses link to categories
+ * by the label string.
  * ******************************************************************************************************
  */
 export const CategoryForm = (props) => {
-  const { onDone, onCancel } = props;
+  const { onDone, onCancel, category } = props;
+  const editing = !!category;
   const { showToast } = useAppContext();
 
-  const [label, setLabel] = useState("");
-  const [description, setDescription] = useState("");
-  const [color, setColor] = useState(DEFAULT_COLOR);
+  const [label, setLabel] = useState(category?.label || "");
+  const [description, setDescription] = useState(category?.description || "");
+  const [color, setColor] = useState(category?.color || DEFAULT_COLOR);
 
   const create = usePost({
     url: API_POST_EXPENSE_CATEGORIES,
@@ -31,10 +37,20 @@ export const CategoryForm = (props) => {
     },
   });
 
+  const update = usePost({
+    url: API_POST_EXPENSE_CATEGORIES_UPDATE,
+    callback: (data) => {
+      if (!data) return;
+      showToast({ message: "Category updated", type: "success" });
+      if (onDone) onDone();
+    },
+  });
+
   // surface request errors as toasts
+  const request = editing ? update : create;
   useEffect(() => {
-    if (create.error) showToast({ message: String(create.error), type: "danger" });
-  }, [create.error]);
+    if (request.error) showToast({ message: String(request.error), type: "danger" });
+  }, [request.error]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -44,11 +60,17 @@ export const CategoryForm = (props) => {
       return;
     }
 
-    create.post({
+    const payload = {
       label: label.trim(),
       description: description.trim(),
       color,
-    });
+    };
+
+    if (editing) {
+      update.post({ id: category.id, ...payload });
+    } else {
+      create.post(payload);
+    }
   };
 
   return (
@@ -98,8 +120,8 @@ export const CategoryForm = (props) => {
       </div>
 
       <div className='category-form-9qw4__actions'>
-        <Button primary type='submit' isLoading={create.loading} className='w-100'>
-          Add category
+        <Button primary type='submit' isLoading={request.loading} className='w-100'>
+          {editing ? "Save changes" : "Add category"}
         </Button>
         {onCancel && (
           <Button secondary type='button' onClick={onCancel}>

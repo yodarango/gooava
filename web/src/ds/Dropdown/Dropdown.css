@@ -1,0 +1,42 @@
+/* Pill trigger matching the app's inline select look (finances forms) */
+.ds-dropdown {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dr-spacing-2);
+  background: var(--dr-epsilon);
+  color: rgba(var(--dr-beta-rgb), 0.8);
+  border: none;
+  border-radius: 1rem;
+  outline: none;
+  padding: var(--dr-spacing-1) var(--dr-spacing-3);
+  font-size: var(--dr-font-size-5);
+  font-weight: var(--dr-font-weight-7);
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.ds-dropdown:hover {
+  opacity: 0.8;
+}
+
+/* secondary: white pill with shadow — mirrors the ds Button's secondary variant
+   (e.g. the Sync button on the "in the bank" card) */
+.ds-dropdown.secondary {
+  background-color: var(--dr-zeta);
+  color: var(--dr-delta);
+  border-radius: 1.8rem;
+  padding: var(--dr-spacing-2) var(--dr-spacing-4);
+  font-weight: bold;
+  box-shadow: 0 0.2rem 0.4rem rgba(var(--dr-beta-rgb), 0.2);
+  transition: background-color 0.3s ease;
+  justify-content: center;
+}
+
+.ds-dropdown.secondary:hover {
+  opacity: 1; /* the ds Button doesn't dim on hover — match it */
+}
+
+.ds-dropdown__value {
+  min-width: 1.6rem;
+  text-align: center;
+}

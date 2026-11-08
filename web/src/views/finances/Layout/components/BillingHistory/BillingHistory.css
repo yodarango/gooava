@@ -57,6 +57,18 @@
     font-size: var(--dr-font-size-5);
   }
 
+  /* pastel purple badge for automatically paid bills */
+  .billing-history-2hf8__auto {
+    background-color: #ece4fb;
+    color: #6b4fd8;
+    border-radius: 1rem;
+    font-size: var(--dr-font-size-6);
+    font-weight: var(--dr-font-weight-7);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0 var(--dr-spacing-2);
+  }
+
   .billing-history-2hf8__amount {
     flex-shrink: 0;
     color: var(--dr-beta);

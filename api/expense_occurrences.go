@@ -13,30 +13,35 @@ import (
 
 var monthPattern = regexp.MustCompile(`^\d{4}-\d{2}$`)
 
+// occurrenceEnsureItem is one (expense_id, due_on) pair to ensure, plus the optional
+// plan-computed amount (only the put away expense carries one).
+type occurrenceEnsureItem struct {
+	ExpenseID int64   `json:"expense_id"`
+	DueOn     string  `json:"due_on"`
+	Amount    float64 `json:"amount"` // >0 only for plan-materialized rows (the put away expense)
+}
+
 // occurrenceEnsureRequest is the shared body of the ensure and review endpoints: the
-// date range to read back plus the (expense_id, due_on) pairs to lazily create.
+// date range to read back plus the items to lazily create.
 type occurrenceEnsureRequest struct {
-	From  string `json:"from"` // YYYY-MM-DD
-	To    string `json:"to"`   // YYYY-MM-DD
-	Items []struct {
-		ExpenseID int64  `json:"expense_id"`
-		DueOn     string `json:"due_on"`
-	} `json:"items"`
+	From  string                 `json:"from"` // YYYY-MM-DD
+	To    string                 `json:"to"`   // YYYY-MM-DD
+	Items []occurrenceEnsureItem `json:"items"`
 }
 
 /************************************************************************
 * Parses the ensure/review request, validates every date, lazily creates the given
-* occurrences, and returns the requested range. Writes the error response and returns
-* ok=false on any failure.
+* occurrences, and returns the requested range plus the validated items. Writes the
+* error response and returns ok=false on any failure.
 ************************************************************************/
-func ensureOccurrencesFromRequest(w http.ResponseWriter, r *http.Request, userID uint) (from, to string, ok bool) {
+func ensureOccurrencesFromRequest(w http.ResponseWriter, r *http.Request, userID uint) (from, to string, items []occurrenceEnsureItem, ok bool) {
 	var httpResponse models.HttpResponse
-	fail := func(message string) (string, string, bool) {
+	fail := func(message string) (string, string, []occurrenceEnsureItem, bool) {
 		httpResponse.Error = message
 		httpResponse.Success = false
 		httpResponse.Data = nil
 		httpResponse.Send(w)
-		return "", "", false
+		return "", "", nil, false
 	}
 
 	var requestBody occurrenceEnsureRequest
@@ -71,14 +76,14 @@ func ensureOccurrencesFromRequest(w http.ResponseWriter, r *http.Request, userID
 			ExpenseID int64
 			DueOn     string
 			Amount    float64
-		}{ExpenseID: item.ExpenseID, DueOn: item.DueOn})
+		}{ExpenseID: item.ExpenseID, DueOn: item.DueOn, Amount: item.Amount})
 	}
 
 	if err := models.EnsureExpenseOccurrences(userID, ensureItems); err != nil {
 		return fail(fmt.Sprintf("%v", err))
 	}
 
-	return requestBody.From, requestBody.To, true
+	return requestBody.From, requestBody.To, requestBody.Items, true
 }
 
 /************************************************************************
@@ -101,9 +106,35 @@ func EnsureExpenseOccurrences(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	from, to, valid := ensureOccurrencesFromRequest(w, r, authUser.Id)
+	from, to, items, valid := ensureOccurrencesFromRequest(w, r, authUser.Id)
 	if !valid {
 		return
+	}
+
+	// the put away expense is materialized by the plan: remove its stale unpaid,
+	// non-custom rows — the rendered set must exactly match the plan's current math
+	putAwayExpenseID, err := models.GetPutAwayExpenseID(authUser.Id)
+	if err != nil {
+		httpResponse.Error = fmt.Sprintf("%v", err)
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+	if putAwayExpenseID > 0 {
+		keepDates := make([]string, 0)
+		for _, item := range items {
+			if item.ExpenseID == putAwayExpenseID {
+				keepDates = append(keepDates, item.DueOn)
+			}
+		}
+		if err := models.PruneExpenseOccurrences(authUser.Id, putAwayExpenseID, from, to, keepDates); err != nil {
+			httpResponse.Error = fmt.Sprintf("%v", err)
+			httpResponse.Success = false
+			httpResponse.Data = nil
+			httpResponse.Send(w)
+			return
+		}
 	}
 
 	// auto-mark occurrences of expenses the user linked to a transaction — a coincidental
@@ -152,7 +183,7 @@ func ReviewPastDueOccurrences(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	from, to, valid := ensureOccurrencesFromRequest(w, r, authUser.Id)
+	from, to, _, valid := ensureOccurrencesFromRequest(w, r, authUser.Id)
 	if !valid {
 		return
 	}
@@ -365,6 +396,72 @@ func SetExpenseOccurrencePaid(w http.ResponseWriter, r *http.Request) {
 
 	httpResponse.Data = map[string]string{
 		"message": map[bool]string{true: "Marked as paid", false: "Marked as unpaid"}[requestBody.Paid],
+	}
+	httpResponse.Success = true
+	httpResponse.Error = nil
+	httpResponse.Send(w)
+}
+
+
+/************************************************************************
+* Hand-sets the amount of one of the authenticated user's unpaid expense
+* occurrences (the pencil edit next to a bill). Paid rows are billing history
+* and stay frozen.
+*
+* status: ✅
+************************************************************************/
+func UpdateExpenseOccurrenceAmount(w http.ResponseWriter, r *http.Request) {
+	var httpResponse models.HttpResponse
+
+	authUser, ok := r.Context().Value(constants.USER_CONTEXT_AUTH_KEY).(*models.AuthUser)
+	if !ok {
+		httpResponse.Error = "Authentication required"
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	var requestBody struct {
+		Id     int64    `json:"id"`
+		Amount *float64 `json:"amount"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil || requestBody.Id <= 0 || requestBody.Amount == nil {
+		httpResponse.Error = "a valid id and amount are required"
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	if *requestBody.Amount < 0 {
+		httpResponse.Error = "amount must be 0 or more"
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	changed, err := models.UpdateExpenseOccurrenceAmount(authUser.Id, requestBody.Id, *requestBody.Amount)
+	if err != nil {
+		httpResponse.Error = fmt.Sprintf("%v", err)
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	if !changed {
+		httpResponse.Error = "expense occurrence not found or already paid"
+		httpResponse.Success = false
+		httpResponse.Data = nil
+		httpResponse.Send(w)
+		return
+	}
+
+	httpResponse.Data = map[string]string{
+		"message": "Amount updated",
 	}
 	httpResponse.Success = true
 	httpResponse.Error = nil

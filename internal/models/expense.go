@@ -15,6 +15,8 @@ type Expense struct {
 	Recurring   string          `json:"recurring"`    // "" (one-time), daily, weekly, biweekly, monthly, quarterly, yearly
 	RecurRule   json.RawMessage `json:"recur_rule"`   // JSON blob with the recurrence details, NULL when not recurring/daily
 	Notes       string          `json:"notes"`        // free-text (e.g. payment method); read-only via the API for now
+	IsReminderOn  bool          `json:"is_reminder_on"`  // email reminders: 3 days out, 1 day out, daily when past due
+	ReminderEmails string       `json:"reminder_emails"` // comma-separated recipients
 	CreatedAt   string          `json:"created_at"`
 }
 
@@ -31,8 +33,8 @@ func (e *Expense) Create() error {
 	}
 
 	query := `
-		INSERT INTO expenses(user_id, category, amount, label, recurring, recur_rule)
-		VALUES(?,?,?,?,?,?)
+		INSERT INTO expenses(user_id, category, amount, label, recurring, recur_rule, is_reminder_on, reminder_emails)
+		VALUES(?,?,?,?,?,?,?,?)
 	`
 
 	// store NULLs instead of empty values for one-time expenses
@@ -45,7 +47,12 @@ func (e *Expense) Create() error {
 		recurRule = []byte(e.RecurRule)
 	}
 
-	result, err := ModelsRepo.DB.Conn.Exec(query, e.UserID, e.Category, e.Amount, e.Label, recurring, recurRule)
+	var reminderEmails interface{}
+	if e.ReminderEmails != "" {
+		reminderEmails = e.ReminderEmails
+	}
+
+	result, err := ModelsRepo.DB.Conn.Exec(query, e.UserID, e.Category, e.Amount, e.Label, recurring, recurRule, e.IsReminderOn, reminderEmails)
 	if err != nil {
 		return fmt.Errorf("could not create expense: %w", err)
 	}
@@ -67,7 +74,8 @@ func (e *Expense) Create() error {
 func ListExpenses(userID uint) ([]Expense, error) {
 	query := `
 		SELECT id, category, amount, label, COALESCE(linked_label, ''), COALESCE(recurring, ''),
-		       recur_rule, COALESCE(notes, ''), DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s')
+		       recur_rule, COALESCE(notes, ''), is_reminder_on, COALESCE(reminder_emails, ''),
+		       DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s')
 		FROM expenses
 		WHERE user_id = ?
 		ORDER BY id DESC
@@ -83,7 +91,7 @@ func ListExpenses(userID uint) ([]Expense, error) {
 	for rows.Next() {
 		var expense Expense
 		var recurRule []byte
-		err := rows.Scan(&expense.Id, &expense.Category, &expense.Amount, &expense.Label, &expense.LinkedLabel, &expense.Recurring, &recurRule, &expense.Notes, &expense.CreatedAt)
+		err := rows.Scan(&expense.Id, &expense.Category, &expense.Amount, &expense.Label, &expense.LinkedLabel, &expense.Recurring, &recurRule, &expense.Notes, &expense.IsReminderOn, &expense.ReminderEmails, &expense.CreatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("could not scan expense: %w", err)
 		}
@@ -111,13 +119,19 @@ func (e *Expense) Update() error {
 		recurRule = []byte(e.RecurRule)
 	}
 
+	var reminderEmails interface{}
+	if e.ReminderEmails != "" {
+		reminderEmails = e.ReminderEmails
+	}
+
 	query := `
 		UPDATE expenses
-		SET category = ?, amount = ?, label = ?, recurring = ?, recur_rule = ?
+		SET category = ?, amount = ?, label = ?, recurring = ?, recur_rule = ?,
+		    is_reminder_on = ?, reminder_emails = ?
 		WHERE id = ? AND user_id = ?
 	`
 
-	result, err := ModelsRepo.DB.Conn.Exec(query, e.Category, e.Amount, e.Label, recurring, recurRule, e.Id, e.UserID)
+	result, err := ModelsRepo.DB.Conn.Exec(query, e.Category, e.Amount, e.Label, recurring, recurRule, e.IsReminderOn, reminderEmails, e.Id, e.UserID)
 	if err != nil {
 		return fmt.Errorf("could not update expense: %w", err)
 	}
@@ -128,6 +142,17 @@ func (e *Expense) Update() error {
 	}
 	if rowsAffected == 0 {
 		return fmt.Errorf("expense not found")
+	}
+
+	// cascade the new amount onto unpaid occurrences the user hasn't hand-edited —
+	// paid rows (history) and pencil-edited amounts (amount_custom) stay untouched
+	if _, err := ModelsRepo.DB.Conn.Exec(
+		`UPDATE expense_occurrences
+		 SET amount = ?
+		 WHERE expense_id = ? AND user_id = ? AND paid = 0 AND amount_custom = 0`,
+		e.Amount, e.Id, e.UserID,
+	); err != nil {
+		return fmt.Errorf("could not cascade amount to unpaid occurrences: %w", err)
 	}
 
 	return nil

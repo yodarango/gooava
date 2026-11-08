@@ -7,6 +7,7 @@ export { Confetti } from "./Confetti/Confetti";
 export { TextArea } from "./TextArea/TextArea";
 export { Portal } from "@mui/base/Portal";
 export { Switch } from "./Switch/Switch";
+export { Dropdown } from "./Dropdown/Dropdown";
 export { Button } from "./Button/Button";
 export { Hearts } from "./Hearts/Hearts";
 export { Input } from "./Input/Input";
