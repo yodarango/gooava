@@ -46,10 +46,15 @@
   font-size: 1.25rem;
 }
 
-.app-header-56yl__title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--dr-beta);
+/* the current page's title, centered between the brand and the avatar —
+   deliberately smaller and thinner than the old in-body page titles */
+.app-header-56yl__page-title {
+  flex: 1;
+  text-align: center;
+  font-size: var(--dr-font-size-3);
+  font-weight: var(--dr-font-weight-5);
+  color: rgba(var(--dr-beta-rgb), 0.55);
+  margin: 0;
 }
 
 /* Navigation */

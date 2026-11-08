@@ -1,6 +1,11 @@
 import { useAppContext } from "../../../views/context/appContextProvider";
-import { ROUTE_HOME, ROUTE_ME } from "@constants";
-import { Link } from "react-router-dom";
+import {
+  ROUTE_FINANCES,
+  ROUTE_CALENDAR,
+  ROUTE_HOME,
+  ROUTE_ME,
+} from "@constants";
+import { Link, useLocation } from "react-router-dom";
 import { Thumbnail } from "@ds";
 import { avatars } from "@images";
 import gooavaLogo from "../../../../public/logo.png";
@@ -8,9 +13,19 @@ import gooavaLogo from "../../../../public/logo.png";
 // styles
 import "./Header.css";
 
+// the page's title lives in the header — driven by the current route
+const PAGE_TITLES = {
+  [ROUTE_HOME]: "Home",
+  [ROUTE_FINANCES]: "Finances",
+  [ROUTE_CALENDAR]: "Calendar",
+  [ROUTE_ME]: "Profile",
+};
+
 export const Header = () => {
   const { state } = useAppContext();
   const { user } = state;
+  const { pathname } = useLocation();
+  const pageTitle = PAGE_TITLES[pathname] || "";
 
   const avatar = avatars.find((a) => a.pathName === user?.avatar) || null;
 
@@ -24,6 +39,10 @@ export const Header = () => {
               <img src={gooavaLogo} alt='Gooava Logo' className='logo' />
             </div>
           </Link>
+
+          {pageTitle && (
+            <h1 className='app-header-56yl__page-title'>{pageTitle}</h1>
+          )}
 
           {/* profile shortcut — avatar + username, links to the /me page */}
           <Link

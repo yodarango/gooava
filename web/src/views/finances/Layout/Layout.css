@@ -7,20 +7,18 @@
   .finances-layout-4f8d__header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end; /* no in-body title anymore — settings sits right */
     gap: var(--dr-spacing-4);
-  }
-
-  .finances-layout-4f8d__title {
-    color: var(--dr-beta);
-    font-size: var(--dr-font-size-0);
-    font-weight: var(--dr-font-weight-8);
   }
 
   .finances-layout-4f8d__today {
     color: var(--dr-delta);
-    font-size: var(--dr-font-size-0);
+    font-size: var(--dr-font-size-2);
     font-weight: var(--dr-font-weight-8);
+
+    @media (min-width: 500px) {
+      font-size: var(--dr-font-size-0);
+    }
   }
 
   /* the current paycheck's leftover, next to the days-till-payday heading */
@@ -30,14 +28,20 @@
     border-radius: 1rem;
     padding: 0.2rem var(--dr-spacing-3);
     background-color: var(--dr-success);
-    color: var(--dr-beta); /* dark on bright green — same pairing as the plan chips */
-    font-size: var(--dr-font-size-4);
+    color: var(
+      --dr-beta
+    ); /* dark on bright green — same pairing as the plan chips */
+    font-size: var(--dr-font-size-6);
     font-weight: var(--dr-font-weight-7);
     vertical-align: middle;
 
     &.short {
       background-color: var(--dr-danger);
       color: var(--dr-zeta);
+    }
+
+    @media (min-width: 500px) {
+      font-size: var(--dr-font-size-4);
     }
   }
 

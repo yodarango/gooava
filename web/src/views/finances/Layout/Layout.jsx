@@ -147,8 +147,8 @@ export const Layout = () => {
 
   return (
     <div className='finances-layout-4f8d'>
+      {/* the page title lives in the app header — this row just hosts settings */}
       <div className='finances-layout-4f8d__header'>
-        <h1 className='finances-layout-4f8d__title'>Finances</h1>
         <FinancesSettings onChanged={() => setRefreshKey((key) => key + 1)} />
       </div>
       <p className='finances-layout-4f8d__today'>
@@ -173,71 +173,70 @@ export const Layout = () => {
             onSynced={() => setRefreshKey((key) => key + 1)}
           />
         ) : (
-        <section className='finances-layout-4f8d__card'>
-          <p className='finances-layout-4f8d__label'>In the bank</p>
+          <section className='finances-layout-4f8d__card'>
+            <p className='finances-layout-4f8d__label'>In the bank</p>
 
-          {editing ? (
-            <div className='finances-layout-4f8d__edit'>
-              <input
-                onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className='finances-layout-4f8d__input'
-                placeholder='0.00'
-                inputMode='decimal'
-                value={draft}
-                type='number'
-                min='0'
-                step='0.01'
-                autoFocus
-              />
+            {editing ? (
+              <div className='finances-layout-4f8d__edit'>
+                <input
+                  onChange={(e) => setDraft(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className='finances-layout-4f8d__input'
+                  placeholder='0.00'
+                  inputMode='decimal'
+                  value={draft}
+                  type='number'
+                  min='0'
+                  step='0.01'
+                  autoFocus
+                />
+                <button
+                  className='finances-layout-4f8d__icon-btn save'
+                  onClick={saveBalance}
+                  aria-label='Save balance'
+                  type='button'
+                >
+                  <MorphIcon icon={Check} label='Save' size={20} />
+                </button>
+                <button
+                  className='finances-layout-4f8d__icon-btn cancel'
+                  onClick={cancelEditing}
+                  aria-label='Cancel'
+                  type='button'
+                >
+                  <MorphIcon icon={X} label='Cancel' size={20} />
+                </button>
+              </div>
+            ) : (
               <button
-                className='finances-layout-4f8d__icon-btn save'
-                onClick={saveBalance}
-                aria-label='Save balance'
+                className='finances-layout-4f8d__amount'
+                onClick={startEditing}
+                title='Click to edit'
                 type='button'
               >
-                <MorphIcon icon={Check} label='Save' size={20} />
+                <span>
+                  {balance === null ? "— set amount —" : formatUSD(balance)}
+                </span>
+                <MorphIcon icon={Pencil} label='Edit balance' size={18} />
               </button>
-              <button
-                className='finances-layout-4f8d__icon-btn cancel'
-                onClick={cancelEditing}
-                aria-label='Cancel'
-                type='button'
-              >
-                <MorphIcon icon={X} label='Cancel' size={20} />
-              </button>
-            </div>
-          ) : (
-            <button
-              className='finances-layout-4f8d__amount'
-              onClick={startEditing}
-              title='Click to edit'
-              type='button'
-            >
-              <span>{balance === null ? "— set amount —" : formatUSD(balance)}</span>
-              <MorphIcon icon={Pencil} label='Edit balance' size={18} />
-            </button>
-          )}
+            )}
 
-          <p className='finances-layout-4f8d__hint'>
-            Updated manually by you — no bank connection.
-          </p>
-        </section>
+            <p className='finances-layout-4f8d__hint'>
+              Updated manually by you — no bank connection.
+            </p>
+          </section>
         )}
-
       </div>
+      <PaydayStrip />
 
       {/* incomes awaiting the user's approval before they count toward the plan */}
       <IncomeApprovals onDecided={() => setRefreshKey((key) => key + 1)} />
-
 
       <UpcomingBills
         refreshKey={refreshKey}
         manualBalance={balance}
         onPlanComputed={setPlanLeft}
       />
-
-      <PaydayStrip />
 
       {/* The connect card goes away once a bank is linked (and stays hidden
           while the status is still loading to avoid a flash) */}

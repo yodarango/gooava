@@ -182,7 +182,6 @@ export const Layout = () => {
 
   return (
     <div className='me-layout-9f3k'>
-      <h1 className='me-layout-9f3k__title'>Profile</h1>
 
       {/* profile card */}
       <form onSubmit={handleProfileSubmit} className='bg-gamma rounded-3 p-4 mb-4'>

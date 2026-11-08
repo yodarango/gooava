@@ -63,7 +63,7 @@ export const BankBalance = (props) => {
   return (
     <section className='bank-balance-6pw1'>
       <div className='bank-balance-6pw1__header'>
-        <p className='bank-balance-6pw1__label'>In the bank</p>
+        <p className='bank-balance-6pw1__label'>Available</p>
         <Button
           secondary
           onClick={() => sync.post({})}

@@ -2,7 +2,6 @@
   background-color: var(--dr-zeta);
   border: 1px solid rgba(var(--dr-eta-rgb), 0.1);
   border-radius: 1.5rem;
-  box-shadow: 0 0.2rem 0.4rem rgba(var(--dr-beta-rgb), 0.2);
   padding: var(--dr-spacing-4);
   text-align: left;
 
@@ -220,12 +219,11 @@
     align-items: center;
     justify-content: space-between;
     color: rgba(var(--dr-beta-rgb), 0.55);
-    font-size: var(--dr-font-size-4);
-    font-weight: var(--dr-font-weight-6);
+    font-size: var(--dr-font-size-5);
+    opacity: 0.6;
 
     span:last-child {
       color: var(--dr-beta);
-      font-weight: var(--dr-font-weight-7);
 
       &.short {
         color: var(--dr-danger);
@@ -252,7 +250,6 @@
     align-items: center;
     gap: var(--dr-spacing-3);
   }
-
 
   .upcoming-bills-5xk3__paycheck {
     display: flex;
@@ -322,12 +319,6 @@
   /* gold headline + left accent when a reserve is needed */
   .upcoming-bills-5xk3__total.short {
     color: var(--dr-warning);
-  }
-
-  &.attention {
-    box-shadow:
-      inset 0.3rem 0 0 var(--dr-warning),
-      0 0.2rem 0.4rem rgba(var(--dr-beta-rgb), 0.2);
   }
 
   /* one collapsible card per pay period */
@@ -422,12 +413,16 @@
     /* solid chips — the tinted backgrounds with matching bright text were unreadable */
     &.left {
       background-color: var(--dr-success);
-      color: var(--dr-beta); /* dark on bright green (~8:1); white would be ~2:1 */
+      color: var(
+        --dr-beta
+      ); /* dark on bright green (~8:1); white would be ~2:1 */
     }
 
     &.short {
       background-color: var(--dr-danger);
-      color: var(--dr-zeta); /* white on crimson — same pairing as the add/payday chips */
+      color: var(
+        --dr-zeta
+      ); /* white on crimson — same pairing as the add/payday chips */
     }
 
     &.unknown {
@@ -489,4 +484,3 @@
     margin-left: auto;
   }
 }
-
