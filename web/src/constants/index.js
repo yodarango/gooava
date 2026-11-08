@@ -51,6 +51,12 @@ export const API_GET_FINANCE_PREFERENCES = API_BASE + "/finances/preferences";
 export const API_POST_FINANCE_PREFERENCES = API_BASE + "/finances/preferences";
 export const API_GET_SPENDING_BREAKDOWN = API_BASE + "/finances/spending-breakdown";
 
+// api milestone routes
+export const API_GET_MILESTONES = API_BASE + "/milestones";
+export const API_POST_MILESTONES = API_BASE + "/milestones";
+export const API_POST_MILESTONES_UPDATE = API_BASE + "/milestones/update";
+export const API_POST_MILESTONES_DELETE = API_BASE + "/milestones/delete";
+
 // api plaid routes
 export const API_POST_PLAID_LINK_TOKEN = API_BASE + "/plaid/link-token/create";
 export const API_POST_PLAID_EXCHANGE = API_BASE + "/plaid/exchange";

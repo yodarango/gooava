@@ -287,7 +287,10 @@ export const UpcomingBills = (props) => {
     window.bills.reduce(
       (sum, bill) =>
         sum +
-        (isBillPaid(bill.expense.id, bill.date) ? 0 : amountFor(bill) || 0),
+        (isBillPaid(bill.expense.id, bill.date) ||
+        bill.expense.category === "milestone"
+          ? 0
+          : amountFor(bill) || 0),
       0,
     );
   const pastDueTotal = pastWindows.reduce(
@@ -632,14 +635,17 @@ export const UpcomingBills = (props) => {
 
   // shared bill row — current/future windows and past-due paychecks. pastDue turns
   // the row red and adds the badge for bills that went unpaid past their due date.
+  // Milestones are personal goals, so they are never flagged as past-due or late.
   const renderBillRow = (bill, pastDue = false) => {
     const occurrence = occurrenceFor(bill.expense.id, bill.date);
     const paid = !!occurrence?.paid;
+    const isMilestone = bill.expense.category === "milestone";
+    const showPastDue = pastDue && !paid && !isMilestone;
 
     return (
       <li
         key={`${bill.expense.id}-${bill.date.getTime()}`}
-        className={`upcoming-bills-5xk3__row ${paid ? "paid" : ""} ${pastDue && !paid ? "past-due" : ""}`}
+        className={`upcoming-bills-5xk3__row ${paid ? "paid" : ""} ${showPastDue ? "past-due" : ""} ${isMilestone ? "milestone" : ""}`}
       >
         <div className='d-flex justify-content-start gap-4 align-items-center'>
           <button
@@ -684,11 +690,19 @@ export const UpcomingBills = (props) => {
                   <span className='upcoming-bills-5xk3__auto-badge'>auto</span>
                 </>
               )}
-              {pastDue && !paid && (
+              {showPastDue && (
                 <>
                   {" "}
                   <span className='upcoming-bills-5xk3__pastdue-badge'>
                     past due
+                  </span>
+                </>
+              )}
+              {isMilestone && (
+                <>
+                  {" "}
+                  <span className='upcoming-bills-5xk3__milestone-badge'>
+                    goal
                   </span>
                 </>
               )}

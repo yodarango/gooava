@@ -45,6 +45,12 @@ func Router() http.Handler {
 	mux.HandleFunc("POST "+constants.ROUTE_POST_FINANCE_PREFERENCES, models.Authenticate(SaveFinancePreferences))
 	mux.HandleFunc("GET "+constants.ROUTE_GET_SPENDING_BREAKDOWN, models.Authenticate(GetSpendingBreakdown))
 
+	// milestone routes (authentication required)
+	mux.HandleFunc("GET "+constants.ROUTE_GET_MILESTONES, models.Authenticate(ListMilestones))
+	mux.HandleFunc("POST "+constants.ROUTE_POST_MILESTONES, models.Authenticate(CreateMilestone))
+	mux.HandleFunc(constants.ROUTE_POST_MILESTONES_UPDATE, models.Authenticate(UpdateMilestone))
+	mux.HandleFunc(constants.ROUTE_POST_MILESTONES_DELETE, models.Authenticate(DeleteMilestone))
+
 	// plaid routes (authentication required)
 	mux.HandleFunc(constants.ROUTE_POST_PLAID_LINK_TOKEN, models.Authenticate(PlaidCreateLinkToken))
 	mux.HandleFunc(constants.ROUTE_POST_PLAID_EXCHANGE, models.Authenticate(PlaidExchangePublicToken))

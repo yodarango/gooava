@@ -48,6 +48,12 @@ const ROUTE_GET_FINANCE_PREFERENCES = ROUTE_API_BASE + "/finances/preferences"
 const ROUTE_POST_FINANCE_PREFERENCES = ROUTE_API_BASE + "/finances/preferences"
 const ROUTE_GET_SPENDING_BREAKDOWN = ROUTE_API_BASE + "/finances/spending-breakdown"
 
+// milestones
+const ROUTE_GET_MILESTONES = ROUTE_API_BASE + "/milestones"
+const ROUTE_POST_MILESTONES = ROUTE_API_BASE + "/milestones"
+const ROUTE_POST_MILESTONES_UPDATE = ROUTE_API_BASE + "/milestones/update"
+const ROUTE_POST_MILESTONES_DELETE = ROUTE_API_BASE + "/milestones/delete"
+
 // plaid
 const ROUTE_POST_PLAID_LINK_TOKEN = ROUTE_API_BASE + "/plaid/link-token/create"
 const ROUTE_POST_PLAID_EXCHANGE = ROUTE_API_BASE + "/plaid/exchange"

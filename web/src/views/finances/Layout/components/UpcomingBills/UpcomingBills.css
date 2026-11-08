@@ -206,6 +206,18 @@
     padding: 0 var(--dr-spacing-2);
   }
 
+  /* cyan/sky badge for savings goal milestones */
+  .upcoming-bills-5xk3__milestone-badge {
+    background-color: #e0f2fe;
+    color: #0284c7;
+    border-radius: 1rem;
+    font-size: var(--dr-font-size-6);
+    font-weight: var(--dr-font-weight-7);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0 var(--dr-spacing-2);
+  }
+
   /* open-body stat lines: scheduled expenses / left from this paycheck / accumulated */
   .upcoming-bills-5xk3__window-stats {
     display: flex;

@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { CategoriesPane } from "./CategoriesPane";
 import { ExpensesPane } from "./ExpensesPane";
 import { IncomePane } from "./IncomePane";
+import { MilestonesPane } from "./MilestonesPane";
 import { useGet } from "@utils";
 
 // styles
@@ -75,6 +76,7 @@ const SettingsDrawer = (props) => {
             <TabItem>Expenses</TabItem>
             <TabItem>Income</TabItem>
             <TabItem>Categories</TabItem>
+            <TabItem>Milestones</TabItem>
 
             <TabContent>
               <div className='finances-settings-8h3j__body'>
@@ -138,6 +140,10 @@ const SettingsDrawer = (props) => {
 
             <TabContent>
               <CategoriesPane />
+            </TabContent>
+
+            <TabContent>
+              <MilestonesPane onChanged={onChanged} />
             </TabContent>
           </Tabs>
         </div>
